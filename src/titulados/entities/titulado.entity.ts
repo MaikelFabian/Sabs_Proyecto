@@ -37,4 +37,6 @@ export class Titulado {
   @ManyToOne(() => Ficha, (ficha) => ficha.titulados)
   @JoinColumn([{ name: "ficha", referencedColumnName: "idficha" }])
   ficha: Ficha;
+
+  /// este es uncMBIO DE PRUEBA BORARARLO LUEGON PLISSS
 }
