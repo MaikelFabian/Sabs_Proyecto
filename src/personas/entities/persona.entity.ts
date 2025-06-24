@@ -1,24 +1,19 @@
 import {
   Column,
   Entity,
-  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
+  PrimaryGeneratedColumn,
 } from "typeorm";
 import { Detalles } from "src/detalles/entities/detalle.entity";
 import { Movimiento } from "src/movimientos/entities/movimiento.entity";
 import { Ficha } from "src/fichas/entities/ficha.entity";
 import { Rol } from "src/roles/entities/role.entity";
 
-
 @Entity("persona", { schema: "public" })
 export class Persona {
-  @Column("uuid", {
-    primary: true,
-    name: "idpersona",
-    default: () => "gen_random_uuid()",
-  })
+  @PrimaryGeneratedColumn({ name: "idpersona", type: "integer" })
   idpersona: number;
 
   @Column("text", { name: "identificacion", unique: true })

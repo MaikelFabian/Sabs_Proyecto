@@ -1,14 +1,10 @@
-import { Column, Entity, Index, OneToMany } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Persona } from "src/personas/entities/persona.entity";
 import { Titulado } from "src/titulados/entities/titulado.entity";
 
 @Entity("ficha", { schema: "public" })
 export class Ficha {
-  @Column("uuid", {
-    primary: true,
-    name: "idficha",
-    default: () => "gen_random_uuid()",
-  })
+  @PrimaryGeneratedColumn({ name: "idficha", type: "integer" })
   idficha: number;
 
   @Column("integer", { name: "numficha" })

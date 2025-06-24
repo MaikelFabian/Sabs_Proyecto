@@ -1,14 +1,15 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 import { Tipositio } from "src/tipo-sitio/entities/tipo-sitio.entity";
-
 
 @Entity("sitio", { schema: "public" })
 export class Sitio {
-  @Column("uuid", {
-    primary: true,
-    name: "idsitio",
-    default: () => "gen_random_uuid()",
-  })
+  @PrimaryGeneratedColumn({ name: "idsitio", type: "integer" })
   idsitio: number;
 
   @Column("text", { name: "sitio" })

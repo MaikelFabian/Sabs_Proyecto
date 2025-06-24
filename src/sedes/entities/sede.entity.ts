@@ -1,13 +1,15 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 import { Centro } from "src/centros/entities/centro.entity";
 
 @Entity("sede", { schema: "public" })
 export class Sede {
-  @Column("uuid", {
-    primary: true,
-    name: "idsede",
-    default: () => "gen_random_uuid()",
-  })
+  @PrimaryGeneratedColumn({ name: "idsede", type: "integer" })
   idsede: number;
 
   @Column("text", { name: "sede" })

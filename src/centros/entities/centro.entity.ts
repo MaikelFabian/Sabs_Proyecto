@@ -1,23 +1,18 @@
 import {
   Column,
   Entity,
-  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
+  PrimaryGeneratedColumn,
 } from "typeorm";
 import { Areacentro } from "src/area-centro/entities/area-centro.entity";
 import { Municipio } from "src/municipios/entities/municipio.entity";
 import { Sede } from "src/sedes/entities/sede.entity";
 
-
 @Entity("centro", { schema: "public" })
 export class Centro {
-  @Column("uuid", {
-    primary: true,
-    name: "idcentro",
-    default: () => "gen_random_uuid()",
-  })
+  @PrimaryGeneratedColumn({ name: "idcentro", type: "integer" })
   idcentro: number;
 
   @Column("text", { name: "centro" })

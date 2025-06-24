@@ -1,14 +1,16 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 import { Material } from "src/materiales/entities/materiale.entity";
 import { Persona } from "src/personas/entities/persona.entity";
 
 @Entity("detalles", { schema: "public" })
 export class Detalles {
-  @Column("uuid", {
-    primary: true,
-    name: "iddetalle",
-    default: () => "gen_random_uuid()",
-  })
+  @PrimaryGeneratedColumn({ name: "iddetalle", type: "integer" })
   iddetalle: number;
 
   @Column("integer", { name: "cantidasolicitada" })

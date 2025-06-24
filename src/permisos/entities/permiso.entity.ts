@@ -1,13 +1,9 @@
-import { Column, Entity, Index, OneToMany } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Rolpermiso } from "src/rolpermiso/entities/rolpermiso.entity";
 
 @Entity("permiso", { schema: "public" })
 export class Permiso {
-  @Column("uuid", {
-    primary: true,
-    name: "idpermiso",
-    default: () => "gen_random_uuid()",
-  })
+  @PrimaryGeneratedColumn({ name: "idpermiso", type: "integer" })
   idpermiso: number;
 
   @Column("text", { name: "nombre" })

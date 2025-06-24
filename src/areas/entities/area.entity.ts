@@ -1,14 +1,15 @@
-import { Column, Entity, Index, OneToMany } from "typeorm";
+import {
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 import { Areacentro } from "src/area-centro/entities/area-centro.entity";
 import { Titulado } from "src/titulados/entities/titulado.entity";
 
 @Entity("area", { schema: "public" })
 export class Area {
-  @Column("uuid", {
-    primary: true,
-    name: "idarea",
-    default: () => "gen_random_uuid()",
-  })
+  @PrimaryGeneratedColumn({ name: "idarea", type: "integer" })
   idarea: number;
 
   @Column("text", { name: "area" })

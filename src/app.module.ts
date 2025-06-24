@@ -23,6 +23,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { RolpermisoModule } from './rolpermiso/rolpermiso.module';
 import { AreaCentroModule } from './area-centro/area-centro.module';
 import { PermisosModule } from './permisos/permisos.module';
+import { AuthModule } from './auth/auth.module';
 
 
 
@@ -39,10 +40,11 @@ import { PermisosModule } from './permisos/permisos.module';
       username:process.env.DB_USERNAME,
       password:process.env.DB_PASSWORD,
       autoLoadEntities:true,
-      synchronize:false,
+      synchronize:true,
+      dropSchema:true,
 
     }),
-    
+    AuthModule, // Agregar aquí
     MaterialesModule,
     PersonasModule,
     FichasModule,

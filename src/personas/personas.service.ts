@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { CreatePersonaDto } from './dto/create-persona.dto';
-import { UpdatePersonaDto } from './dto/update-persona.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Persona } from './entities/persona.entity';
-
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class PersonasService {
@@ -14,9 +12,15 @@ export class PersonasService {
   ) {}
 
   async create(data: Partial<Persona>) {
+    // Encriptar la contraseña si viene en el payload
+    if (data.contrasena) {
+      const salt = bcrypt.genSaltSync(10);
+      data.contrasena = bcrypt.hashSync(data.contrasena, salt);
+    }
+
     const nuevo = await this.personaRepository.save(data);
     return {
-      message: 'Persona creado exitosamente',
+      message: 'Persona creada exitosamente',
       data: nuevo,
     };
   }
@@ -30,7 +34,6 @@ export class PersonasService {
         'movimientos',
         'ficha',
         'rol',
-
       ],
     });
     return {
@@ -49,22 +52,42 @@ export class PersonasService {
         'movimientos',
         'ficha',
         'rol',
-
       ],
     });
     return {
-      message: 'municipio encontrado',
+      message: 'Persona encontrada',
       data: buscar,
     };
   }
 
+  async findByEmail(email: string) {
+    const persona = await this.personaRepository.findOne({
+      where: { correo: email },
+      relations: [
+        'detalles',
+        'detalles2',
+        'detalles3',
+        'movimientos',
+        'ficha',
+        'rol',
+      ],
+    });
+    return persona;
+  }
+
   async update(id: number, data: Partial<Persona>) {
+    // Si actualiza la contraseña, también la encripta
+    if (data.contrasena) {
+      const salt = bcrypt.genSaltSync(10);
+      data.contrasena = bcrypt.hashSync(data.contrasena, salt);
+    }
+
     await this.personaRepository.update(id, data);
     const actualizado = await this.personaRepository.findOneBy({
       idpersona: id,
     });
     return {
-      message: 'persona actualizado exitosamente',
+      message: 'Persona actualizada exitosamente',
       data: actualizado,
     };
   }
@@ -72,8 +95,7 @@ export class PersonasService {
   async remove(id: number) {
     await this.personaRepository.delete(id);
     return {
-      message: 'persona eliminado exitosamente',
+      message: 'Persona eliminada exitosamente',
     };
   }
 }
-

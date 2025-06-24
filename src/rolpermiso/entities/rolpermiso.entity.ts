@@ -1,22 +1,23 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 import { Permiso } from "src/permisos/entities/permiso.entity";
 import { Rol } from "src/roles/entities/role.entity";
 
-
 @Entity("rolpermiso", { schema: "public" })
 export class Rolpermiso {
-  @Column("uuid", {
-    primary: true,
-    name: "idrolpermiso",
-    default: () => "gen_random_uuid()",
-  })
+  @PrimaryGeneratedColumn({ name: "idrolpermiso", type: "integer" })
   idrolpermiso: number;
 
-  @Column("uuid", { name: "rolid", unique: true })
-  rolid: string;
+  @Column("integer", { name: "rolid" })
+  rolid: number;
 
-  @Column("uuid", { name: "permisoid", unique: true })
-  permisoid: string;
+  @Column("integer", { name: "permisoid" })
+  permisoid: number;
 
   @Column("boolean", { name: "activo", nullable: true, default: () => "true" })
   activo: boolean | null;

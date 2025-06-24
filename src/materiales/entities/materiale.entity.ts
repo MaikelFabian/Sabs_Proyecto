@@ -1,10 +1,10 @@
 import {
   Column,
   Entity,
-  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
+  PrimaryGeneratedColumn,
 } from "typeorm";
 import { Detalles } from "src/detalles/entities/detalle.entity";
 import { Categoriamaterial } from "src/categoria-material/entities/categoria-material.entity";
@@ -13,11 +13,7 @@ import { Unidadmedida } from "src/unidad-medida/entities/unidad-medida.entity";
 
 @Entity("material", { schema: "public" })
 export class Material {
-  @Column("uuid", {
-    primary: true,
-    name: "idmaterial",
-    default: () => "gen_random_uuid()",
-  })
+  @PrimaryGeneratedColumn({ name: "idmaterial", type: "integer" })
   idmaterial: number;
 
   @Column("text", { name: "nombrematerial" })
