@@ -1,4 +1,10 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateMaterialeDto } from './create-materiale.dto';
+import { IsIn,  IsInt, IsNotEmpty } from 'class-validator';
 
-export class UpdateMaterialeDto extends PartialType(CreateMaterialeDto) {}
+export class UpdateStockDto {
+    @IsInt()
+    @IsNotEmpty()
+    stock: number;
+
+    @IsNotEmpty()
+    tipo: 'ENTRADA' | 'SALIDA'; 
+}

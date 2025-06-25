@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
 import { materialService } from './materiales.service';
 import { Material } from './entities/materiale.entity';
+import { UpdateStockDto } from './dto/update-materiale.dto';
 
 @Controller('elementos')
 export class MaterialesController {
@@ -21,9 +22,9 @@ export class MaterialesController {
     return this.materialService.findOne(+id);
   }
 
-  @Put(':id')
-  update(@Param('id') id: number, @Body() data: Partial<Material>) {
-    return this.materialService.update(+id, data);
+  @Put(':id/stock')
+  async update(@Param('id') id: number, @Body() updateStockDto: UpdateStockDto): Promise<Material> {
+    return this.materialService.updateStock(id, updateStockDto);
   }
 
   @Delete(':id')

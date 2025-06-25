@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Material } from './entities/materiale.entity';
+import { UpdateStockDto } from './dto/update-materiale.dto';
 
 @Injectable()
 export class materialService {
@@ -17,7 +18,7 @@ export class materialService {
       data: nuevo,
     };
   }
-
+  
   async findAll() {
     const listar = await this.materialRepository.find({
       relations: [
@@ -66,4 +67,26 @@ export class materialService {
       message: 'Elemento eliminado exitosamente',
     };
   }
+async updateStock(id: number, updateStockDto: UpdateStockDto): Promise<Material> {
+  const material = await this.materialRepository.findOne({
+    where: { idmaterial: id }, 
+  });
+
+  if (!material) {
+    throw new Error('Material no encontrado');
+  }
+
+  const { stock, tipo } = updateStockDto;
+
+  if (tipo === 'ENTRADA') {
+    material.stock += stock;
+  } else if (tipo === 'SALIDA') {
+    if (material.stock < stock) {
+      throw new Error('Stock insuficiente');
+    }
+    material.stock -= stock;
+  }
+
+  return this.materialRepository.save(material);
+}
 }

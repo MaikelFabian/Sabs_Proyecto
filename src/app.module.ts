@@ -26,6 +26,8 @@ import { PermisosModule } from './permisos/permisos.module';
 
 
 
+
+
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -39,7 +41,7 @@ import { PermisosModule } from './permisos/permisos.module';
       username:process.env.DB_USERNAME,
       password:process.env.DB_PASSWORD,
       autoLoadEntities:true,
-      synchronize:false,
+
 
     }),
     
@@ -63,6 +65,7 @@ import { PermisosModule } from './permisos/permisos.module';
     RolpermisoModule,
     AreaCentroModule,
     PermisosModule,
+
   ],
 
 })
