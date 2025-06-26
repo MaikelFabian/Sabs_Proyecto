@@ -1,14 +1,9 @@
-import { Column, Entity, Index, OneToMany } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Sitio } from "src/sitios/entities/sitio.entity";
-
 
 @Entity("tipositio", { schema: "public" })
 export class Tipositio {
-  @Column("uuid", {
-    primary: true,
-    name: "idtipositio",
-    default: () => "gen_random_uuid()",
-  })
+  @PrimaryGeneratedColumn({ name: "idtipositio", type: "integer" })
   idtipositio: number;
 
   @Column("text", { name: "tipositio" })

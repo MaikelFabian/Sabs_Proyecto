@@ -1,15 +1,16 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from "typeorm";
 import { Persona } from "src/personas/entities/persona.entity";
 import { Tipomovimiento } from "src/tipo-movimiento/entities/tipo-movimiento.entity";
 
-
 @Entity("movimiento", { schema: "public" })
 export class Movimiento {
-  @Column("uuid", {
-    primary: true,
-    name: "idmovimiento",
-    default: () => "gen_random_uuid()",
-  })
+  @PrimaryGeneratedColumn({ name: "idmovimiento", type: "integer" })
   idmovimiento: number;
 
   @Column("boolean", { name: "activo", nullable: true, default: () => "true" })
@@ -34,10 +35,7 @@ export class Movimiento {
   ])
   movimientopersona: Persona;
 
-  @ManyToOne(
-    () => Tipomovimiento,
-    (tipomovimiento) => tipomovimiento.movimientos
-  )
+  @ManyToOne(() => Tipomovimiento, (tipomovimiento) => tipomovimiento.movimientos)
   @JoinColumn([
     { name: "tipomovimiento", referencedColumnName: "idtipomovimiento" },
   ])

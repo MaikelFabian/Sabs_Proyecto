@@ -1,13 +1,12 @@
-import { Column, Entity, Index, OneToMany } from "typeorm";
-import { Rolpermiso } from "src/rolpermiso/entities/rolpermiso.entity";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn,JoinColumn, ManyToOne } from "typeorm";
+import { Opcion } from "src/opciones/entities/opcion.entity";
+import { Rol } from "src/roles/entities/role.entity";
+import { RolPermisoOpcion } from "src/rol-permiso-opcion/entities/rol-permiso-opcion.entity";
+
 
 @Entity("permiso", { schema: "public" })
 export class Permiso {
-  @Column("uuid", {
-    primary: true,
-    name: "idpermiso",
-    default: () => "gen_random_uuid()",
-  })
+  @PrimaryGeneratedColumn({ name: "idpermiso", type: "integer" })
   idpermiso: number;
 
   @Column("text", { name: "nombre" })
@@ -34,7 +33,15 @@ export class Permiso {
     nullable: true,
   })
   fechaactualizaciN: Date | null;
+  @OneToMany(() => Rol, (rol) => rol.permisos)
+  @JoinColumn({ name: 'id_rol' })
+  rol: Rol;
 
-  @OneToMany(() => Rolpermiso, (rolpermiso) => rolpermiso.permiso)
-  rolpermisos: Rolpermiso[];
+  @ManyToOne(() => Opcion, (opcion) => opcion.permisos)
+  @JoinColumn({ name: 'id_opcion' })
+  opcion: Opcion;
+  @OneToMany(() => RolPermisoOpcion, (rpo) => rpo.permiso)
+  rolPermisoOpciones: RolPermisoOpcion[];
+
+
 }

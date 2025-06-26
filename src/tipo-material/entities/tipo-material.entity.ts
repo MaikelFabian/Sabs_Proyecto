@@ -1,13 +1,9 @@
-import { Column, Entity, Index, OneToMany } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Material } from "src/materiales/entities/materiale.entity";
 
 @Entity("tipomaterial", { schema: "public" })
 export class Tipomaterial {
-  @Column("uuid", {
-    primary: true,
-    name: "idtipomaterial",
-    default: () => "gen_random_uuid()",
-  })
+  @PrimaryGeneratedColumn({ name: "idtipomaterial", type: "integer" })
   idtipomaterial: number;
 
   @Column("text", { name: "tipo" })

@@ -20,11 +20,12 @@ import { MovimientosModule } from './movimientos/movimientos.module';
 import { TipoMovimientoModule } from './tipo-movimiento/tipo-movimiento.module';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { RolpermisoModule } from './rolpermiso/rolpermiso.module';
 import { AreaCentroModule } from './area-centro/area-centro.module';
 import { PermisosModule } from './permisos/permisos.module';
-
-
+import { AuthModule } from './auth/auth.module';
+import { OpcionesModule } from './opciones/opciones.module';
+import { ModulosModule } from './modulos/modulos.module';
+import { RolPermisoOpcionModule } from './rol-permiso-opcion/rol-permiso-opcion.module';
 
 
 
@@ -41,10 +42,10 @@ import { PermisosModule } from './permisos/permisos.module';
       username:process.env.DB_USERNAME,
       password:process.env.DB_PASSWORD,
       autoLoadEntities:true,
-
+      synchronize:true,
 
     }),
-    
+    AuthModule, // Agregar aquí
     MaterialesModule,
     PersonasModule,
     FichasModule,
@@ -62,10 +63,11 @@ import { PermisosModule } from './permisos/permisos.module';
     TipoSitioModule,
     MovimientosModule,
     TipoMovimientoModule,
-    RolpermisoModule,
     AreaCentroModule,
     PermisosModule,
-
+    OpcionesModule,
+    ModulosModule,
+    RolPermisoOpcionModule
   ],
 
 })

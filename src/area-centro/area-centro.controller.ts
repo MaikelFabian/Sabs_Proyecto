@@ -1,10 +1,11 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { AreacentroService } from './area-centro.service';
-import { CreateAreaCentroDto } from './dto/create-area-centro.dto';
-import { UpdateAreaCentroDto } from './dto/update-area-centro.dto';
 import { Areacentro } from './entities/area-centro.entity';
+import { UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('area-centro')
+
 export class AreaCentroController {
   constructor(private readonly areaCentroService: AreacentroService) {}
 
