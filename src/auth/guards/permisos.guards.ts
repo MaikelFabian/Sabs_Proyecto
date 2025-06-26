@@ -17,7 +17,7 @@ export class PermisosGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const user = request.user; // Suponiendo que viene desde JWT
+    const user = request.user;
     const path = request.route.path;
     const metodo = request.method;
 
