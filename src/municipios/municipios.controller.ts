@@ -1,35 +1,45 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { MunicipiosService } from './municipios.service';
-import { CreateMunicipioDto } from './dto/create-municipio.dto';
-import { UpdateMunicipioDto } from './dto/update-municipio.dto';
 import { Municipio } from './entities/municipio.entity';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('municipios')
 export class MunicipiosController {
   constructor(private readonly municipiosService: MunicipiosService) {}
 
   @Post()
-  create(@Body() data: Partial<Municipio>) {
+  create(@Body() data: Partial<Municipio>, @Request() req) {
     return this.municipiosService.create(data);
   }
 
   @Get()
-  findAll() {
+  findAll(@Request() req) {
     return this.municipiosService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string, @Request() req) {
     return this.municipiosService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body()data: Partial<Municipio>) {
+  update(@Param('id') id: string, @Body() data: Partial<Municipio>, @Request() req) {
     return this.municipiosService.update(+id, data);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string, @Request() req) {
     return this.municipiosService.remove(+id);
   }
 }

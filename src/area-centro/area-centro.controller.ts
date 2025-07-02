@@ -1,36 +1,45 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { AreacentroService } from './area-centro.service';
 import { Areacentro } from './entities/area-centro.entity';
-import { UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('area-centro')
-
 export class AreaCentroController {
   constructor(private readonly areaCentroService: AreacentroService) {}
 
   @Post()
-  create(@Body() data: Partial<Areacentro>) {
+  create(@Body() data: Partial<Areacentro>, @Request() req) {
     return this.areaCentroService.create(data);
   }
 
   @Get()
-  findAll() {
+  findAll(@Request() req) {
     return this.areaCentroService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string, @Request() req) {
     return this.areaCentroService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data: Partial<Areacentro>) {
+  update(@Param('id') id: string, @Body() data: Partial<Areacentro>, @Request() req) {
     return this.areaCentroService.update(+id, data);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string, @Request() req) {
     return this.areaCentroService.remove(+id);
   }
 }

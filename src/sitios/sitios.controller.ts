@@ -1,35 +1,45 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { SitiosService } from './sitios.service';
-import { CreateSitioDto } from './dto/create-sitio.dto';
-import { UpdateSitioDto } from './dto/update-sitio.dto';
 import { Sitio } from './entities/sitio.entity';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('sitios')
 export class SitiosController {
   constructor(private readonly sitiosService: SitiosService) {}
 
   @Post()
-  create(@Body() data: Partial<Sitio>) {
+  create(@Body() data: Partial<Sitio>, @Request() req) {
     return this.sitiosService.create(data);
   }
 
   @Get()
-  findAll() {
+  findAll(@Request() req) {
     return this.sitiosService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string, @Request() req) {
     return this.sitiosService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data:Partial<Sitio>) {
+  update(@Param('id') id: string, @Body() data: Partial<Sitio>, @Request() req) {
     return this.sitiosService.update(+id, data);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string, @Request() req) {
     return this.sitiosService.remove(+id);
   }
 }

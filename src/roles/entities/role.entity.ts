@@ -38,6 +38,6 @@ export class Rol {
 
   @ManyToOne(() => Permiso, (permiso) => permiso.rol)
   permisos: Permiso[];
-  @OneToMany(() => RolPermisoOpcion, (rpo) => rpo.rol)
+  @ManyToOne(() => RolPermisoOpcion, (rpo) => rpo.rol)
   rolPermisoOpciones: RolPermisoOpcion[];
 }

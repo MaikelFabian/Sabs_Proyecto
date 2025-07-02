@@ -1,34 +1,46 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { RolPermisoOpcionService } from './rol-permiso-opcion.service';
 import { CreateRolPermisoOpcionDto } from './dto/create-rol-permiso-opcion.dto';
 import { UpdateRolPermisoOpcionDto } from './dto/update-rol-permiso-opcion.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('rol-permiso-opcion')
 export class RolPermisoOpcionController {
   constructor(private readonly rolPermisoOpcionService: RolPermisoOpcionService) {}
 
   @Post()
-  create(@Body() createRolPermisoOpcionDto: CreateRolPermisoOpcionDto) {
+  create(@Body() createRolPermisoOpcionDto: CreateRolPermisoOpcionDto, @Request() req) {
     return this.rolPermisoOpcionService.create(createRolPermisoOpcionDto);
   }
 
   @Get()
-  findAll() {
+  findAll(@Request() req) {
     return this.rolPermisoOpcionService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string, @Request() req) {
     return this.rolPermisoOpcionService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRolPermisoOpcionDto: UpdateRolPermisoOpcionDto) {
+  update(@Param('id') id: string, @Body() updateRolPermisoOpcionDto: UpdateRolPermisoOpcionDto, @Request() req) {
     return this.rolPermisoOpcionService.update(+id, updateRolPermisoOpcionDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string, @Request() req) {
     return this.rolPermisoOpcionService.remove(+id);
   }
 }

@@ -1,35 +1,45 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { UnidadMedidaService } from './unidad-medida.service';
-import { CreateUnidadMedidaDto } from './dto/create-unidad-medida.dto';
-import { UpdateUnidadMedidaDto } from './dto/update-unidad-medida.dto';
 import { Unidadmedida } from './entities/unidad-medida.entity';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('unidad-medida')
 export class UnidadMedidaController {
   constructor(private readonly unidadMedidaService: UnidadMedidaService) {}
 
   @Post()
-  create(@Body() data:Partial<Unidadmedida>) {
+  create(@Body() data: Partial<Unidadmedida>, @Request() req) {
     return this.unidadMedidaService.create(data);
   }
 
   @Get()
-  findAll() {
+  findAll(@Request() req) {
     return this.unidadMedidaService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string, @Request() req) {
     return this.unidadMedidaService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data: Partial<Unidadmedida>) {
+  update(@Param('id') id: string, @Body() data: Partial<Unidadmedida>, @Request() req) {
     return this.unidadMedidaService.update(+id, data);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string, @Request() req) {
     return this.unidadMedidaService.remove(+id);
   }
 }

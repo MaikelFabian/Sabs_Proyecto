@@ -1,14 +1,25 @@
-import { Controller, Post, Body, Request, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Res, UnauthorizedException } from '@nestjs/common';
+import { Response } from 'express';
 import { AuthService } from './auth.service';
-import { LocalAuthGuard } from './local-auth.guard';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Request() req) {
-    return this.authService.login(req.user);
+  async login(
+    @Body('correo') correo: string,
+    @Body('contrasena') contrasena: string,
+    @Res() res: Response,
+  ) {
+    const user = await this.authService.validateUser(correo, contrasena);
+    if (!user) throw new UnauthorizedException('Credenciales inválidas');
+    return this.authService.login(user, res);
+  }
+
+  @Post('logout')
+  async logout(@Res() res: Response) {
+    res.clearCookie('access_token');
+    res.send({ message: 'Sesión cerrada correctamente' });
   }
 }

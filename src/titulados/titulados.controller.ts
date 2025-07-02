@@ -1,35 +1,45 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { TituladosService } from './titulados.service';
-import { CreateTituladoDto } from './dto/create-titulado.dto';
-import { UpdateTituladoDto } from './dto/update-titulado.dto';
 import { Titulado } from './entities/titulado.entity';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('titulados')
 export class TituladosController {
   constructor(private readonly tituladosService: TituladosService) {}
 
   @Post()
-  create(@Body() data: Partial<Titulado>) {
+  create(@Body() data: Partial<Titulado>, @Request() req) {
     return this.tituladosService.create(data);
   }
 
   @Get()
-  findAll() {
+  findAll(@Request() req) {
     return this.tituladosService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string, @Request() req) {
     return this.tituladosService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data:Partial<Titulado>) {
+  update(@Param('id') id: string, @Body() data: Partial<Titulado>, @Request() req) {
     return this.tituladosService.update(+id, data);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string, @Request() req) {
     return this.tituladosService.remove(+id);
   }
 }

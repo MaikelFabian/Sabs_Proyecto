@@ -26,7 +26,7 @@ export class RolesService {
     const listar = await this.rolRepository.find({
       relations: [
         'personas',
-        'rolpermisos',
+        'rolPermisoOpciones',
 
       ],
     });
@@ -41,7 +41,7 @@ export class RolesService {
       where: { idrol: id },
       relations: [
         'personas',
-        'rolpermisos',
+        'rolPermisoOpciones',
 
       ],
     });

@@ -43,10 +43,9 @@ import { RolPermisoOpcionModule } from './rol-permiso-opcion/rol-permiso-opcion.
       password:process.env.DB_PASSWORD,
       autoLoadEntities:true,
       synchronize:true,
-      dropSchema:true,
 
     }),
-    AuthModule, // Agregar aquí
+    AuthModule, 
     MaterialesModule,
     PersonasModule,
     FichasModule,
