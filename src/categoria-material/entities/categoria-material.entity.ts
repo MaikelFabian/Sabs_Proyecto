@@ -1,39 +1,34 @@
+// src/categoria-material/entities/categoria-material.entity.ts
 import {
-  Column,
   Entity,
-  Index,
-  OneToMany,
   PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Material } from 'src/materiales/entities/materiale.entity';
 
-@Entity('categoriamaterial', { schema: 'public' })
-export class Categoriamaterial {
-  @PrimaryGeneratedColumn({ name: 'id', type: 'integer' })
+@Entity()
+export class CategoriaMaterial {
+  @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('text', { name: 'codigoMaterial' })
-  codigoMaterial: string;
+  @Column()
+  codigo: string;
 
-  @Column('text', { name: 'categoria' })
+  @Column()
   categoria: string;
 
-  @Column('boolean', { name: 'activo', nullable: true, default: () => 'true' })
-  activo: boolean | null;
+  @Column({ default: true })
+  activo: boolean;
 
-  @Column('timestamp without time zone', {
-    name: 'fechaCreacion',
-    nullable: true,
-    default: () => 'now()',
-  })
-  fechaCreacion: Date | null;
+  @CreateDateColumn()
+  fechaCreacion: Date;
 
-  @Column('timestamp without time zone', {
-    name: 'fechaActualizacion',
-    nullable: true,
-  })
-  fechaActualizacion: Date | null;
+  @UpdateDateColumn({ nullable: true })
+  fechaActualizacion?: Date;
 
-  @OneToMany(() => Material, (material) => material.categoriamaterial)
-  materials: Material[];
+  @OneToMany(() => Material, (material) => material.categoriaMaterial)
+  materiales?: Material[];
 }
