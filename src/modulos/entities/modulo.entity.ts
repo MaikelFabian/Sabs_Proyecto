@@ -1,19 +1,15 @@
-import {
-    Column,
-    Entity,
-    Index,
-    OneToMany,
-    PrimaryGeneratedColumn,
-} from 'typeorm';
+// src/modulo/entities/modulo.entity.ts
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Opcion } from 'src/opciones/entities/opcion.entity';
 
-@Entity('modulos', { schema: 'public' })
+@Entity()
 export class Modulo {
-    @PrimaryGeneratedColumn()
-    id: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column({ name: 'nombre_modulo', length: 100 })
-    nombre_modulo: string;
-    @OneToMany(() => Opcion, (opcion) => opcion.modulo)
-    opciones: Opcion[];
+  @Column()
+  nombre: string;
+
+  @OneToMany(() => Opcion, (opcion) => opcion.modulo)
+  opciones?: Opcion[];
 }

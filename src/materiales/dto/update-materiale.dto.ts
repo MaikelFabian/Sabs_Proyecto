@@ -1,6 +1,6 @@
 import { IsIn,  IsInt, IsNotEmpty } from 'class-validator';
 
-export class UpdateStockDto {
+export class UpdateMaterialDto {
     @IsInt()
     @IsNotEmpty()
     stock: number;

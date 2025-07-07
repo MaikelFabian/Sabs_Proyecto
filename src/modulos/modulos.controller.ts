@@ -8,8 +8,8 @@ export class ModulosController {
   constructor(private readonly modulosService: ModulosService) {}
 
   @Post()
-  create(@Body() createModuloDto: CreateModuloDto) {
-    return this.modulosService.create(createModuloDto);
+  create(@Body() dto: CreateModuloDto) {
+    return this.modulosService.create(dto);
   }
 
   @Get()
@@ -23,8 +23,8 @@ export class ModulosController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateModuloDto: UpdateModuloDto) {
-    return this.modulosService.update(+id, updateModuloDto);
+  update(@Param('id') id: string, @Body() dto: UpdateModuloDto) {
+    return this.modulosService.update(+id, dto);
   }
 
   @Delete(':id')

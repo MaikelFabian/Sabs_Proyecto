@@ -23,9 +23,9 @@ export class DetallesService {
   async findAll() {
     const listar = await this.detallesRepository.find({
       relations: [
-        'personaaprueba',
-        'personaencargada',
-        'personasolicita',
+        'personaAprueba',
+        'personaEncargada',
+        'personaSolicita',
         'material',
       ],
     });
@@ -37,11 +37,11 @@ export class DetallesService {
 
   async findOne(id: number) {
     const buscar = await this.detallesRepository.findOne({
-      where: { iddetalle: id },
+      where: { id: id },
       relations: [
-        'personaaprueba',
-        'personaencargada',
-        'personasolicita',
+        'personaAprueba',
+        'personaEncargada',
+        'personaSolicita',
         'material',
       ],
     });
@@ -54,7 +54,7 @@ export class DetallesService {
   async update(id: number, data: Partial<Detalles>) {
     await this.detallesRepository.update(id, data);
     const actualizado = await this.detallesRepository.findOneBy({
-      iddetalle: id,
+      id: id,
     });
     return {
       message: 'detalles actualizado exitosamente',

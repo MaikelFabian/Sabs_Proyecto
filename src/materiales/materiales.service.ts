@@ -1,92 +1,51 @@
-import { Injectable } from '@nestjs/common';
+// src/material/material.service.ts
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { Material } from './entities/materiale.entity';
-import { UpdateStockDto } from './dto/update-materiale.dto';
+import { Repository } from 'typeorm';
+import { CreateMaterialDto } from './dto/create-materiale.dto';
+import { UpdateMaterialDto } from './dto/update-materiale.dto';
 
 @Injectable()
-export class materialService {
+export class MaterialService {
   constructor(
     @InjectRepository(Material)
-    private readonly materialRepository: Repository<Material>,
+    private readonly repo: Repository<Material>,
   ) {}
 
-  async create(data: Partial<Material>) {
-    const nuevo = await this.materialRepository.save(data);
-    return {
-      message: 'material creado exitosamente',
-      data: nuevo,
-    };
+  async create(dto: CreateMaterialDto) {
+    const nuevo = this.repo.create({ ...dto });
+    const guardado = await this.repo.save(nuevo);
+    return { message: 'Material creado', data: guardado };
   }
-  
+
   async findAll() {
-    const listar = await this.materialRepository.find({
-      relations: [
-        'detalles',
-        'categoriamaterial',
-        'tipomaterial',
-        'unidadmedida',
-      ],
+    const lista = await this.repo.find({
+      relations: ['tipoMaterial', 'unidadMedida', 'categoriaMaterial', 'detalles'],
     });
-    return {
-      message: 'Listado de elementos',
-      data: listar,
-    };
+    return { message: 'Listado de materiales', data: lista };
   }
 
   async findOne(id: number) {
-    const buscar = await this.materialRepository.findOne({
-      where: { idmaterial: id },
-      relations: [
-        'Detalles',
-        'Categoriamaterial',
-        'Tipomaterial',
-        'Unidadmedida',
-      ],
+    const encontrado = await this.repo.findOne({
+      where: { id },
+      relations: ['tipoMaterial', 'unidadMedida', 'categoriaMaterial', 'detalles'],
     });
-    return {
-      message: 'Elemento encontrado',
-      data: buscar,
-    };
+    if (!encontrado) throw new NotFoundException(`Material no encontrado id: ${id}`);
+    return { message: 'Material encontrado', data: encontrado };
   }
 
-  async update(id: number, data: Partial<Material>) {
-    await this.materialRepository.update(id, data);
-    const actualizado = await this.materialRepository.findOneBy({
-      idmaterial: id,
+  async update(id: number, dto: UpdateMaterialDto) {
+    await this.repo.update(id, dto);
+    const actualizado = await this.repo.findOne({
+      where: { id },
+      relations: ['tipoMaterial', 'unidadMedida', 'categoriaMaterial', 'detalles'],
     });
-    return {
-      message: 'Elemento actualizado exitosamente',
-      data: actualizado,
-    };
+    return { message: 'Material actualizado', data: actualizado };
   }
 
   async remove(id: number) {
-    await this.materialRepository.delete(id);
-    return {
-      message: 'Elemento eliminado exitosamente',
-    };
+    await this.repo.delete(id);
+    return { message: 'Material eliminado' };
   }
-async updateStock(id: number, updateStockDto: UpdateStockDto): Promise<Material> {
-  const material = await this.materialRepository.findOne({
-    where: { idmaterial: id }, 
-  });
-
-  if (!material) {
-    throw new Error('Material no encontrado');
-  }
-
-  const { stock, tipo } = updateStockDto;
-
-  if (tipo === 'ENTRADA') {
-    material.stock += stock;
-  } else if (tipo === 'SALIDA') {
-    if (material.stock < stock) {
-      throw new Error('Stock insuficiente');
-    }
-    material.stock -= stock;
-  }
-
-  return this.materialRepository.save(material);
-}
 }

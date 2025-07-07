@@ -4,50 +4,50 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-} from "typeorm";
-import { Material } from "src/materiales/entities/materiale.entity";
-import { Persona } from "src/personas/entities/persona.entity";
+} from 'typeorm';
+import { Material } from 'src/materiales/entities/materiale.entity';
+import { Persona } from 'src/personas/entities/persona.entity';
 
-@Entity("detalles", { schema: "public" })
+@Entity('detalles', { schema: 'public' })
 export class Detalles {
-  @PrimaryGeneratedColumn({ name: "iddetalle", type: "integer" })
-  iddetalle: number;
+  @PrimaryGeneratedColumn({ name: 'id', type: 'integer' })
+  id: number;
 
-  @Column("integer", { name: "cantidasolicitada" })
-  cantidasolicitada: number;
+  @Column('integer', { name: 'cantidaSolicitada' })
+  cantidaSolicitada: number;
 
-  @Column("text", { name: "descripcion", nullable: true })
+  @Column('text', { name: 'descripcion', nullable: true })
   descripcion: string | null;
 
-  @Column("boolean", { name: "activo", nullable: true, default: () => "true" })
+  @Column('boolean', { name: 'activo', nullable: true, default: () => 'true' })
   activo: boolean | null;
 
-  @Column("timestamp without time zone", {
-    name: "fechacreacion",
+  @Column('timestamp without time zone', {
+    name: 'fechaCreacion',
     nullable: true,
-    default: () => "now()",
+    default: () => 'now()',
   })
-  fechacreacion: Date | null;
+  fechaCreacion: Date | null;
 
-  @Column("timestamp without time zone", {
-    name: "fechaactualización",
+  @Column('timestamp without time zone', { 
+    name: 'fechaActualizacion',
     nullable: true,
   })
-  fechaactualizaciN: Date | null;
+  fechaActualizacion: Date | null;
 
   @ManyToOne(() => Material, (material) => material.detalles)
-  @JoinColumn([{ name: "material", referencedColumnName: "idmaterial" }])
+  @JoinColumn([{ name: 'material', referencedColumnName: 'id' }])
   material: Material;
 
   @ManyToOne(() => Persona, (persona) => persona.detalles)
-  @JoinColumn([{ name: "personaaprueba", referencedColumnName: "idpersona" }])
-  personaaprueba: Persona;
+  @JoinColumn([{ name: 'personaAprueba', referencedColumnName: 'id' }])
+  personaAprueba: Persona;
 
   @ManyToOne(() => Persona, (persona) => persona.detalles2)
-  @JoinColumn([{ name: "personaencargada", referencedColumnName: "idpersona" }])
-  personaencargada: Persona;
+  @JoinColumn([{ name: 'personaEncargada', referencedColumnName: 'id' }])
+  personaEncargada: Persona;
 
   @ManyToOne(() => Persona, (persona) => persona.detalles3)
-  @JoinColumn([{ name: "personasolicita", referencedColumnName: "idpersona" }])
-  personasolicita: Persona;
+  @JoinColumn([{ name: 'personaSolicita', referencedColumnName: 'id' }])
+  personaSolicita: Persona;
 }

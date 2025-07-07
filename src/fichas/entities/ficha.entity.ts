@@ -1,33 +1,33 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Persona } from "src/personas/entities/persona.entity";
-import { Titulado } from "src/titulados/entities/titulado.entity";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Persona } from 'src/personas/entities/persona.entity';
+import { Titulado } from 'src/titulados/entities/titulado.entity';
 
-@Entity("ficha", { schema: "public" })
+@Entity('ficha', { schema: 'public' })
 export class Ficha {
-  @PrimaryGeneratedColumn({ name: "idficha", type: "integer" })
-  idficha: number;
+  @PrimaryGeneratedColumn({ name: 'id', type: 'integer' })
+  id: number;
 
-  @Column("integer", { name: "numficha" })
-  numficha: number;
+  @Column('integer', { name: 'numero' })
+  numero: number;
 
-  @Column("integer", { name: "cantidadaprendices", nullable: true })
+  @Column('integer', { name: 'cantidadaprendices', nullable: true })
   cantidadaprendices: number | null;
 
-  @Column("boolean", { name: "activo", nullable: true, default: () => "true" })
+  @Column('boolean', { name: 'activo', nullable: true, default: () => 'true' })
   activo: boolean | null;
 
-  @Column("timestamp without time zone", {
-    name: "fechacreacion",
+  @Column('timestamp without time zone', {
+    name: 'fechaCreacion',
     nullable: true,
-    default: () => "now()",
+    default: () => 'now()',
   })
-  fechacreacion: Date | null;
+  fechaCreacion: Date | null;
 
-  @Column("timestamp without time zone", {
-    name: "fechaactualización",
+  @Column('timestamp without time zone', {
+    name: 'fechaActualizacion',
     nullable: true,
   })
-  fechaactualizaciN: Date | null;
+  fechaActualizacion: Date | null;
 
   @OneToMany(() => Persona, (persona) => persona.ficha)
   personas: Persona[];

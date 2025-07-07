@@ -1,34 +1,35 @@
-import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
-import { materialService } from './materiales.service';
-import { Material } from './entities/materiale.entity';
-import { UpdateStockDto } from './dto/update-materiale.dto';
+// src/material/material.controller.ts
+import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { MaterialService } from './materiales.service';
+import { CreateMaterialDto } from './dto/create-materiale.dto';
+import { UpdateMaterialDto } from './dto/update-materiale.dto';
 
-@Controller('elementos')
-export class MaterialesController {
-  constructor(private readonly materialService: materialService) {}
+@Controller('material')
+export class MaterialController {
+  constructor(private readonly service: MaterialService) {}
 
   @Post()
-  create(@Body() data: Partial<Material>) {
-    return this.materialService.create(data);
+  create(@Body() dto: CreateMaterialDto) {
+    return this.service.create(dto);
   }
 
   @Get()
   findAll() {
-    return this.materialService.findAll();
+    return this.service.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.materialService.findOne(+id);
+  findOne(@Param('id') id: string) {
+    return this.service.findOne(+id);
   }
 
-  @Put(':id/stock')
-  async update(@Param('id') id: number, @Body() updateStockDto: UpdateStockDto): Promise<Material> {
-    return this.materialService.updateStock(id, updateStockDto);
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateMaterialDto) {
+    return this.service.update(+id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.materialService.remove(+id);
+  remove(@Param('id') id: string) {
+    return this.service.remove(+id);
   }
 }

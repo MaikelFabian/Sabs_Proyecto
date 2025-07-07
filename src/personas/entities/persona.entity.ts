@@ -1,75 +1,79 @@
+// src/persona/entities/persona.entity.ts
 import {
-  Column,
   Entity,
-  JoinColumn,
+  PrimaryGeneratedColumn,
+  Column,
   ManyToOne,
   OneToMany,
-  PrimaryGeneratedColumn,
-} from "typeorm";
-import { Detalles } from "src/detalles/entities/detalle.entity";
-import { Movimiento } from "src/movimientos/entities/movimiento.entity";
-import { Ficha } from "src/fichas/entities/ficha.entity";
-import { Rol } from "src/roles/entities/role.entity";
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { Exclude } from 'class-transformer';
+import { Rol } from 'src/roles/entities/role.entity';
+import { Ficha } from 'src/fichas/entities/ficha.entity';
+import { Detalles } from 'src/detalles/entities/detalle.entity';
+import { Movimiento } from 'src/movimientos/entities/movimiento.entity';
 
-@Entity("persona", { schema: "public" })
+@Entity()
 export class Persona {
-  @PrimaryGeneratedColumn({ name: "idpersona", type: "integer" })
-  idpersona: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column("text", { name: "identificacion", unique: true })
+  @Column()
   identificacion: string;
 
-  @Column("text", { name: "nombre" })
+  @Column()
   nombre: string;
 
-  @Column("text", { name: "apellido" })
+  @Column()
   apellido: string;
 
-  @Column("text", { name: "telefono", nullable: true })
-  telefono: string | null;
+  @Column({ nullable: true })
+  telefono: string;
 
-  @Column("text", { name: "correo", unique: true })
+  @Column()
   correo: string;
 
-  @Column("text", { name: "contrasena" })
+  @Column()
+  @Exclude()
   contrasena: string;
 
-  @Column("integer", { name: "edad" })
+  @Column()
   edad: number;
 
-  @Column("boolean", { name: "activo", nullable: true, default: () => "true" })
-  activo: boolean | null;
+  @Column({ default: true })
+  activo: boolean;
 
-  @Column("timestamp without time zone", {
-    name: "fechacreacion",
-    nullable: true,
-    default: () => "now()",
-  })
-  fechacreacion: Date | null;
+  @CreateDateColumn()
+  fechaCreacion: Date;
 
-  @Column("timestamp without time zone", {
-    name: "fechaactualización",
-    nullable: true,
-  })
-  fechaactualizaciN: Date | null;
+  @UpdateDateColumn({ nullable: true })
+  fechaActualizacion?: Date;
 
-  @OneToMany(() => Detalles, (detalles) => detalles.personaaprueba)
-  detalles: Detalles[];
+  @ManyToOne(() => Rol, (rol) => rol.personas, { nullable: true })
+  @JoinColumn({ name: 'rolId' })
+  rol?: Rol;
 
-  @OneToMany(() => Detalles, (detalles) => detalles.personaencargada)
-  detalles2: Detalles[];
+  @Column({ nullable: true })
+  rolId?: number;
 
-  @OneToMany(() => Detalles, (detalles) => detalles.personasolicita)
-  detalles3: Detalles[];
+  @ManyToOne(() => Ficha, (ficha) => ficha.personas, { nullable: true })
+  @JoinColumn({ name: 'fichaId' })
+  ficha?: Ficha;
 
-  @OneToMany(() => Movimiento, (movimiento) => movimiento.movimientopersona)
-  movimientos: Movimiento[];
+  @Column({ nullable: true })
+  fichaId?: number;
 
-  @ManyToOne(() => Ficha, (ficha) => ficha.personas)
-  @JoinColumn([{ name: "ficha", referencedColumnName: "idficha" }])
-  ficha: Ficha;
+  @OneToMany(() => Detalles, (detalle) => detalle.personaEncargada)
+  encargos?: Detalles[];
 
-  @ManyToOne(() => Rol, (rol) => rol.personas)
-  @JoinColumn([{ name: "rol", referencedColumnName: "idrol" }])
-  rol: Rol;
+  @OneToMany(() => Detalles, (detalle) => detalle.personaSolicita)
+  solicitudes?: Detalles[];
+
+  @OneToMany(() => Detalles, (detalle) => detalle.personaAprueba)
+  aprobaciones?: Detalles[];
+
+  @OneToMany(() => Movimiento, (movimiento) => movimiento.persona)
+  movimientos?: Movimiento[];
 }

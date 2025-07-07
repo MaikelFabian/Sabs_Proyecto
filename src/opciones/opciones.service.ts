@@ -1,26 +1,42 @@
-import { Injectable } from '@nestjs/common';
-import { CreateOpcioneDto } from './dto/create-opcione.dto';
-import { UpdateOpcioneDto } from './dto/update-opcione.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Opcion } from './entities/opcion.entity';
+import { CreateOpcionDto } from './dto/create-opcione.dto';
+import { UpdateOpcionDto } from './dto/update-opcione.dto';
 
 @Injectable()
 export class OpcionesService {
-  create(createOpcioneDto: CreateOpcioneDto) {
-    return 'This action adds a new opcione';
+  constructor(
+    @InjectRepository(Opcion)
+    private readonly opcionRepo: Repository<Opcion>,
+  ) {}
+
+  async create(dto: CreateOpcionDto) {
+    const nueva = this.opcionRepo.create(dto);
+    const guardada = await this.opcionRepo.save(nueva);
+    return { message: 'Opcion creada', data: guardada };
   }
 
-  findAll() {
-    return `This action returns all opciones`;
+  async findAll() {
+    const lista = await this.opcionRepo.find({ relations: ['modulo', 'permisos'] });
+    return { message: 'Listado de opciones', data: lista };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} opcione`;
+  async findOne(id: number) {
+    const opcion = await this.opcionRepo.findOne({ where: { id }, relations: ['modulo', 'permisos'] });
+    if (!opcion) throw new NotFoundException(`Opcion id ${id} no encontrada`);
+    return { message: 'Opcion encontrada', data: opcion };
   }
 
-  update(id: number, updateOpcioneDto: UpdateOpcioneDto) {
-    return `This action updates a #${id} opcione`;
+  async update(id: number, dto: UpdateOpcionDto) {
+    await this.opcionRepo.update(id, dto);
+    const actualizada = await this.opcionRepo.findOneBy({ id });
+    return { message: 'Opcion actualizada', data: actualizada };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} opcione`;
+  async remove(id: number) {
+    await this.opcionRepo.delete(id);
+    return { message: 'Opcion eliminada' };
   }
 }

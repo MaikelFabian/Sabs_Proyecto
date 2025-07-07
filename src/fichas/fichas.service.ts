@@ -5,9 +5,6 @@ import { Ficha } from './entities/ficha.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-
-
-
 @Injectable()
 export class FichasService {
   constructor(
@@ -25,11 +22,7 @@ export class FichasService {
 
   async findAll() {
     const listar = await this.fichaRepository.find({
-      relations: [
-        'personas',
-        'titulados',
-
-      ],
+      relations: ['personas', 'titulados'],
     });
     return {
       message: 'lista de fichas',
@@ -39,11 +32,8 @@ export class FichasService {
 
   async findOne(id: number) {
     const buscar = await this.fichaRepository.findOne({
-      where: { idficha: id },
-      relations: [
-        'personas',
-        'titulados',
-      ],
+      where: { id: id },
+      relations: ['personas', 'titulados'],
     });
     return {
       message: 'ficha encontrado',
@@ -54,7 +44,7 @@ export class FichasService {
   async update(id: number, data: Partial<Ficha>) {
     await this.fichaRepository.update(id, data);
     const actualizado = await this.fichaRepository.findOneBy({
-      idficha: id,
+      id: id,
     });
     return {
       message: 'ficha actualizado exitosamente',

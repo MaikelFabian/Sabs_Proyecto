@@ -1,11 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { CreateRoleDto } from './dto/create-role.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
+// src/rol/roles.service.ts
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Rol } from './entities/role.entity';
-
-
+import { CreateRolDto } from './dto/create-role.dto';
+import { UpdateRolDto } from './dto/update-role.dto';
 
 @Injectable()
 export class RolesService {
@@ -14,50 +13,40 @@ export class RolesService {
     private readonly rolRepository: Repository<Rol>,
   ) {}
 
-  async create(data: Partial<Rol>) {
-    const nuevo = await this.rolRepository.save(data);
+  async create(createRolDto: CreateRolDto) {
+    const nuevo = this.rolRepository.create(createRolDto);
+    const guardado = await this.rolRepository.save(nuevo);
     return {
-      message: 'rol creado exitosamente',
-      data: nuevo,
+      message: 'Rol creado exitosamente',
+      data: guardado,
     };
   }
 
   async findAll() {
-    const listar = await this.rolRepository.find({
-      relations: [
-        'personas',
-        'rolpermisos',
-
-      ],
-    });
+    const lista = await this.rolRepository.find({ relations: ['personas', 'permisos'] });
     return {
       message: 'Listado de roles',
-      data: listar,
+      data: lista,
     };
   }
 
   async findOne(id: number) {
-    const buscar = await this.rolRepository.findOne({
-      where: { idrol: id },
-      relations: [
-        'personas',
-        'rolpermisos',
-
-      ],
+    const rol = await this.rolRepository.findOne({
+      where: { id },
+      relations: ['personas', 'permisos'],
     });
+    if (!rol) throw new NotFoundException(`Rol con id ${id} no encontrado`);
     return {
-      message: 'rol encontrado',
-      data: buscar,
+      message: 'Rol encontrado',
+      data: rol,
     };
   }
 
-  async update(id: number, data: Partial<Rol>) {
-    await this.rolRepository.update(id, data);
-    const actualizado = await this.rolRepository.findOneBy({
-      idrol: id,
-    });
+  async update(id: number, updateRolDto: UpdateRolDto) {
+    await this.rolRepository.update(id, updateRolDto);
+    const actualizado = await this.rolRepository.findOneBy({ id });
     return {
-      message: 'rol actualizado exitosamente',
+      message: 'Rol actualizado exitosamente',
       data: actualizado,
     };
   }
@@ -65,7 +54,7 @@ export class RolesService {
   async remove(id: number) {
     await this.rolRepository.delete(id);
     return {
-      message: 'rol eliminado exitosamente',
+      message: 'Rol eliminado exitosamente',
     };
   }
 }

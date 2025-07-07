@@ -22,10 +22,7 @@ export class AreasService {
 
   async findAll() {
     const listar = await this.areaRepository.find({
-      relations: [
-        'areascentro',
-        'titulado',
-      ],
+      relations: ['areascentro', 'titulado'],
     });
     return {
       message: 'Listado de areas',
@@ -35,11 +32,8 @@ export class AreasService {
 
   async findOne(id: number) {
     const buscar = await this.areaRepository.findOne({
-      where: { idarea: id },
-      relations: [
-        'areascentro',
-        'titulado',
-      ],
+      where: { id: id },
+      relations: ['areascentro', 'titulado'],
     });
     return {
       message: 'area encontrado',
@@ -50,7 +44,7 @@ export class AreasService {
   async update(id: number, data: Partial<Area>) {
     await this.areaRepository.update(id, data);
     const actualizado = await this.areaRepository.findOneBy({
-      idarea: id,
+      id: id,
     });
     return {
       message: 'area actualizado exitosamente',

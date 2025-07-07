@@ -1,15 +1,15 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { OpcionesService } from './opciones.service';
-import { CreateOpcioneDto } from './dto/create-opcione.dto';
-import { UpdateOpcioneDto } from './dto/update-opcione.dto';
+import { CreateOpcionDto } from './dto/create-opcione.dto';
+import { UpdateOpcionDto } from './dto/update-opcione.dto';
 
 @Controller('opciones')
 export class OpcionesController {
   constructor(private readonly opcionesService: OpcionesService) {}
 
   @Post()
-  create(@Body() createOpcioneDto: CreateOpcioneDto) {
-    return this.opcionesService.create(createOpcioneDto);
+  create(@Body() dto: CreateOpcionDto) {
+    return this.opcionesService.create(dto);
   }
 
   @Get()
@@ -23,8 +23,8 @@ export class OpcionesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOpcioneDto: UpdateOpcioneDto) {
-    return this.opcionesService.update(+id, updateOpcioneDto);
+  update(@Param('id') id: string, @Body() dto: UpdateOpcionDto) {
+    return this.opcionesService.update(+id, dto);
   }
 
   @Delete(':id')

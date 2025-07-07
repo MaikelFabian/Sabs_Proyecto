@@ -22,9 +22,7 @@ export class CategoriaMaterialService {
 
   async findAll() {
     const listar = await this.CategoriamaterialRepository.find({
-      relations: [
-        'materials',
-      ],
+      relations: ['materials'],
     });
     return {
       message: 'Listado de Categoriamaterial',
@@ -34,11 +32,8 @@ export class CategoriaMaterialService {
 
   async findOne(id: number) {
     const buscar = await this.CategoriamaterialRepository.findOne({
-      where: { idcategoriamaterial: id },
-      relations: [
-      'materials',
-
-      ],
+      where: { id: id },
+      relations: ['materials'],
     });
     return {
       message: 'Categoriamaterial encontrado',
@@ -49,7 +44,7 @@ export class CategoriaMaterialService {
   async update(id: number, data: Partial<Categoriamaterial>) {
     await this.CategoriamaterialRepository.update(id, data);
     const actualizado = await this.CategoriamaterialRepository.findOneBy({
-      idcategoriamaterial: id,
+      id: id,
     });
     return {
       message: 'ElCategoriamaterialemento actualizado exitosamente',

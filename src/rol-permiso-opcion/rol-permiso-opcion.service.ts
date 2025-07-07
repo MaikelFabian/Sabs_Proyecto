@@ -1,26 +1,59 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { RolPermisoOpcion } from './entities/rol-permiso-opcion.entity';
 import { CreateRolPermisoOpcionDto } from './dto/create-rol-permiso-opcion.dto';
 import { UpdateRolPermisoOpcionDto } from './dto/update-rol-permiso-opcion.dto';
 
 @Injectable()
 export class RolPermisoOpcionService {
-  create(createRolPermisoOpcionDto: CreateRolPermisoOpcionDto) {
-    return 'This action adds a new rolPermisoOpcion';
+  constructor(
+    @InjectRepository(RolPermisoOpcion)
+    private readonly rpoRepo: Repository<RolPermisoOpcion>,
+  ) {}
+
+ async create(dto: CreateRolPermisoOpcionDto) {
+  const nuevo = this.rpoRepo.create({
+    rol: dto.rolId ? { id: dto.rolId } : undefined,
+    permiso: dto.permisoId ? { id: dto.permisoId } : undefined,
+    opcion: dto.opcionId ? { id: dto.opcionId } : undefined,
+  });
+  const guardado = await this.rpoRepo.save(nuevo);
+  return { message: 'RolPermisoOpcion creado', data: guardado };
+}
+
+
+  async findAll() {
+    const lista = await this.rpoRepo.find({
+      relations: ['rol', 'permiso', 'opcion'],
+    });
+    return { message: 'Listado de RolPermisoOpcion', data: lista };
   }
 
-  findAll() {
-    return `This action returns all rolPermisoOpcion`;
+  async findOne(id: number) {
+    const encontrado = await this.rpoRepo.findOne({
+      where: { id },
+      relations: ['rol', 'permiso', 'opcion'],
+    });
+    if (!encontrado) throw new NotFoundException(`No encontrado id ${id}`);
+    return { message: 'RolPermisoOpcion encontrado', data: encontrado };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} rolPermisoOpcion`;
-  }
+  async update(id: number, dto: UpdateRolPermisoOpcionDto) {
+  await this.rpoRepo.update(id, {
+    rol: dto.rolId ? { id: dto.rolId } : undefined,
+    permiso: dto.permisoId ? { id: dto.permisoId } : undefined,
+    opcion: dto.opcionId ? { id: dto.opcionId } : undefined,
+  });
+  const actualizado = await this.rpoRepo.findOne({
+    where: { id },
+    relations: ['rol', 'permiso', 'opcion'],
+  });
+  return { message: 'RolPermisoOpcion actualizado', data: actualizado };
+}
 
-  update(id: number, updateRolPermisoOpcionDto: UpdateRolPermisoOpcionDto) {
-    return `This action updates a #${id} rolPermisoOpcion`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} rolPermisoOpcion`;
+  async remove(id: number) {
+    await this.rpoRepo.delete(id);
+    return { message: 'RolPermisoOpcion eliminado' };
   }
 }

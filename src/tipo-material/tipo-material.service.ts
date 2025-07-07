@@ -5,7 +5,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Tipomaterial } from './entities/tipo-material.entity';
 
-
 @Injectable()
 export class TipoMaterialService {
   constructor(
@@ -23,10 +22,7 @@ export class TipoMaterialService {
 
   async findAll() {
     const listar = await this.tipomaterialRepository.find({
-      relations: [
-        'materials',
-
-      ],
+      relations: ['materials'],
     });
     return {
       message: 'Listado de tipos de materiales',
@@ -36,11 +32,8 @@ export class TipoMaterialService {
 
   async findOne(id: number) {
     const buscar = await this.tipomaterialRepository.findOne({
-      where: { idtipomaterial: id },
-      relations: [
-        'materials',
-
-      ],
+      where: { id: id },
+      relations: ['materials'],
     });
     return {
       message: 'municipio encontrado',
@@ -51,7 +44,7 @@ export class TipoMaterialService {
   async update(id: number, data: Partial<Tipomaterial>) {
     await this.tipomaterialRepository.update(id, data);
     const actualizado = await this.tipomaterialRepository.findOneBy({
-      idtipomaterial: id,
+      id: id,
     });
     return {
       message: 'tipomaterial actualizado exitosamente',

@@ -22,10 +22,7 @@ export class MunicipiosService {
 
   async findAll() {
     const listar = await this.municipioRepository.find({
-      relations: [
-        'centros',
-
-      ],
+      relations: ['centros'],
     });
     return {
       message: 'Listado de municipios',
@@ -35,11 +32,8 @@ export class MunicipiosService {
 
   async findOne(id: number) {
     const buscar = await this.municipioRepository.findOne({
-      where: { idmunicipio: id },
-      relations: [
-        'centros',
-
-      ],
+      where: { id: id },
+      relations: ['centros'],
     });
     return {
       message: 'municipio encontrado',
@@ -50,7 +44,7 @@ export class MunicipiosService {
   async update(id: number, data: Partial<Municipio>) {
     await this.municipioRepository.update(id, data);
     const actualizado = await this.municipioRepository.findOneBy({
-      idmunicipio: id,
+      id: id,
     });
     return {
       message: 'municipio actualizado exitosamente',

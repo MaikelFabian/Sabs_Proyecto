@@ -5,7 +5,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Unidadmedida } from './entities/unidad-medida.entity';
 
-
 @Injectable()
 export class UnidadMedidaService {
   constructor(
@@ -23,10 +22,7 @@ export class UnidadMedidaService {
 
   async findAll() {
     const listar = await this.unidadmedidaRepository.find({
-      relations: [
-        'materials',
-
-      ],
+      relations: ['materials'],
     });
     return {
       message: 'Listado de unidad de medida ',
@@ -36,11 +32,8 @@ export class UnidadMedidaService {
 
   async findOne(id: number) {
     const buscar = await this.unidadmedidaRepository.findOne({
-      where: { idunidadmedida: id },
-      relations: [
-        'materials',
-
-      ],
+      where: { id: id },
+      relations: ['materials'],
     });
     return {
       message: 'unidad de medida  encontrado',
@@ -51,7 +44,7 @@ export class UnidadMedidaService {
   async update(id: number, data: Partial<Unidadmedida>) {
     await this.unidadmedidaRepository.update(id, data);
     const actualizado = await this.unidadmedidaRepository.findOneBy({
-      idunidadmedida: id,
+      id: id,
     });
     return {
       message: 'unidad de medida  actualizado exitosamente',

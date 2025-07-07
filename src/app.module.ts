@@ -27,23 +27,20 @@ import { OpcionesModule } from './opciones/opciones.module';
 import { ModulosModule } from './modulos/modulos.module';
 import { RolPermisoOpcionModule } from './rol-permiso-opcion/rol-permiso-opcion.module';
 
-
-
 @Module({
   imports: [
     ConfigModule.forRoot(),
 
-      TypeOrmModule.forRoot({
-      type:'postgres',
-      host:process.env.DB_HOST,
-      port:parseInt(process.env.DB_PORT ?? '5432'),
-      database:process.env.DB_NAME,
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: process.env.DB_HOST,
+      port: parseInt(process.env.DB_PORT ?? '5432'),
+      database: process.env.DB_NAME,
       entities: [__dirname + '/*/.entity{.ts,.js}'],
-      username:process.env.DB_USERNAME,
-      password:process.env.DB_PASSWORD,
-      autoLoadEntities:true,
-      synchronize:true,
-
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      autoLoadEntities: true,
+      synchronize: true,
     }),
     AuthModule, // Agregar aquí
     MaterialesModule,
@@ -67,8 +64,7 @@ import { RolPermisoOpcionModule } from './rol-permiso-opcion/rol-permiso-opcion.
     PermisosModule,
     OpcionesModule,
     ModulosModule,
-    RolPermisoOpcionModule
+    RolPermisoOpcionModule,
   ],
-
 })
 export class AppModule {}

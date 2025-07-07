@@ -1,47 +1,37 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn,JoinColumn, ManyToOne } from "typeorm";
-import { Opcion } from "src/opciones/entities/opcion.entity";
-import { Rol } from "src/roles/entities/role.entity";
-import { RolPermisoOpcion } from "src/rol-permiso-opcion/entities/rol-permiso-opcion.entity";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Opcion } from 'src/opciones/entities/opcion.entity';
+import { RolPermisoOpcion } from 'src/rol-permiso-opcion/entities/rol-permiso-opcion.entity';
 
-
-@Entity("permiso", { schema: "public" })
+@Entity()
 export class Permiso {
-  @PrimaryGeneratedColumn({ name: "idpermiso", type: "integer" })
-  idpermiso: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column("text", { name: "nombre" })
+  @Column()
   nombre: string;
 
-  @Column("text", { name: "descripcion", nullable: true })
-  descripcion: string | null;
+  @Column({ nullable: true })
+  descripcion?: string;
 
-  @Column("text", { name: "codigo", unique: true })
+  @Column()
   codigo: string;
 
-  @Column("boolean", { name: "activo", nullable: true, default: () => "true" })
-  activo: boolean | null;
+  @Column({ default: true })
+  activo: boolean;
 
-  @Column("timestamp without time zone", {
-    name: "fechacreacion",
-    nullable: true,
-    default: () => "now()",
-  })
-  fechacreacion: Date | null;
+  @CreateDateColumn()
+  fechaCreacion: Date;
 
-  @Column("timestamp without time zone", {
-    name: "fechaactualización",
-    nullable: true,
-  })
-  fechaactualizaciN: Date | null;
-  @OneToMany(() => Rol, (rol) => rol.permisos)
-  @JoinColumn({ name: 'id_rol' })
-  rol: Rol;
+  @UpdateDateColumn({ nullable: true })
+  fechaActualizacion?: Date;
 
-  @ManyToOne(() => Opcion, (opcion) => opcion.permisos)
-  @JoinColumn({ name: 'id_opcion' })
-  opcion: Opcion;
+  @ManyToOne(() => Opcion, (opcion) => opcion.permisos, { nullable: true })
+  @JoinColumn({ name: 'opcionId' })
+  opcion?: Opcion;
+
+  @Column({ nullable: true })
+  opcionId?: number;
+
   @OneToMany(() => RolPermisoOpcion, (rpo) => rpo.permiso)
-  rolPermisoOpciones: RolPermisoOpcion[];
-
-
+  rolesPermisosOpciones?: RolPermisoOpcion[];
 }

@@ -22,11 +22,7 @@ export class CentrosService {
 
   async findAll() {
     const listar = await this.centroRepository.find({
-      relations: [
-        'areacentro',
-        'municipio',
-        'sede',
-      ],
+      relations: ['areacentro', 'municipio', 'sede'],
     });
     return {
       message: 'Listado de centros',
@@ -36,12 +32,8 @@ export class CentrosService {
 
   async findOne(id: number) {
     const buscar = await this.centroRepository.findOne({
-      where: { idcentro: id },
-      relations: [
-        'areacentro',
-        'municipio',
-        'sede',
-      ],
+      where: { id: id },
+      relations: ['areacentro', 'municipio', 'sede'],
     });
     return {
       message: 'centro encontrado',
@@ -52,7 +44,7 @@ export class CentrosService {
   async update(id: number, data: Partial<Centro>) {
     await this.centroRepository.update(id, data);
     const actualizado = await this.centroRepository.findOneBy({
-      idcentro: id,
+      id: id,
     });
     return {
       message: 'centro actualizado exitosamente',

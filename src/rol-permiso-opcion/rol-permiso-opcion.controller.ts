@@ -5,30 +5,30 @@ import { UpdateRolPermisoOpcionDto } from './dto/update-rol-permiso-opcion.dto';
 
 @Controller('rol-permiso-opcion')
 export class RolPermisoOpcionController {
-  constructor(private readonly rolPermisoOpcionService: RolPermisoOpcionService) {}
+  constructor(private readonly service: RolPermisoOpcionService) {}
 
   @Post()
-  create(@Body() createRolPermisoOpcionDto: CreateRolPermisoOpcionDto) {
-    return this.rolPermisoOpcionService.create(createRolPermisoOpcionDto);
+  create(@Body() dto: CreateRolPermisoOpcionDto) {
+    return this.service.create(dto);
   }
 
   @Get()
   findAll() {
-    return this.rolPermisoOpcionService.findAll();
+    return this.service.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.rolPermisoOpcionService.findOne(+id);
+    return this.service.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRolPermisoOpcionDto: UpdateRolPermisoOpcionDto) {
-    return this.rolPermisoOpcionService.update(+id, updateRolPermisoOpcionDto);
+  update(@Param('id') id: string, @Body() dto: UpdateRolPermisoOpcionDto) {
+    return this.service.update(+id, dto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.rolPermisoOpcionService.remove(+id);
+    return this.service.remove(+id);
   }
 }

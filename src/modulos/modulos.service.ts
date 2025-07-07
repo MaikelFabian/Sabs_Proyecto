@@ -1,26 +1,42 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Modulo } from './entities/modulo.entity';
 import { CreateModuloDto } from './dto/create-modulo.dto';
 import { UpdateModuloDto } from './dto/update-modulo.dto';
 
 @Injectable()
 export class ModulosService {
-  create(createModuloDto: CreateModuloDto) {
-    return 'This action adds a new modulo';
+  constructor(
+    @InjectRepository(Modulo)
+    private readonly moduloRepo: Repository<Modulo>,
+  ) {}
+
+  async create(dto: CreateModuloDto) {
+    const nuevo = this.moduloRepo.create(dto);
+    const guardado = await this.moduloRepo.save(nuevo);
+    return { message: 'Modulo creado', data: guardado };
   }
 
-  findAll() {
-    return `This action returns all modulos`;
+  async findAll() {
+    const lista = await this.moduloRepo.find({ relations: ['opciones'] });
+    return { message: 'Listado de modulos', data: lista };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} modulo`;
+  async findOne(id: number) {
+    const modulo = await this.moduloRepo.findOne({ where: { id }, relations: ['opciones'] });
+    if (!modulo) throw new NotFoundException(`Modulo id ${id} no encontrado`);
+    return { message: 'Modulo encontrado', data: modulo };
   }
 
-  update(id: number, updateModuloDto: UpdateModuloDto) {
-    return `This action updates a #${id} modulo`;
+  async update(id: number, dto: UpdateModuloDto) {
+    await this.moduloRepo.update(id, dto);
+    const actualizado = await this.moduloRepo.findOneBy({ id });
+    return { message: 'Modulo actualizado', data: actualizado };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} modulo`;
+  async remove(id: number) {
+    await this.moduloRepo.delete(id);
+    return { message: 'Modulo eliminado' };
   }
 }

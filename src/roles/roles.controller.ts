@@ -1,16 +1,16 @@
+// src/rol/roles.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { RolesService } from './roles.service';
-import { CreateRoleDto } from './dto/create-role.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
-import { Rol } from './entities/role.entity';
+import { CreateRolDto } from './dto/create-role.dto';
+import { UpdateRolDto } from './dto/update-role.dto';
 
 @Controller('roles')
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
   @Post()
-  create(@Body() data : Partial<Rol>) {
-    return this.rolesService.create(data);
+  create(@Body() createRolDto: CreateRolDto) {
+    return this.rolesService.create(createRolDto);
   }
 
   @Get()
@@ -24,8 +24,8 @@ export class RolesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data : Partial< Rol>) {
-    return this.rolesService.update(+id, data);
+  update(@Param('id') id: string, @Body() updateRolDto: UpdateRolDto) {
+    return this.rolesService.update(+id, updateRolDto);
   }
 
   @Delete(':id')

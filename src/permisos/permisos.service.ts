@@ -1,68 +1,42 @@
-import { Injectable } from '@nestjs/common';
-import { CreatePermisoDto } from './dto/create-permiso.dto';
-import { UpdatePermisoDto } from './dto/update-permiso.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Permiso } from './entities/permiso.entity';
-
+import { CreatePermisoDto } from './dto/create-permiso.dto';
+import { UpdatePermisoDto } from './dto/update-permiso.dto';
 
 @Injectable()
 export class PermisosService {
   constructor(
     @InjectRepository(Permiso)
-    private readonly permisoRepository: Repository<Permiso>,
+    private readonly permisoRepo: Repository<Permiso>,
   ) {}
 
-  async create(data: Partial<Permiso>) {
-    const nuevo = await this.permisoRepository.save(data);
-    return {
-      message: 'municipios creado exitosamente',
-      data: nuevo,
-    };
+  async create(dto: CreatePermisoDto) {
+    const nuevo = this.permisoRepo.create(dto);
+    const guardado = await this.permisoRepo.save(nuevo);
+    return { message: 'Permiso creado', data: guardado };
   }
 
   async findAll() {
-    const listar = await this.permisoRepository.find({
-      relations: [
-        'rolpermisos',
-
-      ],
-    });
-    return {
-      message: 'Listado de permisos',
-      data: listar,
-    };
+    const lista = await this.permisoRepo.find({ relations: ['opcion'] });
+    return { message: 'Listado de permisos', data: lista };
   }
 
   async findOne(id: number) {
-    const buscar = await this.permisoRepository.findOne({
-      where: { idpermiso: id },
-      relations: [
-        'rolpermisos',
-
-      ],
-    });
-    return {
-      message: 'permiso encontrado',
-      data: buscar,
-    };
+    const permiso = await this.permisoRepo.findOne({ where: { id }, relations: ['opcion'] });
+    if (!permiso) throw new NotFoundException(`Permiso id ${id} no encontrado`);
+    return { message: 'Permiso encontrado', data: permiso };
   }
 
-  async update(id: number, data: Partial<Permiso>) {
-    await this.permisoRepository.update(id, data);
-    const actualizado = await this.permisoRepository.findOneBy({
-      idpermiso: id,
-    });
-    return {
-      message: 'permiso actualizado exitosamente',
-      data: actualizado,
-    };
+  async update(id: number, dto: UpdatePermisoDto) {
+    await this.permisoRepo.update(id, dto);
+    const actualizado = await this.permisoRepo.findOneBy({ id });
+    return { message: 'Permiso actualizado', data: actualizado };
   }
 
   async remove(id: number) {
-    await this.permisoRepository.delete(id);
-    return {
-      message: 'permiso eliminado exitosamente',
-    };
+    await this.permisoRepo.delete(id);
+    return { message: 'Permiso eliminado' };
   }
 }

@@ -2,15 +2,14 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { PermisosService } from './permisos.service';
 import { CreatePermisoDto } from './dto/create-permiso.dto';
 import { UpdatePermisoDto } from './dto/update-permiso.dto';
-import { Permiso } from './entities/permiso.entity';
 
 @Controller('permisos')
 export class PermisosController {
   constructor(private readonly permisosService: PermisosService) {}
 
   @Post()
-  create(@Body() data: Partial<Permiso>) {
-    return this.permisosService.create(data);
+  create(@Body() dto: CreatePermisoDto) {
+    return this.permisosService.create(dto);
   }
 
   @Get()
@@ -24,8 +23,8 @@ export class PermisosController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data: Partial<Permiso>) {
-    return this.permisosService.update(+id, data);
+  update(@Param('id') id: string, @Body() dto: UpdatePermisoDto) {
+    return this.permisosService.update(+id, dto);
   }
 
   @Delete(':id')

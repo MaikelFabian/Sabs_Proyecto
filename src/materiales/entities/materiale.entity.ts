@@ -1,76 +1,69 @@
+// src/material/entities/material.entity.ts
 import {
-  Column,
   Entity,
-  JoinColumn,
+  PrimaryGeneratedColumn,
+  Column,
   ManyToOne,
   OneToMany,
-  PrimaryGeneratedColumn,
-} from "typeorm";
-import { Detalles } from "src/detalles/entities/detalle.entity";
-import { Categoriamaterial } from "src/categoria-material/entities/categoria-material.entity";
-import { Tipomaterial } from "src/tipo-material/entities/tipo-material.entity";
-import { Unidadmedida } from "src/unidad-medida/entities/unidad-medida.entity";
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { TipoMaterial } from 'src/tipo-material/entities/tipo-material.entity';
+import { UnidadMedida } from 'src/unidad-medida/entities/unidad-medida.entity';
+import { CategoriaMaterial } from 'src/categoria-material/entities/categoria-material.entity';
+import { Detalles } from 'src/detalles/entities/detalle.entity';
 
-@Entity("material", { schema: "public" })
+@Entity()
 export class Material {
-  @PrimaryGeneratedColumn({ name: "idmaterial", type: "integer" })
-  idmaterial: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column("text", { name: "nombrematerial" })
-  nombrematerial: string;
+  @Column()
+  nombre: string;
 
-  @Column("text", { name: "descripcion" })
+  @Column()
   descripcion: string;
 
-  @Column("integer", { name: "stock" })
+  @Column()
   stock: number;
 
-  @Column("boolean", { name: "caduca" })
+  @Column({ default: true })
   caduca: boolean;
 
-  @Column("timestamp without time zone", {
-    name: "fechavencimiento",
-    nullable: true,
-  })
-  fechavencimiento: Date | null;
+  @Column({ nullable: true })
+  fechaVencimiento?: string;
 
-  @Column("boolean", { name: "activo", nullable: true, default: () => "true" })
-  activo: boolean | null;
+  @Column({ default: true })
+  activo: boolean;
 
-  @Column("timestamp without time zone", {
-    name: "fechacreacion",
-    nullable: true,
-    default: () => "now()",
-  })
-  fechacreacion: Date | null;
+  @CreateDateColumn()
+  fechaCreacion: string;
 
-  @Column("timestamp without time zone", {
-    name: "fechaactualización",
-    nullable: true,
-  })
-  fechaactualizaciN: Date | null;
+  @UpdateDateColumn({ nullable: true })
+  fechaActualizacion?: string;
 
-  @OneToMany(() => Detalles, (detalles) => detalles.material)
-  detalles: Detalles[];
+  @ManyToOne(() => TipoMaterial, (tipo) => tipo.materiales, { nullable: true })
+  @JoinColumn({ name: 'tipoMaterialId' })
+  tipoMaterial?: TipoMaterial;
 
-  @ManyToOne(
-    () => Categoriamaterial,
-    (categoriamaterial) => categoriamaterial.materials
-  )
-  @JoinColumn([
-    { name: "categoriamaterial", referencedColumnName: "idcategoriamaterial" },
-  ])
-  categoriamaterial: Categoriamaterial;
+  @Column({ nullable: true })
+  tipoMaterialId?: number;
 
-  @ManyToOne(() => Tipomaterial, (tipomaterial) => tipomaterial.materials)
-  @JoinColumn([
-    { name: "tipomaterial", referencedColumnName: "idtipomaterial" },
-  ])
-  tipomaterial: Tipomaterial;
+  @ManyToOne(() => UnidadMedida, (unidad) => unidad.materiales, { nullable: true })
+  @JoinColumn({ name: 'unidadMedidaId' })
+  unidadMedida?: UnidadMedida;
 
-  @ManyToOne(() => Unidadmedida, (unidadmedida) => unidadmedida.materials)
-  @JoinColumn([
-    { name: "unidadmedida", referencedColumnName: "idunidadmedida" },
-  ])
-  unidadmedida: Unidadmedida;
+  @Column({ nullable: true })
+  unidadMedidaId?: number;
+
+  @ManyToOne(() => CategoriaMaterial, (categoria) => categoria.materiales, { nullable: true })
+  @JoinColumn({ name: 'categoriaMaterialId' })
+  categoriaMaterial?: CategoriaMaterial;
+
+  @Column({ nullable: true })
+  categoriaMaterialId?: number;
+
+  @OneToMany(() => Detalles, (detalle) => detalle.material)
+  detalles?: Detalles[];
 }

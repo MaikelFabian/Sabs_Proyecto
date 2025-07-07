@@ -1,35 +1,35 @@
+// src/movimiento/movimiento.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { MovimientosService } from './movimientos.service';
+import { MovimientoService } from './movimientos.service';
 import { CreateMovimientoDto } from './dto/create-movimiento.dto';
 import { UpdateMovimientoDto } from './dto/update-movimiento.dto';
-import { Movimiento } from './entities/movimiento.entity';
 
-@Controller('movimientos')
-export class MovimientosController {
-  constructor(private readonly movimientosService: MovimientosService) {}
+@Controller('movimiento')
+export class MovimientoController {
+  constructor(private readonly service: MovimientoService) {}
 
   @Post()
-  create(@Body() data: Partial<Movimiento>) {
-    return this.movimientosService.create(data);
+  create(@Body() dto: CreateMovimientoDto) {
+    return this.service.create(dto);
   }
 
   @Get()
   findAll() {
-    return this.movimientosService.findAll();
+    return this.service.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.movimientosService.findOne(+id);
+    return this.service.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data: Partial<Movimiento>) {
-    return this.movimientosService.update(+id, data);
+  update(@Param('id') id: string, @Body() dto: UpdateMovimientoDto) {
+    return this.service.update(+id, dto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.movimientosService.remove(+id);
+    return this.service.remove(+id);
   }
 }

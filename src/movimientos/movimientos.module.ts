@@ -1,12 +1,14 @@
+// src/movimiento/movimiento.module.ts
 import { Module } from '@nestjs/common';
-import { MovimientosService } from './movimientos.service';
-import { MovimientosController } from './movimientos.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Movimiento } from './entities/movimiento.entity';
+import { MovimientoService } from './movimientos.service';
+import { MovimientoController } from './movimientos.controller';
 
 @Module({
-  imports : [TypeOrmModule.forFeature([Movimiento])],
-  controllers: [MovimientosController],
-  providers: [MovimientosService],
+  imports: [TypeOrmModule.forFeature([Movimiento])],
+  controllers: [MovimientoController],
+  providers: [MovimientoService],
+  exports: [MovimientoService],
 })
-export class MovimientosModule {}
+export class MovimientoModule {}

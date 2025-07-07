@@ -1,8 +1,11 @@
+// src/personas/personas.service.ts
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Persona } from './entities/persona.entity';
 import * as bcrypt from 'bcryptjs';
+import { CreatePersonaDto } from './dto/create-persona.dto';
+import { UpdatePersonaDto } from './dto/update-persona.dto';
 
 @Injectable()
 export class PersonasService {
@@ -11,11 +14,9 @@ export class PersonasService {
     private readonly personaRepository: Repository<Persona>,
   ) {}
 
-  async create(data: Partial<Persona>) {
-    // Encriptar la contraseña si viene en el payload
+  async create(data: CreatePersonaDto) {
     if (data.contrasena) {
-      const salt = bcrypt.genSaltSync(10);
-      data.contrasena = bcrypt.hashSync(data.contrasena, salt);
+      data.contrasena = await bcrypt.hash(data.contrasena, 10);
     }
 
     const nuevo = await this.personaRepository.save(data);
@@ -28,9 +29,9 @@ export class PersonasService {
   async findAll() {
     const listar = await this.personaRepository.find({
       relations: [
-        'detalles',
-        'detalles2',
-        'detalles3',
+        'encargos',
+        'solicitudes',
+        'aprobaciones',
         'movimientos',
         'ficha',
         'rol',
@@ -44,11 +45,11 @@ export class PersonasService {
 
   async findOne(id: number) {
     const buscar = await this.personaRepository.findOne({
-      where: { idpersona: id },
+      where: { id },
       relations: [
-        'detalles',
-        'detalles2',
-        'detalles3',
+        'encargos',
+        'solicitudes',
+        'aprobaciones',
         'movimientos',
         'ficha',
         'rol',
@@ -64,9 +65,9 @@ export class PersonasService {
     const persona = await this.personaRepository.findOne({
       where: { correo: email },
       relations: [
-        'detalles',
-        'detalles2',
-        'detalles3',
+        'encargos',
+        'solicitudes',
+        'aprobaciones',
         'movimientos',
         'ficha',
         'rol',
@@ -75,17 +76,13 @@ export class PersonasService {
     return persona;
   }
 
-  async update(id: number, data: Partial<Persona>) {
-    // Si actualiza la contraseña, también la encripta
+  async update(id: number, data: UpdatePersonaDto) {
     if (data.contrasena) {
-      const salt = bcrypt.genSaltSync(10);
-      data.contrasena = bcrypt.hashSync(data.contrasena, salt);
+      data.contrasena = await bcrypt.hash(data.contrasena, 10);
     }
 
     await this.personaRepository.update(id, data);
-    const actualizado = await this.personaRepository.findOneBy({
-      idpersona: id,
-    });
+    const actualizado = await this.personaRepository.findOneBy({ id });
     return {
       message: 'Persona actualizada exitosamente',
       data: actualizado,

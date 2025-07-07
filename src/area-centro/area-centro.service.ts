@@ -21,10 +21,7 @@ export class AreacentroService {
 
   async findAll() {
     const listar = await this.areacentroRepository.find({
-      relations: [
-        'area',
-        'centro',
-      ],
+      relations: ['area', 'centro'],
     });
     return {
       message: 'Listado de elementos',
@@ -34,11 +31,8 @@ export class AreacentroService {
 
   async findOne(id: number) {
     const buscar = await this.areacentroRepository.findOne({
-      where: { idareacentro: id },
-      relations: [
-        'area',
-        'centro',
-      ],
+      where: { id: id },
+      relations: ['area', 'centro'],
     });
     return {
       message: 'Elemento encontrado',
@@ -49,7 +43,7 @@ export class AreacentroService {
   async update(id: number, data: Partial<Areacentro>) {
     await this.areacentroRepository.update(id, data);
     const actualizado = await this.areacentroRepository.findOneBy({
-      idareacentro: id,
+      id: id,
     });
     return {
       message: 'area-centro  actualizado exitosamente',

@@ -1,43 +1,33 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from "typeorm";
-import { Persona } from "src/personas/entities/persona.entity";
-import { Tipomovimiento } from "src/tipo-movimiento/entities/tipo-movimiento.entity";
+// src/movimiento/entities/movimiento.entity.ts
+import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, JoinColumn } from 'typeorm';
+import { Persona } from 'src/personas/entities/persona.entity';
+import { TipoMovimiento } from 'src/tipo-movimiento/entities/tipo-movimiento.entity';
 
-@Entity("movimiento", { schema: "public" })
+@Entity()
 export class Movimiento {
-  @PrimaryGeneratedColumn({ name: "idmovimiento", type: "integer" })
-  idmovimiento: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column("boolean", { name: "activo", nullable: true, default: () => "true" })
-  activo: boolean | null;
+  @ManyToOne(() => TipoMovimiento, (tipo) => tipo.movimientos, { nullable: true })
+  @JoinColumn({ name: 'tipoMovimientoId' })
+  tipoMovimiento?: TipoMovimiento;
 
-  @Column("timestamp without time zone", {
-    name: "fechacreacion",
-    nullable: true,
-    default: () => "now()",
-  })
-  fechacreacion: Date | null;
+  @Column({ nullable: true })
+  tipoMovimientoId?: number;
 
-  @Column("timestamp without time zone", {
-    name: "fechaactualización",
-    nullable: true,
-  })
-  fechaactualizaciN: Date | null;
+  @ManyToOne(() => Persona, (persona) => persona.movimientos, { nullable: true })
+  @JoinColumn({ name: 'personaId' })
+  persona?: Persona;
 
-  @ManyToOne(() => Persona, (persona) => persona.movimientos)
-  @JoinColumn([
-    { name: "movimientopersona", referencedColumnName: "idpersona" },
-  ])
-  movimientopersona: Persona;
+  @Column({ nullable: true })
+  personaId?: number;
 
-  @ManyToOne(() => Tipomovimiento, (tipomovimiento) => tipomovimiento.movimientos)
-  @JoinColumn([
-    { name: "tipomovimiento", referencedColumnName: "idtipomovimiento" },
-  ])
-  tipomovimiento: Tipomovimiento;
+  @Column({ default: true })
+  activo: boolean;
+
+  @Column()
+  fechaCreacion: string;
+
+  @Column({ nullable: true })
+  fechaActualizacion?: string;
 }
