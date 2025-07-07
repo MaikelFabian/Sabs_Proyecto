@@ -1,67 +1,42 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Sede } from './entities/sede.entity';
+import { Repository } from 'typeorm';
 import { CreateSedeDto } from './dto/create-sede.dto';
 import { UpdateSedeDto } from './dto/update-sede.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Sede } from './entities/sede.entity';
 
 @Injectable()
-export class SedesService {
+export class SedeService {
   constructor(
     @InjectRepository(Sede)
-    private readonly sedeRepository: Repository<Sede>,
+    private readonly repo: Repository<Sede>,
   ) {}
 
-  async create(data: Partial<Sede>) {
-    const nuevo = await this.sedeRepository.save(data);
-    return {
-      message: 'sede creado exitosamente',
-      data: nuevo,
-    };
+  async create(dto: CreateSedeDto) {
+    const nueva = this.repo.create({ ...dto });
+    const guardada = await this.repo.save(nueva);
+    return { message: 'Sede creada', data: guardada };
   }
 
   async findAll() {
-    const listar = await this.sedeRepository.find({
-      relations: [
-        'centro',
-
-      ],
-    });
-    return {
-      message: 'Listado de sede',
-      data: listar,
-    };
+    const lista = await this.repo.find({ relations: ['centro'] });
+    return { message: 'Listado de sedes', data: lista };
   }
 
   async findOne(id: number) {
-    const buscar = await this.sedeRepository.findOne({
-      where: { idsede: id },
-      relations: [
-        'centro',
-
-      ],
-    });
-    return {
-      message: 'sede encontrado',
-      data: buscar,
-    };
+    const sede = await this.repo.findOne({ where: { id }, relations: ['centro'] });
+    if (!sede) throw new NotFoundException(`Sede no encontrada id: ${id}`);
+    return { message: 'Sede encontrada', data: sede };
   }
 
-  async update(id: number, data: Partial<Sede>) {
-    await this.sedeRepository.update(id, data);
-    const actualizado = await this.sedeRepository.findOneBy({
-      idsede: id,
-    });
-    return {
-      message: 'sede actualizado exitosamente',
-      data: actualizado,
-    };
+  async update(id: number, dto: UpdateSedeDto) {
+    await this.repo.update(id, dto);
+    const actualizada = await this.repo.findOne({ where: { id }, relations: ['centro'] });
+    return { message: 'Sede actualizada', data: actualizada };
   }
 
   async remove(id: number) {
-    await this.sedeRepository.delete(id);
-    return {
-      message: 'sede eliminado exitosamente',
-    };
+    await this.repo.delete(id);
+    return { message: 'Sede eliminada' };
   }
 }

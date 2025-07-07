@@ -1,35 +1,35 @@
+
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { TituladosService } from './titulados.service';
+import { TituladoService } from './titulados.service';
 import { CreateTituladoDto } from './dto/create-titulado.dto';
 import { UpdateTituladoDto } from './dto/update-titulado.dto';
-import { Titulado } from './entities/titulado.entity';
 
-@Controller('titulados')
-export class TituladosController {
-  constructor(private readonly tituladosService: TituladosService) {}
+@Controller('titulado')
+export class TituladoController {
+  constructor(private readonly service: TituladoService) {}
 
   @Post()
-  create(@Body() data: Partial<Titulado>) {
-    return this.tituladosService.create(data);
+  create(@Body() dto: CreateTituladoDto) {
+    return this.service.create(dto);
   }
 
   @Get()
   findAll() {
-    return this.tituladosService.findAll();
+    return this.service.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.tituladosService.findOne(+id);
+    return this.service.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data:Partial<Titulado>) {
-    return this.tituladosService.update(+id, data);
+  update(@Param('id') id: string, @Body() dto: UpdateTituladoDto) {
+    return this.service.update(+id, dto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.tituladosService.remove(+id);
+    return this.service.remove(+id);
   }
 }

@@ -1,67 +1,48 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { TipoSitio } from './entities/tipo-sitio.entity';
+import { Repository } from 'typeorm';
 import { CreateTipoSitioDto } from './dto/create-tipo-sitio.dto';
 import { UpdateTipoSitioDto } from './dto/update-tipo-sitio.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Tipositio } from './entities/tipo-sitio.entity';
 
 @Injectable()
 export class TipoSitioService {
   constructor(
-    @InjectRepository(Tipositio)
-    private readonly tipositioRepository: Repository<Tipositio>,
+    @InjectRepository(TipoSitio)
+    private readonly repo: Repository<TipoSitio>,
   ) {}
 
-  async create(data: Partial<Tipositio>) {
-    const nuevo = await this.tipositioRepository.save(data);
-    return {
-      message: 'tipo de municipio  creado exitosamente',
-      data: nuevo,
-    };
+  async create(dto: CreateTipoSitioDto) {
+    const nuevo = this.repo.create({ ...dto });
+    const guardado = await this.repo.save(nuevo);
+    return { message: 'TipoSitio creado', data: guardado };
   }
 
   async findAll() {
-    const listar = await this.tipositioRepository.find({
-      relations: [
-        'sitios',
-
-      ],
-    });
-    return {
-      message: 'Listado de tipo de municipio',
-      data: listar,
-    };
+    const lista = await this.repo.find({ relations: ['sitios'] });
+    return { message: 'Listado de tipos de sitio', data: lista };
   }
 
   async findOne(id: number) {
-    const buscar = await this.tipositioRepository.findOne({
-      where: { idtipositio: id },
-      relations: [
-        'sitios',
-
-      ],
+    const tipo = await this.repo.findOne({
+      where: { id },
+      relations: ['sitios'],
     });
-    return {
-      message: 'tipo de municipio encontrado',
-      data: buscar,
-    };
+    if (!tipo) throw new NotFoundException(`TipoSitio no encontrado id: ${id}`);
+    return { message: 'TipoSitio encontrado', data: tipo };
   }
 
-  async update(id: number, data: Partial<Tipositio>) {
-    await this.tipositioRepository.update(id, data);
-    const actualizado = await this.tipositioRepository.findOneBy({
-      idtipositio: id,
+  async update(id: number, dto: UpdateTipoSitioDto) {
+    await this.repo.update(id, dto);
+    const actualizado = await this.repo.findOne({
+      where: { id },
+      relations: ['sitios'],
     });
-    return {
-      message: 'tipo de municipio actualizado exitosamente',
-      data: actualizado,
-    };
+    return { message: 'TipoSitio actualizado', data: actualizado };
   }
 
   async remove(id: number) {
-    await this.tipositioRepository.delete(id);
-    return {
-      message: 'tipo de municipio eliminado exitosamente',
-    };
+    await this.repo.delete(id);
+    return { message: 'TipoSitio eliminado' };
   }
 }

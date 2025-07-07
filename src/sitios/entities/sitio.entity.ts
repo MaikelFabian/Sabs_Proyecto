@@ -1,37 +1,36 @@
+// src/sitio/entities/sitio.entity.ts
 import {
-  Column,
   Entity,
-  JoinColumn,
-  ManyToOne,
   PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
+  JoinColumn,
 } from 'typeorm';
-import { Tipositio } from 'src/tipo-sitio/entities/tipo-sitio.entity';
+import { TipoSitio } from 'src/tipo-sitio/entities/tipo-sitio.entity';
 
-@Entity('sitio', { schema: 'public' })
+@Entity()
 export class Sitio {
-  @PrimaryGeneratedColumn({ name: 'idsitio', type: 'integer' })
-  idsitio: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column('text', { name: 'sitio' })
-  sitio: string;
+  @Column()
+  nombre: string;
 
-  @Column('boolean', { name: 'activo', nullable: true, default: () => 'true' })
-  activo: boolean | null;
+  @Column({ nullable: true })
+  tipoSitioId?: number;
 
-  @Column('timestamp without time zone', {
-    name: 'fechaCreacion',
-    nullable: true,
-    default: () => 'now()',
-  })
-  fechaCreacion: Date | null;
+  @Column({ default: true })
+  activo: boolean;
 
-  @Column('timestamp without time zone', {
-    name: 'fechaActualizacion',
-    nullable: true,
-  })
-  fechaActualizacion: Date | null;
+  @CreateDateColumn()
+  fechaCreacion: Date;
 
-  @ManyToOne(() => Tipositio, (tipositio) => tipositio.sitios)
-  @JoinColumn([{ name: 'tipositio', referencedColumnName: 'idtipositio' }])
-  tipositio: Tipositio;
+  @UpdateDateColumn({ nullable: true })
+  fechaActualizacion?: Date;
+
+  @ManyToOne(() => TipoSitio, (tipoSitio) => tipoSitio.sitios, { nullable: true })
+  @JoinColumn({ name: 'tipoSitioId' })
+  tipoSitio?: TipoSitio;
 }

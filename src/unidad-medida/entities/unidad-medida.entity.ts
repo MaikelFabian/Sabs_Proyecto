@@ -1,4 +1,3 @@
-// src/unidad-medida/entities/unidad-medida.entity.ts
 import {
   Entity,
   PrimaryGeneratedColumn,

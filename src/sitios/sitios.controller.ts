@@ -1,35 +1,35 @@
+// src/sitio/sitio.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { SitiosService } from './sitios.service';
+import { SitioService } from './sitios.service';
 import { CreateSitioDto } from './dto/create-sitio.dto';
 import { UpdateSitioDto } from './dto/update-sitio.dto';
-import { Sitio } from './entities/sitio.entity';
 
-@Controller('sitios')
-export class SitiosController {
-  constructor(private readonly sitiosService: SitiosService) {}
+@Controller('sitio')
+export class SitioController {
+  constructor(private readonly service: SitioService) {}
 
   @Post()
-  create(@Body() data: Partial<Sitio>) {
-    return this.sitiosService.create(data);
+  create(@Body() dto: CreateSitioDto) {
+    return this.service.create(dto);
   }
 
   @Get()
   findAll() {
-    return this.sitiosService.findAll();
+    return this.service.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.sitiosService.findOne(+id);
+    return this.service.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data:Partial<Sitio>) {
-    return this.sitiosService.update(+id, data);
+  update(@Param('id') id: string, @Body() dto: UpdateSitioDto) {
+    return this.service.update(+id, dto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.sitiosService.remove(+id);
+    return this.service.remove(+id);
   }
 }

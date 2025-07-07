@@ -1,4 +1,3 @@
-// src/movimiento/movimiento.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Movimiento } from './entities/movimiento.entity';

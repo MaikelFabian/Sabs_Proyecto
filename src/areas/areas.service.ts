@@ -1,61 +1,51 @@
-import { Injectable } from '@nestjs/common';
+// src/area/area.service.ts
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Area } from './entities/area.entity';
+import { Repository } from 'typeorm';
 import { CreateAreaDto } from './dto/create-area.dto';
 import { UpdateAreaDto } from './dto/update-area.dto';
-import { Area } from './entities/area.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 
 @Injectable()
-export class AreasService {
+export class AreaService {
   constructor(
     @InjectRepository(Area)
-    private readonly areaRepository: Repository<Area>,
+    private readonly repo: Repository<Area>,
   ) {}
 
-  async create(data: Partial<Area>) {
-    const nuevo = await this.areaRepository.save(data);
-    return {
-      message: 'area creado exitosamente',
-      data: nuevo,
-    };
+  async create(dto: CreateAreaDto) {
+    const nueva = this.repo.create({ ...dto });
+    const guardada = await this.repo.save(nueva);
+    return { message: 'Área creada', data: guardada };
   }
 
   async findAll() {
-    const listar = await this.areaRepository.find({
-      relations: ['areascentro', 'titulado'],
+    const lista = await this.repo.find({
+      relations: ['areasCentro', 'titulados'],
     });
-    return {
-      message: 'Listado de areas',
-      data: listar,
-    };
+    return { message: 'Listado de áreas', data: lista };
   }
 
   async findOne(id: number) {
-    const buscar = await this.areaRepository.findOne({
-      where: { id: id },
-      relations: ['areascentro', 'titulado'],
+    const area = await this.repo.findOne({
+      where: { id },
+      relations: ['areasCentro', 'titulados'],
     });
-    return {
-      message: 'area encontrado',
-      data: buscar,
-    };
+    if (!area) throw new NotFoundException(`Área no encontrada id: ${id}`);
+    return { message: 'Área encontrada', data: area };
   }
 
-  async update(id: number, data: Partial<Area>) {
-    await this.areaRepository.update(id, data);
-    const actualizado = await this.areaRepository.findOneBy({
-      id: id,
+  async update(id: number, dto: UpdateAreaDto) {
+    await this.repo.update(id, dto);
+    const actualizada = await this.repo.findOne({
+      where: { id },
+      relations: ['areasCentro', 'titulados'],
     });
-    return {
-      message: 'area actualizado exitosamente',
-      data: actualizado,
-    };
+    return { message: 'Área actualizada', data: actualizada };
   }
 
   async remove(id: number) {
-    await this.areaRepository.delete(id);
-    return {
-      message: 'area eliminado exitosamente',
-    };
+    await this.repo.delete(id);
+    return { message: 'Área eliminada' };
   }
 }

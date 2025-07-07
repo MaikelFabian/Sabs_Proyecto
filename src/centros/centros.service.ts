@@ -1,61 +1,42 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Centro } from './entities/centro.entity';
+import { Repository } from 'typeorm';
 import { CreateCentroDto } from './dto/create-centro.dto';
 import { UpdateCentroDto } from './dto/update-centro.dto';
-import { Centro } from './entities/centro.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 
 @Injectable()
-export class CentrosService {
+export class CentroService {
   constructor(
     @InjectRepository(Centro)
-    private readonly centroRepository: Repository<Centro>,
+    private readonly repo: Repository<Centro>,
   ) {}
 
-  async create(data: Partial<Centro>) {
-    const nuevo = await this.centroRepository.save(data);
-    return {
-      message: 'centro creado exitosamente',
-      data: nuevo,
-    };
+  async create(dto: CreateCentroDto) {
+    const nuevo = this.repo.create({ ...dto });
+    const guardado = await this.repo.save(nuevo);
+    return { message: 'Centro creado', data: guardado };
   }
 
   async findAll() {
-    const listar = await this.centroRepository.find({
-      relations: ['areacentro', 'municipio', 'sede'],
-    });
-    return {
-      message: 'Listado de centros',
-      data: listar,
-    };
+    const lista = await this.repo.find({ relations: ['municipio', 'areasCentro', 'sedes'] });
+    return { message: 'Listado de centros', data: lista };
   }
 
   async findOne(id: number) {
-    const buscar = await this.centroRepository.findOne({
-      where: { id: id },
-      relations: ['areacentro', 'municipio', 'sede'],
-    });
-    return {
-      message: 'centro encontrado',
-      data: buscar,
-    };
+    const encontrado = await this.repo.findOne({ where: { id }, relations: ['municipio', 'areasCentro', 'sedes'] });
+    if (!encontrado) throw new NotFoundException(`Centro no encontrado id: ${id}`);
+    return { message: 'Centro encontrado', data: encontrado };
   }
 
-  async update(id: number, data: Partial<Centro>) {
-    await this.centroRepository.update(id, data);
-    const actualizado = await this.centroRepository.findOneBy({
-      id: id,
-    });
-    return {
-      message: 'centro actualizado exitosamente',
-      data: actualizado,
-    };
+  async update(id: number, dto: UpdateCentroDto) {
+    await this.repo.update(id, dto);
+    const actualizado = await this.repo.findOne({ where: { id }, relations: ['municipio', 'areasCentro', 'sedes'] });
+    return { message: 'Centro actualizado', data: actualizado };
   }
 
   async remove(id: number) {
-    await this.centroRepository.delete(id);
-    return {
-      message: 'centro eliminado exitosamente',
-    };
+    await this.repo.delete(id);
+    return { message: 'Centro eliminado' };
   }
 }

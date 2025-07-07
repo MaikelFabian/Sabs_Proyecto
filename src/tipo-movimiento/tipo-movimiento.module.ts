@@ -1,4 +1,3 @@
-// src/tipo-movimiento/tipo-movimiento.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TipoMovimiento } from './entities/tipo-movimiento.entity';

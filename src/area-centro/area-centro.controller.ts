@@ -1,36 +1,35 @@
+// src/areacentro/areacentro.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { AreacentroService } from './area-centro.service';
-import { Areacentro } from './entities/area-centro.entity';
-import { UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { AreaCentroService } from './area-centro.service';
+import { CreateAreaCentroDto } from './dto/create-area-centro.dto';
+import { UpdateAreaCentroDto } from './dto/update-area-centro.dto';
 
-@Controller('area-centro')
-
+@Controller('areacentro')
 export class AreaCentroController {
-  constructor(private readonly areaCentroService: AreacentroService) {}
+  constructor(private readonly service: AreaCentroService) {}
 
   @Post()
-  create(@Body() data: Partial<Areacentro>) {
-    return this.areaCentroService.create(data);
+  create(@Body() dto: CreateAreaCentroDto) {
+    return this.service.create(dto);
   }
 
   @Get()
   findAll() {
-    return this.areaCentroService.findAll();
+    return this.service.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.areaCentroService.findOne(+id);
+    return this.service.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data: Partial<Areacentro>) {
-    return this.areaCentroService.update(+id, data);
+  update(@Param('id') id: string, @Body() dto: UpdateAreaCentroDto) {
+    return this.service.update(+id, dto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.areaCentroService.remove(+id);
+    return this.service.remove(+id);
   }
 }

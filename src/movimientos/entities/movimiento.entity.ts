@@ -1,23 +1,22 @@
-// src/movimiento/entities/movimiento.entity.ts
-import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, JoinColumn } from 'typeorm';
-import { Persona } from 'src/personas/entities/persona.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
+  JoinColumn,
+} from 'typeorm';
 import { TipoMovimiento } from 'src/tipo-movimiento/entities/tipo-movimiento.entity';
+import { Persona } from 'src/personas/entities/persona.entity';
 
 @Entity()
 export class Movimiento {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => TipoMovimiento, (tipo) => tipo.movimientos, { nullable: true })
-  @JoinColumn({ name: 'tipoMovimientoId' })
-  tipoMovimiento?: TipoMovimiento;
-
   @Column({ nullable: true })
   tipoMovimientoId?: number;
-
-  @ManyToOne(() => Persona, (persona) => persona.movimientos, { nullable: true })
-  @JoinColumn({ name: 'personaId' })
-  persona?: Persona;
 
   @Column({ nullable: true })
   personaId?: number;
@@ -25,9 +24,17 @@ export class Movimiento {
   @Column({ default: true })
   activo: boolean;
 
-  @Column()
-  fechaCreacion: string;
+  @CreateDateColumn()
+  fechaCreacion: Date;
 
-  @Column({ nullable: true })
-  fechaActualizacion?: string;
+  @UpdateDateColumn({ nullable: true })
+  fechaActualizacion?: Date;
+
+  @ManyToOne(() => TipoMovimiento, (tipo) => tipo.movimientos, { nullable: true })
+  @JoinColumn({ name: 'tipoMovimientoId' })
+  tipoMovimiento?: TipoMovimiento;
+
+  @ManyToOne(() => Persona, (persona) => persona.movimientos, { nullable: true })
+  @JoinColumn({ name: 'personaId' })
+  persona?: Persona;
 }

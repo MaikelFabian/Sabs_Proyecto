@@ -1,46 +1,44 @@
 import {
-  Column,
   Entity,
-  JoinColumn,
+  PrimaryGeneratedColumn,
+  Column,
   ManyToOne,
   OneToMany,
-  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  JoinColumn,
 } from 'typeorm';
-import { Areacentro } from 'src/area-centro/entities/area-centro.entity';
 import { Municipio } from 'src/municipios/entities/municipio.entity';
+import { AreaCentro } from 'src/area-centro/entities/area-centro.entity';
 import { Sede } from 'src/sedes/entities/sede.entity';
 
-@Entity('centro', { schema: 'public' })
+@Entity()
 export class Centro {
-  @PrimaryGeneratedColumn({ name: 'id', type: 'integer' })
+  @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('text', { name: 'centro' })
-  centro: string;
+  @Column()
+  nombre: string;
 
-  @Column('boolean', { name: 'activo', nullable: true, default: () => 'true' })
-  activo: boolean | null;
+  @Column({ nullable: true })
+  municipioId?: number;
 
-  @Column('timestamp without time zone', {
-    name: 'fechaCreacion',
-    nullable: true,
-    default: () => 'now()',
-  })
-  fechaCreacion: Date | null;
+  @Column({ default: true })
+  activo: boolean;
 
-  @Column('timestamp without time zone', {
-    name: 'fechaActualizacion',
-    nullable: true,
-  })
-  fechaActualizacion: Date | null;
+  @CreateDateColumn()
+  fechaCreacion: Date;
 
-  @OneToMany(() => Areacentro, (areacentro) => areacentro.centro)
-  areacentros: Areacentro[];
+  @UpdateDateColumn({ nullable: true })
+  fechaActualizacion?: Date;
 
-  @ManyToOne(() => Municipio, (municipio) => municipio.centros)
-  @JoinColumn([{ name: 'municipio', referencedColumnName: 'id' }])
-  municipio: Municipio;
+  @ManyToOne(() => Municipio, (municipio) => municipio.centros, { nullable: true })
+  @JoinColumn({ name: 'municipioId' })
+  municipio?: Municipio;
+
+  @OneToMany(() => AreaCentro, (areaCentro) => areaCentro.centro)
+  areasCentro?: AreaCentro[];
 
   @OneToMany(() => Sede, (sede) => sede.centro)
-  sedes: Sede[];
+  sedes?: Sede[];
 }

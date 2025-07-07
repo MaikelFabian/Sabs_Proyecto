@@ -1,5 +1,4 @@
-// src/movimiento/dto/create-movimiento.dto.ts
-import { IsOptional, IsNumber, IsBoolean, IsString } from 'class-validator';
+import { IsOptional, IsNumber, IsBoolean } from 'class-validator';
 
 export class CreateMovimientoDto {
   @IsOptional()
@@ -10,13 +9,7 @@ export class CreateMovimientoDto {
   @IsNumber()
   personaId?: number;
 
-  @IsBoolean()
-  activo: boolean;
-
-  @IsString()
-  fechaCreacion: string;
-
   @IsOptional()
-  @IsString()
-  fechaActualizacion?: string;
+  @IsBoolean()
+  activo?: boolean;
 }

@@ -1,5 +1,12 @@
-// src/movimiento/movimiento.controller.ts
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { MovimientoService } from './movimientos.service';
 import { CreateMovimientoDto } from './dto/create-movimiento.dto';
 import { UpdateMovimientoDto } from './dto/update-movimiento.dto';

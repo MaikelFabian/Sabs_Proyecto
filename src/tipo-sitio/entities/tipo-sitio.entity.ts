@@ -1,30 +1,30 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Sitio } from 'src/sitios/entities/sitio.entity';
 
-@Entity('tipositio', { schema: 'public' })
-export class Tipositio {
-  @PrimaryGeneratedColumn({ name: 'idtipositio', type: 'integer' })
-  idtipositio: number;
+@Entity()
+export class TipoSitio {
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column('text', { name: 'tipositio' })
-  tipositio: string;
+  @Column()
+  nombre: string;
 
-  @Column('boolean', { name: 'activo', nullable: true, default: () => 'true' })
-  activo: boolean | null;
+  @Column({ default: true })
+  activo: boolean;
 
-  @Column('timestamp without time zone', {
-    name: 'fechaCreacion',
-    nullable: true,
-    default: () => 'now()',
-  })
-  fechaCreacion: Date | null;
+  @CreateDateColumn()
+  fechaCreacion: Date;
 
-  @Column('timestamp without time zone', {
-    name: 'fechaActualizacion',
-    nullable: true,
-  })
-  fechaActualizacion: Date | null;
+  @UpdateDateColumn({ nullable: true })
+  fechaActualizacion?: Date;
 
-  @OneToMany(() => Sitio, (sitio) => sitio.tipositio)
-  sitios: Sitio[];
+  @OneToMany(() => Sitio, (sitio) => sitio.tipoSitio)
+  sitios?: Sitio[];
 }

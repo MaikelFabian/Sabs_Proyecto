@@ -1,8 +1,7 @@
-// src/tipo-movimiento/tipo-movimiento.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { TipoMovimiento } from './entities/tipo-movimiento.entity';
+import { Repository } from 'typeorm';
 import { CreateTipoMovimientoDto } from './dto/create-tipo-movimiento.dto';
 import { UpdateTipoMovimientoDto } from './dto/update-tipo-movimiento.dto';
 
@@ -14,25 +13,32 @@ export class TipoMovimientoService {
   ) {}
 
   async create(dto: CreateTipoMovimientoDto) {
-    const nuevo = this.repo.create(dto);
+    const nuevo = this.repo.create({ ...dto });
     const guardado = await this.repo.save(nuevo);
     return { message: 'TipoMovimiento creado', data: guardado };
   }
 
   async findAll() {
     const lista = await this.repo.find({ relations: ['movimientos'] });
-    return { message: 'Listado de TipoMovimiento', data: lista };
+    return { message: 'Listado de tipos de movimiento', data: lista };
   }
 
   async findOne(id: number) {
-    const encontrado = await this.repo.findOne({ where: { id }, relations: ['movimientos'] });
-    if (!encontrado) throw new NotFoundException(`TipoMovimiento no encontrado id: ${id}`);
-    return { message: 'TipoMovimiento encontrado', data: encontrado };
+    const tipo = await this.repo.findOne({
+      where: { id },
+      relations: ['movimientos'],
+    });
+    if (!tipo)
+      throw new NotFoundException(`TipoMovimiento no encontrado id: ${id}`);
+    return { message: 'TipoMovimiento encontrado', data: tipo };
   }
 
   async update(id: number, dto: UpdateTipoMovimientoDto) {
     await this.repo.update(id, dto);
-    const actualizado = await this.repo.findOne({ where: { id }, relations: ['movimientos'] });
+    const actualizado = await this.repo.findOne({
+      where: { id },
+      relations: ['movimientos'],
+    });
     return { message: 'TipoMovimiento actualizado', data: actualizado };
   }
 

@@ -1,14 +1,14 @@
+// src/ficha/ficha.module.ts
 import { Module } from '@nestjs/common';
-import { FichasService } from './fichas.service';
-import { FichasController } from './fichas.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Ficha } from './entities/ficha.entity';
-
-
+import { FichaService } from './fichas.service';
+import { FichaController } from './fichas.controller';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Ficha])],
-  controllers: [FichasController],
-  providers: [FichasService],
+  controllers: [FichaController],
+  providers: [FichaService],
+  exports: [FichaService],
 })
-export class FichasModule {}
+export class FichaModule {}

@@ -1,35 +1,34 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { CentrosService } from './centros.service';
+import { CentroService } from './centros.service';
 import { CreateCentroDto } from './dto/create-centro.dto';
 import { UpdateCentroDto } from './dto/update-centro.dto';
-import { Centro } from './entities/centro.entity';
 
-@Controller('centros')
-export class CentrosController {
-  constructor(private readonly centrosService: CentrosService) {}
+@Controller('centro')
+export class CentroController {
+  constructor(private readonly service: CentroService) {}
 
   @Post()
-  create(@Body() data : Partial<Centro>) {
-    return this.centrosService.create(data);
+  create(@Body() dto: CreateCentroDto) {
+    return this.service.create(dto);
   }
 
   @Get()
   findAll() {
-    return this.centrosService.findAll();
+    return this.service.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.centrosService.findOne(+id);
+    return this.service.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body()data : Partial <Centro>) {
-    return this.centrosService.update(+id, data);
+  update(@Param('id') id: string, @Body() dto: UpdateCentroDto) {
+    return this.service.update(+id, dto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.centrosService.remove(+id);
+    return this.service.remove(+id);
   }
 }

@@ -1,35 +1,35 @@
+// src/tipositio/tipositio.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { TipoSitioService } from './tipo-sitio.service';
 import { CreateTipoSitioDto } from './dto/create-tipo-sitio.dto';
 import { UpdateTipoSitioDto } from './dto/update-tipo-sitio.dto';
-import { Tipositio } from './entities/tipo-sitio.entity';
 
-@Controller('tipo-sitio')
+@Controller('tipositio')
 export class TipoSitioController {
-  constructor(private readonly tipoSitioService: TipoSitioService) {}
+  constructor(private readonly service: TipoSitioService) {}
 
   @Post()
-  create(@Body() data: Partial<Tipositio>) {
-    return this.tipoSitioService.create(data);
+  create(@Body() dto: CreateTipoSitioDto) {
+    return this.service.create(dto);
   }
 
   @Get()
   findAll() {
-    return this.tipoSitioService.findAll();
+    return this.service.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.tipoSitioService.findOne(+id);
+    return this.service.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data:Partial<Tipositio>) {
-    return this.tipoSitioService.update(+id, data);
+  update(@Param('id') id: string, @Body() dto: UpdateTipoSitioDto) {
+    return this.service.update(+id, dto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.tipoSitioService.remove(+id);
+    return this.service.remove(+id);
   }
 }

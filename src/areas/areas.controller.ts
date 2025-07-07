@@ -1,35 +1,35 @@
+// src/area/area.controller.ts
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { AreasService } from './areas.service';
+import { AreaService } from './areas.service';
 import { CreateAreaDto } from './dto/create-area.dto';
 import { UpdateAreaDto } from './dto/update-area.dto';
-import { Area } from './entities/area.entity';
 
-@Controller('areas')
-export class AreasController {
-  constructor(private readonly areasService: AreasService) {}
+@Controller('area')
+export class AreaController {
+  constructor(private readonly service: AreaService) {}
 
   @Post()
-  create(@Body() data: Partial<Area>) {
-    return this.areasService.create(data);
+  create(@Body() dto: CreateAreaDto) {
+    return this.service.create(dto);
   }
 
   @Get()
   findAll() {
-    return this.areasService.findAll();
+    return this.service.findAll();
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.areasService.findOne(+id);
+    return this.service.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data: Partial <Area>) {
-    return this.areasService.update(+id, data);
+  update(@Param('id') id: string, @Body() dto: UpdateAreaDto) {
+    return this.service.update(+id, dto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.areasService.remove(+id);
+    return this.service.remove(+id);
   }
 }
