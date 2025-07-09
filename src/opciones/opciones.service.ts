@@ -39,4 +39,14 @@ export class OpcionesService {
     await this.opcionRepo.delete(id);
     return { message: 'Opcion eliminada' };
   }
+async getAllWithPermisos() {
+    const data = await this.opcionRepo.find({
+      relations: ['permisos'],
+    });
+    return {
+      message: 'Opciones con sus permisos',
+      data,
+    };
+  }
+
 }

@@ -14,17 +14,26 @@ export class PersonasService {
     private readonly personaRepository: Repository<Persona>,
   ) {}
 
-  async create(data: CreatePersonaDto) {
-    if (data.contrasena) {
-      data.contrasena = await bcrypt.hash(data.contrasena, 10);
-    }
-
-    const nuevo = await this.personaRepository.save(data);
-    return {
-      message: 'Persona creada exitosamente',
-      data: nuevo,
-    };
+  async create(data: Partial<Persona>) {
+  if (data.contrasena) {
+    const salt = bcrypt.genSaltSync(10);
+    data.contrasena = bcrypt.hashSync(data.contrasena, salt);
   }
+
+  if (data.rolId) {
+    data.rol = { id: data.rolId } as any;
+  }
+
+  if (data.fichaId) {
+    data.ficha = { id: data.fichaId } as any;
+  }
+
+  const nuevo = await this.personaRepository.save(data);
+  return {
+    message: 'Persona creada exitosamente',
+    data: nuevo,
+  };
+}
 
   async findAll() {
     const listar = await this.personaRepository.find({
@@ -60,21 +69,21 @@ export class PersonasService {
       data: buscar,
     };
   }
+ 
+async findByEmail(email: string) {
+  const persona = await this.personaRepository.findOne({
+    where: { correo: email },
+    relations: [
+      'rol',
+      'rol.rolesPermisosOpciones',
+      'rol.rolesPermisosOpciones.permiso',
+      'rol.rolesPermisosOpciones.opcion',
+      'rol.rolesPermisosOpciones.opcion.modulo',
+    ],
+  });
+  return persona;
+}
 
-  async findByEmail(email: string) {
-    const persona = await this.personaRepository.findOne({
-      where: { correo: email },
-      relations: [
-        'encargos',
-        'solicitudes',
-        'aprobaciones',
-        'movimientos',
-        'ficha',
-        'rol',
-      ],
-    });
-    return persona;
-  }
 
   async update(id: number, data: UpdatePersonaDto) {
     if (data.contrasena) {

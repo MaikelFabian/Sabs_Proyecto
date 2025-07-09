@@ -13,14 +13,18 @@ export class RolesService {
     private readonly rolRepository: Repository<Rol>,
   ) {}
 
-  async create(createRolDto: CreateRolDto) {
-    const nuevo = this.rolRepository.create(createRolDto);
-    const guardado = await this.rolRepository.save(nuevo);
-    return {
-      message: 'Rol creado exitosamente',
-      data: guardado,
-    };
+  async create(data: CreateRolDto) {
+  if (data.permisosId) {
+    data.permisosId = { id: data.permisosId } as any;
   }
+
+  const nuevo = await this.rolRepository.save(data);
+  return {
+    message: 'Rol creado exitosamente',
+    data: nuevo,
+  };
+}
+
 
   async findAll() {
     const lista = await this.rolRepository.find({ relations: ['personas', 'permisos'] });
@@ -55,6 +59,21 @@ export class RolesService {
     await this.rolRepository.delete(id);
     return {
       message: 'Rol eliminado exitosamente',
+    };
+  }
+
+  async getAllWithPermisosYOpciones() {
+    const data = await this.rolRepository.find({
+      relations: [
+        'rolesPermisosOpciones',
+        'rolesPermisosOpciones.permiso',
+        'rolesPermisosOpciones.opcion',
+        'rolesPermisosOpciones.opcion.modulo',
+      ],
+    });
+    return {
+      message: 'Roles con permisos y opciones',
+      data,
     };
   }
 }

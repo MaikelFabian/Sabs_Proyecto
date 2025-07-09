@@ -7,6 +7,12 @@ import { UpdatePermisoDto } from './dto/update-permiso.dto';
 export class PermisosController {
   constructor(private readonly permisosService: PermisosService) {}
 
+
+  @Get('full')
+  getAllWithOpcionYModulo() {
+    return this.permisosService.getAllWithOpcionYModulo();
+  }
+
   @Post()
   create(@Body() dto: CreatePermisoDto) {
     return this.permisosService.create(dto);

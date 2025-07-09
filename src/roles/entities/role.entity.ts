@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { Persona } from 'src/personas/entities/persona.entity';
 import { Permiso } from 'src/permisos/entities/permiso.entity';
+import { RolPermisoOpcion } from 'src/rol-permiso-opcion/entities/rol-permiso-opcion.entity';
 
 @Entity()
 export class Rol {
@@ -31,11 +32,10 @@ export class Rol {
 
   @OneToMany(() => Persona, (persona) => persona.rol)
   personas?: Persona[];
+  
+@OneToMany(() => RolPermisoOpcion, (rpo) => rpo.rol)
+rolesPermisosOpciones?: RolPermisoOpcion[];
 
-  @ManyToOne(() => Permiso, (permiso) => permiso.rolesPermisosOpciones, { nullable: true })
-  @JoinColumn({ name: 'permisosId' })
-  permisos?: Permiso;
 
-  @Column({ nullable: true })
-  permisosId?: number;
+ 
 }

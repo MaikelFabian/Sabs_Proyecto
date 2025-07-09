@@ -32,4 +32,10 @@ export class RolesController {
   remove(@Param('id') id: string) {
     return this.rolesService.remove(+id);
   }
+
+   @Get('full')
+  getAllRolesWithPermisosYOpciones() {
+    return this.rolesService.getAllWithPermisosYOpciones();
+  }
+
 }

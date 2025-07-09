@@ -39,4 +39,15 @@ export class PermisosService {
     await this.permisoRepo.delete(id);
     return { message: 'Permiso eliminado' };
   }
+
+   async getAllWithOpcionYModulo() {
+    const data = await this.permisoRepo.find({
+      relations: ['opcion', 'opcion.modulo'],
+    });
+    return {
+      message: 'Permisos con su opción y módulo',
+      data,
+    };
+  }
+
 }

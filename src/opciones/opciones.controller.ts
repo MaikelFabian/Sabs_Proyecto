@@ -7,6 +7,12 @@ import { UpdateOpcionDto } from './dto/update-opcione.dto';
 export class OpcionesController {
   constructor(private readonly opcionesService: OpcionesService) {}
 
+
+  @Get('full')
+  getAllWithPermisos() {
+    return this.opcionesService.getAllWithPermisos();
+  }
+
   @Post()
   create(@Body() dto: CreateOpcionDto) {
     return this.opcionesService.create(dto);
