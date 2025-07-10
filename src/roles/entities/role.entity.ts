@@ -32,10 +32,7 @@ export class Rol {
 
   @OneToMany(() => Persona, (persona) => persona.rol)
   personas?: Persona[];
-  
-@OneToMany(() => RolPermisoOpcion, (rpo) => rpo.rol)
-rolesPermisosOpciones?: RolPermisoOpcion[];
 
-
- 
+  @OneToMany(() => RolPermisoOpcion, (rpo) => rpo.rol)
+  rolesPermisosOpciones?: RolPermisoOpcion[];
 }

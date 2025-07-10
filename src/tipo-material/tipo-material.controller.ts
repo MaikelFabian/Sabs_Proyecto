@@ -4,7 +4,7 @@ import { TipoMaterialService } from './tipo-material.service';
 import { CreateTipoMaterialDto } from './dto/create-tipo-material.dto';
 import { UpdateTipoMaterialDto } from './dto/update-tipo-material.dto';
 
-@Controller('tipo-material')
+@Controller('tipomateriales')
 export class TipoMaterialController {
   constructor(private readonly service: TipoMaterialService) {}
 

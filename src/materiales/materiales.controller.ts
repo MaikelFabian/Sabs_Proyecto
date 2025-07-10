@@ -1,10 +1,13 @@
 // src/material/material.controller.ts
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { MaterialService } from './materiales.service';
 import { CreateMaterialDto } from './dto/create-materiale.dto';
 import { UpdateMaterialDto } from './dto/update-materiale.dto';
+import { PermisosGuard } from 'src/auth/guards/permisos.guards';
+import { LocalAuthGuard } from 'src/auth/local-auth.guard';
 
-@Controller('material')
+@Controller('materiales')
+@UseGuards(LocalAuthGuard, PermisosGuard)
 export class MaterialController {
   constructor(private readonly service: MaterialService) {}
 

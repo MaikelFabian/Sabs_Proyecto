@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { TipoMovimiento } from 'src/tipo-movimiento/entities/tipo-movimiento.entity';
 import { Persona } from 'src/personas/entities/persona.entity';
+import { Material } from 'src/materiales/entities/materiale.entity';
 
 @Entity()
 export class Movimiento {
@@ -29,6 +30,14 @@ export class Movimiento {
 
   @UpdateDateColumn({ nullable: true })
   fechaActualizacion?: Date;
+
+  
+  @ManyToOne(() => Material, (material) => material.movimientos, { eager: true })
+  @JoinColumn({ name: 'materialId' })
+  material: Material;
+
+  @Column()
+  materialId: number;
 
   @ManyToOne(() => TipoMovimiento, (tipo) => tipo.movimientos, { nullable: true })
   @JoinColumn({ name: 'tipoMovimientoId' })

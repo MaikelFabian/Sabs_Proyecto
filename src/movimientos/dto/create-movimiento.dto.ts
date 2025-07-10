@@ -1,15 +1,19 @@
-import { IsOptional, IsNumber, IsBoolean } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateMovimientoDto {
-  @IsOptional()
   @IsNumber()
-  tipoMovimientoId?: number;
+  cantidad: number;
 
   @IsOptional()
-  @IsNumber()
-  personaId?: number;
+  @IsString()
+  descripcion?: string;
 
-  @IsOptional()
-  @IsBoolean()
-  activo?: boolean;
+  @IsNumber()
+  materialId: number;
+
+  @IsNumber()
+  tipoMovimientoId: number;
+
+  @IsNumber()
+  personaId: number;
 }

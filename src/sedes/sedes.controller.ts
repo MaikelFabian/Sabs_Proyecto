@@ -3,7 +3,7 @@ import { SedeService } from './sedes.service';
 import { CreateSedeDto } from './dto/create-sede.dto';
 import { UpdateSedeDto } from './dto/update-sede.dto';
 
-@Controller('sede')
+@Controller('sedes')
 export class SedeController {
   constructor(private readonly service: SedeService) {}
 

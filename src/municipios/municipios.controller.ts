@@ -3,7 +3,7 @@ import { MunicipioService } from './municipios.service';
 import { CreateMunicipioDto } from './dto/create-municipio.dto';
 import { UpdateMunicipioDto } from './dto/update-municipio.dto';
 
-@Controller('municipio')
+@Controller('municipios')
 export class MunicipioController {
   constructor(private readonly service: MunicipioService) {}
 

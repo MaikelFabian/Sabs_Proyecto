@@ -3,7 +3,7 @@ import { TipoMovimientoService } from './tipo-movimiento.service';
 import { CreateTipoMovimientoDto } from './dto/create-tipo-movimiento.dto';
 import { UpdateTipoMovimientoDto } from './dto/update-tipo-movimiento.dto';
 
-@Controller('tipomovimiento')
+@Controller('tipomovimientos')
 export class TipoMovimientoController {
   constructor(private readonly service: TipoMovimientoService) {}
 

@@ -4,7 +4,7 @@ import { SitioService } from './sitios.service';
 import { CreateSitioDto } from './dto/create-sitio.dto';
 import { UpdateSitioDto } from './dto/update-sitio.dto';
 
-@Controller('sitio')
+@Controller('sitios')
 export class SitioController {
   constructor(private readonly service: SitioService) {}
 

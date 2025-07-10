@@ -4,7 +4,7 @@ import { TipoSitioService } from './tipo-sitio.service';
 import { CreateTipoSitioDto } from './dto/create-tipo-sitio.dto';
 import { UpdateTipoSitioDto } from './dto/update-tipo-sitio.dto';
 
-@Controller('tipositio')
+@Controller('tipositios')
 export class TipoSitioController {
   constructor(private readonly service: TipoSitioService) {}
 

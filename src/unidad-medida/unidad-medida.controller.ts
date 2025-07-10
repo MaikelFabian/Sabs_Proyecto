@@ -4,7 +4,7 @@ import { UnidadMedidaService } from './unidad-medida.service';
 import { CreateUnidadMedidaDto } from './dto/create-unidad-medida.dto';
 import { UpdateUnidadMedidaDto } from './dto/update-unidad-medida.dto';
 
-@Controller('unidad-medida')
+@Controller('unidadmedidas')
 export class UnidadMedidaController {
   constructor(private readonly service: UnidadMedidaService) {}
 

@@ -4,7 +4,7 @@ import { AreaCentroService } from './area-centro.service';
 import { CreateAreaCentroDto } from './dto/create-area-centro.dto';
 import { UpdateAreaCentroDto } from './dto/update-area-centro.dto';
 
-@Controller('areacentro')
+@Controller('areacentros')
 export class AreaCentroController {
   constructor(private readonly service: AreaCentroService) {}
 

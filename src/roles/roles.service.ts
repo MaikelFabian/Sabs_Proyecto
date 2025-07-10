@@ -14,20 +14,19 @@ export class RolesService {
   ) {}
 
   async create(data: CreateRolDto) {
-  if (data.permisosId) {
-    data.permisosId = { id: data.permisosId } as any;
+    if (data.permisosId) {
+      data.permisosId = { id: data.permisosId } as any;
+    }
+
+    const nuevo = await this.rolRepository.save(data);
+    return {
+      message: 'Rol creado exitosamente',
+      data: nuevo,
+    };
   }
 
-  const nuevo = await this.rolRepository.save(data);
-  return {
-    message: 'Rol creado exitosamente',
-    data: nuevo,
-  };
-}
-
-
   async findAll() {
-    const lista = await this.rolRepository.find({ relations: ['personas', 'permisos'] });
+    const lista = await this.rolRepository.find({ relations: ['personas'] });
     return {
       message: 'Listado de roles',
       data: lista,

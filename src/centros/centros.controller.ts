@@ -3,7 +3,7 @@ import { CentroService } from './centros.service';
 import { CreateCentroDto } from './dto/create-centro.dto';
 import { UpdateCentroDto } from './dto/update-centro.dto';
 
-@Controller('centro')
+@Controller('centros')
 export class CentroController {
   constructor(private readonly service: CentroService) {}
 

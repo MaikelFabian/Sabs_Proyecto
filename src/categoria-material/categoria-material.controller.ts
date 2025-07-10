@@ -4,7 +4,7 @@ import { CategoriaMaterialService } from './categoria-material.service';
 import { CreateCategoriaMaterialDto } from './dto/create-categoria-material.dto';
 import { UpdateCategoriaMaterialDto } from './dto/update-categoria-material.dto';
 
-@Controller('categoria-material')
+@Controller('categoriamateriales')
 export class CategoriaMaterialController {
   constructor(private readonly service: CategoriaMaterialService) {}
 

@@ -13,6 +13,7 @@ import { TipoMaterial } from 'src/tipo-material/entities/tipo-material.entity';
 import { UnidadMedida } from 'src/unidad-medida/entities/unidad-medida.entity';
 import { CategoriaMaterial } from 'src/categoria-material/entities/categoria-material.entity';
 import { Detalles } from 'src/detalles/entities/detalle.entity';
+import { Movimiento } from 'src/movimientos/entities/movimiento.entity';
 
 @Entity()
 export class Material {
@@ -66,4 +67,8 @@ export class Material {
 
   @OneToMany(() => Detalles, (detalle) => detalle.material)
   detalles?: Detalles[];
+
+  /** NUEVO: relación con movimientos */
+  @OneToMany(() => Movimiento, (movimiento) => movimiento.material)
+  movimientos?: Movimiento[];
 }
