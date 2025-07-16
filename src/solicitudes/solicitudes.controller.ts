@@ -96,4 +96,6 @@ export class SolicitudesController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.service.remove(id);
   }
+
+  // Endpoint para obtener las solicitudes de un usuario específico
 }
