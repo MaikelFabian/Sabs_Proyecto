@@ -26,6 +26,7 @@ import { AuthModule } from './auth/auth.module';
 import { OpcionesModule } from './opciones/opciones.module';
 import { ModulosModule } from './modulos/modulos.module';
 import { RolPermisoOpcionModule } from './rol-permiso-opcion/rol-permiso-opcion.module';
+import { SolicitudesModule } from './solicitudes/solicitudes.module';
 
 @Module({
   imports: [
@@ -65,6 +66,7 @@ import { RolPermisoOpcionModule } from './rol-permiso-opcion/rol-permiso-opcion.
     OpcionesModule,
     ModulosModule,
     RolPermisoOpcionModule,
+    SolicitudesModule,
   ],
 })
 export class AppModule {}

@@ -68,7 +68,7 @@ export class Material {
   @OneToMany(() => Detalles, (detalle) => detalle.material)
   detalles?: Detalles[];
 
-  /** NUEVO: relación con movimientos */
+ 
   @OneToMany(() => Movimiento, (movimiento) => movimiento.material)
   movimientos?: Movimiento[];
 }

@@ -22,6 +22,9 @@ export class Movimiento {
   @Column({ nullable: true })
   personaId?: number;
 
+  @Column()
+  cantidad: number;
+
   @Column({ default: true })
   activo: boolean;
 
@@ -31,19 +34,24 @@ export class Movimiento {
   @UpdateDateColumn({ nullable: true })
   fechaActualizacion?: Date;
 
-  
-  @ManyToOne(() => Material, (material) => material.movimientos, { eager: true })
+  @ManyToOne(() => Material, (material) => material.movimientos, {
+    eager: true,
+  })
   @JoinColumn({ name: 'materialId' })
   material: Material;
 
   @Column()
   materialId: number;
 
-  @ManyToOne(() => TipoMovimiento, (tipo) => tipo.movimientos, { nullable: true })
+  @ManyToOne(() => TipoMovimiento, (tipo) => tipo.movimientos, {
+    nullable: true,
+  })
   @JoinColumn({ name: 'tipoMovimientoId' })
   tipoMovimiento?: TipoMovimiento;
 
-  @ManyToOne(() => Persona, (persona) => persona.movimientos, { nullable: true })
+  @ManyToOne(() => Persona, (persona) => persona.movimientos, {
+    nullable: true,
+  })
   @JoinColumn({ name: 'personaId' })
   persona?: Persona;
 }

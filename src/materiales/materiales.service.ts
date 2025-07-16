@@ -19,6 +19,14 @@ export class MaterialService {
     return { message: 'Material creado', data: guardado };
   }
 
+  async obtenerStockCompleto() {
+  return this.repo.find({
+    select: ['id', 'nombre', 'descripcion', 'stock', 'activo', 'fechaVencimiento'],
+    relations: ['tipoMaterial', 'unidadMedida', 'categoriaMaterial'],
+    where: { activo: true }
+  });
+}
+
   async findAll() {
     const lista = await this.repo.find({
       relations: ['tipoMaterial', 'unidadMedida', 'categoriaMaterial', 'detalles'],

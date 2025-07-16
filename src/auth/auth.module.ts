@@ -5,17 +5,21 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { PersonasModule } from '../personas/personas.module';
 import { LocalStrategy } from './local.strategy';
+import { JwtStrategy } from './jwt.strategy';
+import { ExtractJwt } from 'passport-jwt';
 
 @Module({
   imports: [
     PersonasModule,
     PassportModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'Sabs',
+      secret: 'Sabs',
       signOptions: { expiresIn: '24h' },
+     
     }),
+    
   ],
-  providers: [AuthService, LocalStrategy],
+  providers: [AuthService, LocalStrategy,JwtStrategy],
   controllers: [AuthController],
   exports: [AuthService],
 })

@@ -18,19 +18,32 @@ export class PermisosGuard implements CanActivate {
     private reflector: Reflector,
     @InjectRepository(RolPermisoOpcion)
     private readonly repo: Repository<RolPermisoOpcion>,
-  ) {}
+  ) {
+    console.log('✅ PermisosGuard construido');
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    console.log('🔐 JwtAuthGuard activado');
+    
+
     const request = context.switchToHttp().getRequest();
     const user = request.user;
-    const path = request.route.path; // Ej: /usuarios/:id
+    console.log('👤 User en PermisosGuard:', JSON.stringify(user, null, 2));
+    const path = request.route.path;
     const metodo = request.method;
+    console.log('========= PermisosGuard =========');
+    console.log('Usuario:', user);
+    console.log('Path:', path);
+    console.log('Method:', metodo);
+    console.log('Permiso encontrado, acceso concedido');
+    console.log('NO se encontró permiso, acceso denegado');
 
     // Leer permisos explícitos del decorator
     const permisosRequeridos = this.reflector.getAllAndOverride<string[]>(
       PERMISSIONS_KEY,
       [context.getHandler(), context.getClass()],
     );
+    console.log('🔒 Permisos requeridos por decorator:', permisosRequeridos);
 
     // Si hay permisos específicos, validar contra ellos
     if (permisosRequeridos && permisosRequeridos.length > 0) {
@@ -39,12 +52,20 @@ export class PermisosGuard implements CanActivate {
         .leftJoinAndSelect('rpo.permiso', 'permiso')
         .leftJoinAndSelect('rpo.opcion', 'opcion')
         .where('rpo.rolId = :rolId', { rolId: user.rolId })
-        .andWhere('permiso.codigo IN (:...codigos)', { codigos: permisosRequeridos })
-        .andWhere(':path LIKE CONCAT(opcion.rutaFrontend, "%")', { path })
+        
+        .andWhere('permiso.codigo IN (:...codigos)', {
+          codigos: permisosRequeridos,
+        })
+        .andWhere(':path LIKE opcion.rutaFrontend || \'%\'', { path })
+
         .getOne();
+      console.log('path', path);
+      console.log('permisosRequeridos', permisosRequeridos);
 
       if (!tienePermiso) {
-        throw new ForbiddenException('No tienes permiso para realizar esta acción');
+        throw new ForbiddenException(
+          'No tienes permiso para realizar esta acción',
+        );
       }
 
       return true;
@@ -59,11 +80,13 @@ export class PermisosGuard implements CanActivate {
       .leftJoinAndSelect('rpo.opcion', 'opcion')
       .where('rpo.rolId = :rolId', { rolId: user.rolId })
       .andWhere('permiso.codigo = :codigo', { codigo: permisoRequerido })
-      .andWhere(':path LIKE CONCAT(opcion.rutaFrontend, "%")', { path })
+      .andWhere(':path LIKE opcion.rutaFrontend || \'%\'', { path })
       .getOne();
 
     if (!tienePermiso) {
-      throw new ForbiddenException('No tienes permiso para realizar esta acción');
+      throw new ForbiddenException(
+        'No tienes permiso para realizar esta acción',
+      );
     }
 
     return true;

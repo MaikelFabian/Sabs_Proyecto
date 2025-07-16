@@ -25,14 +25,21 @@ export class TipoMaterialService {
   }
 
   async findOne(id: number) {
-    const encontrado = await this.repo.findOne({ where: { id }, relations: ['materiales'] });
-    if (!encontrado) throw new NotFoundException(`TipoMaterial no encontrado id: ${id}`);
+    const encontrado = await this.repo.findOne({
+      where: { id },
+      relations: ['materiales'],
+    });
+    if (!encontrado)
+      throw new NotFoundException(`TipoMaterial no encontrado id: ${id}`);
     return { message: 'TipoMaterial encontrado', data: encontrado };
   }
 
   async update(id: number, dto: UpdateTipoMaterialDto) {
     await this.repo.update(id, dto);
-    const actualizado = await this.repo.findOne({ where: { id }, relations: ['materiales'] });
+    const actualizado = await this.repo.findOne({
+      where: { id },
+      relations: ['materiales'],
+    });
     return { message: 'TipoMaterial actualizado', data: actualizado };
   }
 

@@ -2,7 +2,7 @@ export function mapMetodoToPermiso(metodo: string): string {
     switch (metodo.toUpperCase()) {
         case 'GET':
             return 'ver';
-        case 'POST':
+        case 'POST  ':
             return 'crear';
         case 'PUT':
         case 'PATCH':
