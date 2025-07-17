@@ -13,7 +13,6 @@ import { MaterialService } from './materiales.service';
 import { CreateMaterialDto } from './dto/create-materiale.dto';
 import { UpdateMaterialDto } from './dto/update-materiale.dto';
 import { PermisosGuard } from 'src/auth/guards/permisos.guards';
-import { LocalAuthGuard } from 'src/auth/local-auth.guard';
 import { Roles } from 'src/auth/guards/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
@@ -24,7 +23,6 @@ export class MaterialController {
 
   @Post()
   @UseGuards(JwtAuthGuard, PermisosGuard)
-  @Post()
   @Roles('CREATE_MATERIALES')
   create(@Body() dto: CreateMaterialDto) {
     console.log('⚡️ Entró a MaterialController.create');

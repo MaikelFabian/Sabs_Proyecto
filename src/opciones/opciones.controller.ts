@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { OpcionesService } from './opciones.service';
 import { CreateOpcionDto } from './dto/create-opcione.dto';
 import { UpdateOpcionDto } from './dto/update-opcione.dto';
@@ -6,7 +14,6 @@ import { UpdateOpcionDto } from './dto/update-opcione.dto';
 @Controller('opciones')
 export class OpcionesController {
   constructor(private readonly opcionesService: OpcionesService) {}
-
 
   @Get('full')
   getAllWithPermisos() {

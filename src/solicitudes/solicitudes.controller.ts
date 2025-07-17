@@ -14,11 +14,12 @@ import {
 } from '@nestjs/common';
 import { SolicitudesService } from './solicitudes.service';
 import { CreateSolicitudDto } from './dto/create-solicitud.dto';
-import { LocalAuthGuard } from 'src/auth/local-auth.guard';
-import { PermisosGuard } from 'src/auth/guards/permisos.guards';
-import { Roles } from 'src/auth/guards/roles.decorator';
 import { UpdateSolicitudDto } from './dto/update-solicitud.dto';
+import { Roles } from 'src/auth/guards/roles.decorator';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { PermisosGuard } from 'src/auth/guards/permisos.guards';
 
+@UseGuards(JwtAuthGuard, PermisosGuard)
 @Controller('solicitudes')
 export class SolicitudesController {
   constructor(private readonly service: SolicitudesService) {}
@@ -29,7 +30,7 @@ export class SolicitudesController {
   }
 
   @Put(':id/aprobar')
-  @UseGuards(LocalAuthGuard, PermisosGuard)
+  @UseGuards(JwtAuthGuard, PermisosGuard)
   @Roles('APROBAR_SOLICITUDES')
   async aprobarSolicitud(@Param('id') id: number, @Req() req) {
     const personaApruebaId = req.user.id;
@@ -37,7 +38,7 @@ export class SolicitudesController {
   }
 
   @Put(':id/entregar')
-  @UseGuards(LocalAuthGuard, PermisosGuard)
+  @UseGuards(JwtAuthGuard, PermisosGuard)
   @Roles('ENTREGAR_SOLICITUDES')
   async entregarSolicitud(@Param('id') id: number, @Req() req) {
     const personaEncargadaId = req.user.id;
@@ -45,6 +46,7 @@ export class SolicitudesController {
   }
 
   @Patch(':id/autorizar')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
   @Roles('AUTORIZAR_SOLICITUDES')
   async autorizar(
     @Param('id', ParseIntPipe) id: number,
@@ -59,11 +61,14 @@ export class SolicitudesController {
 
   @Get('filtrar')
   @Roles('VER_SOLICITUDES')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
   async filtrar(@Query('aprobada') aprobada: boolean) {
     return this.service.filtrarPorEstado(aprobada);
   }
 
   @Get()
+  @Roles('VER_SOLICITUDES')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
   findAll(
     @Query('aprobada') aprobada?: string,
     @Query('personaSolicitaId') personaSolicitaId?: string,
@@ -79,11 +84,15 @@ export class SolicitudesController {
   }
 
   @Get(':id')
+  @Roles('VER_SOLICITUD')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.service.findOne(id);
   }
 
   @Patch(':id')
+  @Roles('EDITAR_SOLICITUDES')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateSolicitudDto,
@@ -93,6 +102,8 @@ export class SolicitudesController {
   }
 
   @Delete(':id')
+  @Roles('ELIMINAR_SOLICITUDES')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.service.remove(id);
   }
