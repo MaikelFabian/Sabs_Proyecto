@@ -17,7 +17,7 @@ import { PermisosGuard } from 'src/auth/guards/permisos.guards';
 import { Roles } from 'src/auth/guards/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
-@UseGuards(JwtAuthGuard, PermisosGuard)
+
 @Controller('movimientos')
 export class MovimientoController {
   constructor(private readonly service: MovimientoService) {}

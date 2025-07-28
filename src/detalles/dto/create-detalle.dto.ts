@@ -1,31 +1,15 @@
-// src/detalles/dto/create-detalles.dto.ts
-import { IsNumber, IsOptional, IsString, IsBoolean } from 'class-validator';
+import { IsNumber, IsOptional } from "class-validator";
 
 export class CreateDetallesDto {
   @IsNumber()
-  cantidadSolicitada: number;
-
   @IsOptional()
-  @IsString()
-  descripcion?: string;
+  cantidad: number;
 
-  @IsOptional()
-  @IsBoolean()
-  activo?: boolean;
-
-  @IsOptional()
   @IsNumber()
-  materialId?: number;
-
   @IsOptional()
-  @IsNumber()
-  personaEncargadaId?: number;
+  materialId: number;
 
-  @IsOptional()
   @IsNumber()
-  personaSolicitaId?: number;
-
   @IsOptional()
-  @IsNumber()
-  personaApruebaId?: number;
+  solicitudId: number;
 }

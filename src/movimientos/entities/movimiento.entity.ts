@@ -10,6 +10,7 @@ import {
 import { TipoMovimiento } from 'src/tipo-movimiento/entities/tipo-movimiento.entity';
 import { Persona } from 'src/personas/entities/persona.entity';
 import { Material } from 'src/materiales/entities/materiale.entity';
+import { Solicitud } from 'src/solicitudes/entities/solicitud.entity';
 
 @Entity()
 export class Movimiento {
@@ -54,4 +55,9 @@ export class Movimiento {
   })
   @JoinColumn({ name: 'personaId' })
   persona?: Persona;
+
+  @ManyToOne(() => Solicitud, (solicitud) => solicitud.movimientos, {
+    nullable: true,
+  })
+  solicitud: Solicitud;
 }

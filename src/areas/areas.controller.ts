@@ -22,21 +22,21 @@ export class AreaController {
   constructor(private readonly service: AreaService) {}
 
   @Post()
-  @Roles('CREAR_AREAS')
+  @Roles('CREAR_ÁREAS')
   @UseGuards(JwtAuthGuard, PermisosGuard)
   create(@Body() dto: CreateAreaDto) {
     return this.service.create(dto);
   }
 
   @Get()
-  @Roles('VER_AREAS')
+  @Roles('VER_ÁREAS')
   @UseGuards(JwtAuthGuard, PermisosGuard)
   findAll() {
     return this.service.findAll();
   }
 
   @Get(':id')
-  @Roles('VER_AREA')
+  @Roles('VER_ÁREA')
   @UseGuards(JwtAuthGuard, PermisosGuard)
   findOne(@Param('id') id: string) {
     return this.service.findOne(+id);

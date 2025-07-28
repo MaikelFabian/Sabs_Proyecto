@@ -37,7 +37,8 @@ import { SolicitudesModule } from './solicitudes/solicitudes.module';
       host: process.env.DB_HOST,
       port: parseInt(process.env.DB_PORT ?? '5432'),
       database: process.env.DB_NAME,
-      entities: [__dirname + '/*/.entity{.ts,.js}'],
+      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       autoLoadEntities: true,

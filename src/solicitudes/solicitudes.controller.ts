@@ -19,7 +19,7 @@ import { Roles } from 'src/auth/guards/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { PermisosGuard } from 'src/auth/guards/permisos.guards';
 
-@UseGuards(JwtAuthGuard, PermisosGuard)
+//@UseGuards(JwtAuthGuard, PermisosGuard)
 @Controller('solicitudes')
 export class SolicitudesController {
   constructor(private readonly service: SolicitudesService) {}
@@ -30,45 +30,24 @@ export class SolicitudesController {
   }
 
   @Put(':id/aprobar')
-  @UseGuards(JwtAuthGuard, PermisosGuard)
-  @Roles('APROBAR_SOLICITUDES')
+  //@UseGuards(JwtAuthGuard, PermisosGuard)
+  //@Roles('APROBAR_SOLICITUDES')
   async aprobarSolicitud(@Param('id') id: number, @Req() req) {
     const personaApruebaId = req.user.id;
     return this.service.aprobarSolicitud(+id, personaApruebaId);
   }
 
   @Put(':id/entregar')
-  @UseGuards(JwtAuthGuard, PermisosGuard)
-  @Roles('ENTREGAR_SOLICITUDES')
+  //@UseGuards(JwtAuthGuard, PermisosGuard)
+  //@Roles('ENTREGAR_SOLICITUDES')
   async entregarSolicitud(@Param('id') id: number, @Req() req) {
     const personaEncargadaId = req.user.id;
     return this.service.entregarSolicitud(+id, personaEncargadaId);
   }
 
-  @Patch(':id/autorizar')
-  @UseGuards(JwtAuthGuard, PermisosGuard)
-  @Roles('AUTORIZAR_SOLICITUDES')
-  async autorizar(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: { personaApruebaId: number; aprobar: boolean },
-  ) {
-    return this.service.autorizarSolicitud(
-      id,
-      dto.personaApruebaId,
-      dto.aprobar,
-    );
-  }
-
-  @Get('filtrar')
-  @Roles('VER_SOLICITUDES')
-  @UseGuards(JwtAuthGuard, PermisosGuard)
-  async filtrar(@Query('aprobada') aprobada: boolean) {
-    return this.service.filtrarPorEstado(aprobada);
-  }
-
   @Get()
-  @Roles('VER_SOLICITUDES')
-  @UseGuards(JwtAuthGuard, PermisosGuard)
+  //@Roles('VER_SOLICITUDES')
+  //@UseGuards(JwtAuthGuard, PermisosGuard)
   findAll(
     @Query('aprobada') aprobada?: string,
     @Query('personaSolicitaId') personaSolicitaId?: string,
@@ -84,15 +63,15 @@ export class SolicitudesController {
   }
 
   @Get(':id')
-  @Roles('VER_SOLICITUD')
-  @UseGuards(JwtAuthGuard, PermisosGuard)
+  //@Roles('VER_SOLICITUD')
+  //@UseGuards(JwtAuthGuard, PermisosGuard)
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.service.findOne(id);
   }
 
   @Patch(':id')
-  @Roles('EDITAR_SOLICITUDES')
-  @UseGuards(JwtAuthGuard, PermisosGuard)
+  //@Roles('EDITAR_SOLICITUDES')
+  // @UseGuards(JwtAuthGuard, PermisosGuard)
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateSolicitudDto,
@@ -108,5 +87,32 @@ export class SolicitudesController {
     return this.service.remove(id);
   }
 
-  // Endpoint para obtener las solicitudes de un usuario específico
+  @Get(':id/movimientos')
+  getMovimientos(@Param('id', ParseIntPipe) id: number) {
+    return this.service.getMovimientosPorSolicitud(id);
+  }
+
+  @Post(':id/aprobar')
+  aprobar(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('aprobadorId') aprobadorId: number,
+  ) {
+    return this.service.aprobarSolicitud(id, aprobadorId);
+  }
+
+  @Post(':id/entregar')
+  entregar(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('encargadoId') encargadoId: number,
+  ) {
+    return this.service.entregarSolicitud(id, encargadoId);
+  }
+
+  @Post(':id/devolver')
+  devolver(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('encargadoId') encargadoId: number,
+  ) {
+    return this.service.devolverSolicitud(id, encargadoId);
+  }
 }

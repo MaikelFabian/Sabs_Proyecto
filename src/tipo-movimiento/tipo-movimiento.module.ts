@@ -9,6 +9,6 @@ import { RolPermisoOpcionModule } from 'src/rol-permiso-opcion/rol-permiso-opcio
   imports: [TypeOrmModule.forFeature([TipoMovimiento]),RolPermisoOpcionModule],
   controllers: [TipoMovimientoController],
   providers: [TipoMovimientoService],
-  exports: [TipoMovimientoService],
+  exports: [TipoMovimientoService, TypeOrmModule],
 })
 export class TipoMovimientoModule {}

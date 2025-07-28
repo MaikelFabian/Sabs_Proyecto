@@ -15,6 +15,9 @@ export class TipoMovimiento {
 
   @Column()
   nombre: string;
+  
+  @Column({ nullable: true })
+  descripcion?: string;
 
   @Column({ default: true })
   activo: boolean;

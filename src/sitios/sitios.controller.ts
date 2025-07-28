@@ -27,7 +27,7 @@ export class SitioController {
   }
 
   @Get(':id')
-  @Roles('VER_SITIO')
+  @Roles('VER_SITIOS')
   @UseGuards(JwtAuthGuard, PermisosGuard)
   findOne(@Param('id') id: string) {
     return this.service.findOne(+id);

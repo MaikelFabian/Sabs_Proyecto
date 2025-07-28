@@ -16,4 +16,8 @@ export class CreateMovimientoDto {
 
   @IsNumber()
   personaId: number;
+  
+  @IsOptional()
+  @IsNumber()
+  solicitudId?: number;
 }

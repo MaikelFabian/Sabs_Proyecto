@@ -1,8 +1,8 @@
 // src/detalles/detalles.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Detalles } from './entities/detalle.entity';
 import { Repository } from 'typeorm';
+import { Detalles } from './entities/detalle.entity';
 import { CreateDetallesDto } from './dto/create-detalle.dto';
 import { UpdateDetallesDto } from './dto/update-detalle.dto';
 
@@ -14,19 +14,14 @@ export class DetallesService {
   ) {}
 
   async create(dto: CreateDetallesDto) {
-    const nuevo = this.repo.create({ ...dto });
+    const nuevo = this.repo.create(dto);
     const guardado = await this.repo.save(nuevo);
     return { message: 'Detalle creado', data: guardado };
   }
 
   async findAll() {
     const lista = await this.repo.find({
-      relations: [
-        'material',
-        'personaEncargada',
-        'personaSolicita',
-        'personaAprueba',
-      ],
+      relations: ['material', 'solicitud'],
     });
     return { message: 'Listado de detalles', data: lista };
   }
@@ -34,12 +29,7 @@ export class DetallesService {
   async findOne(id: number) {
     const encontrado = await this.repo.findOne({
       where: { id },
-      relations: [
-        'material',
-        'personaEncargada',
-        'personaSolicita',
-        'personaAprueba',
-      ],
+      relations: ['material', 'solicitud'],
     });
     if (!encontrado)
       throw new NotFoundException(`Detalle no encontrado id: ${id}`);
@@ -50,12 +40,7 @@ export class DetallesService {
     await this.repo.update(id, dto);
     const actualizado = await this.repo.findOne({
       where: { id },
-      relations: [
-        'material',
-        'personaEncargada',
-        'personaSolicita',
-        'personaAprueba',
-      ],
+      relations: ['material', 'solicitud'],
     });
     return { message: 'Detalle actualizado', data: actualizado };
   }

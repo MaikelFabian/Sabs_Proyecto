@@ -10,178 +10,304 @@ import { Detalles } from 'src/detalles/entities/detalle.entity';
 import { CreateSolicitudDto } from './dto/create-solicitud.dto';
 import { Material } from 'src/materiales/entities/materiale.entity';
 import { Movimiento } from 'src/movimientos/entities/movimiento.entity';
+import { Persona } from 'src/personas/entities/persona.entity';
+import { TipoMovimiento } from 'src/tipo-movimiento/entities/tipo-movimiento.entity';
 
 @Injectable()
 export class SolicitudesService {
   constructor(
-    @InjectRepository(Detalles)
-    private readonly detalleRepo: Repository<Detalles>,
     @InjectRepository(Solicitud)
     private readonly solicitudRepo: Repository<Solicitud>,
 
+    @InjectRepository(Detalles)
+    private readonly detalleRepo: Repository<Detalles>,
+
     @InjectRepository(Material)
-    private readonly materialRepository: Repository<Material>,
+    private readonly materialRepo: Repository<Material>,
 
     @InjectRepository(Movimiento)
-    private readonly movimientoRepository: Repository<Movimiento>,
+    private readonly movimientoRepo: Repository<Movimiento>,
+
+    @InjectRepository(Persona)
+    private readonly personaRepo: Repository<Persona>,
+
+    @InjectRepository(TipoMovimiento)
+    private readonly tipoMovimientoRepo: Repository<TipoMovimiento>,
   ) {}
 
   async create(dto: CreateSolicitudDto) {
+    const solicitante = await this.personaRepo.findOne({
+      where: { id: dto.personaId },
+    });
+    if (!solicitante)
+      throw new NotFoundException('Persona solicitante no encontrada');
+
     const solicitud = this.solicitudRepo.create({
       descripcion: dto.descripcion,
-      personaId: dto.personaId,
+      solicitante,
       estado: 'PENDIENTE',
     });
 
     await this.solicitudRepo.save(solicitud);
+
     const detalles = dto.detalles.map((d) =>
       this.detalleRepo.create({
         cantidad: d.cantidad,
-        materialId: d.materialId,
-        solicitudId: solicitud.id,
+        material: { id: d.materialId },
+        solicitud,
+        personaSolicita: solicitante,
       }),
     );
+
     await this.detalleRepo.save(detalles);
 
     return this.solicitudRepo.findOne({
       where: { id: solicitud.id },
-      relations: ['persona', 'detalles', 'detalles.material'],
+      relations: ['solicitante', 'detalles', 'detalles.material'],
     });
   }
 
-  async aprobarSolicitud(id: number, personaApruebaId: number) {
+  async aprobarSolicitud(id: number, aprobadorId: number) {
     const solicitud = await this.solicitudRepo.findOne({
       where: { id },
-      relations: ['detalles'],
-    });
-    if (!solicitud) throw new NotFoundException('Solicitud no encontrada');
-
-    solicitud.estado = 'APROBADA';
-    solicitud.personaApruebaId = personaApruebaId;
-    solicitud.fechaActualizacion = new Date();
-    return this.solicitudRepo.save(solicitud);
-  }
-
-  async entregarSolicitud(id: number, personaEncargadaId: number) {
-    const solicitud = await this.solicitudRepo.findOne({
-      where: { id },
-      relations: ['detalles'],
-    });
-    if (!solicitud) throw new NotFoundException('Solicitud no encontrada');
-
-    solicitud.estado = 'ENTREGADA';
-    solicitud.personaEncargadaId = personaEncargadaId;
-    solicitud.fechaActualizacion = new Date();
-
-    // Descontar stock
-    for (const detalle of solicitud.detalles) {
-      const material = await this.materialRepository.findOne({
-        where: { id: detalle.materialId },
-      });
-      if (material) {
-        material.stock -= detalle.cantidadSolicitada;
-        await this.materialRepository.save(material);
-
-        // Registrar movimiento de salida
-        const movimiento = this.movimientoRepository.create({
-          cantidad: detalle.cantidadSolicitada,
-          materialId: detalle.materialId,
-          tipoMovimientoId: 2, // Salida
-        });
-        await this.movimientoRepository.save(movimiento);
-      }
-    }
-
-    return this.solicitudRepo.save(solicitud);
-  }
-
-  async autorizarSolicitud(
-    id: number,
-    personaApruebaId: number,
-    aprobar: boolean,
-  ) {
-    const solicitud = await this.solicitudRepo.findOne({
-      where: { id },
-      relations: ['detalles'],
-    });
-    if (!solicitud) throw new NotFoundException('Solicitud no encontrada');
-
-    solicitud.aprobada = aprobar;
-    solicitud.personaApruebaId = personaApruebaId;
-
-    if (aprobar) {
-      for (const detalle of solicitud.detalles) {
-        const material = await this.materialRepository.findOne({
-          where: { id: detalle.materialId },
-        });
-        if (!material) throw new NotFoundException('Material no encontrado');
-
-        if (material.stock < detalle.cantidadSolicitada) {
-          throw new BadRequestException(
-            `Stock insuficiente para el material ${material.nombre}`,
-          );
-        }
-
-        material.stock -= detalle.cantidadSolicitada;
-        await this.materialRepository.save(material);
-
-        const movimiento = this.movimientoRepository.create({
-          tipoMovimientoId: 2, // salida
-          materialId: material.id,
-          cantidad: detalle.cantidadSolicitada,
-        });
-        await this.movimientoRepository.save(movimiento);
-      }
-    }
-
-    return this.solicitudRepo.save(solicitud);
-  }
-
-  async filtrarPorEstado(aprobada: boolean) {
-    return this.solicitudRepo.find({
-      where: { aprobada },
       relations: ['detalles', 'detalles.material'],
     });
+    if (!solicitud) throw new NotFoundException('Solicitud no encontrada');
+
+    const aprobador = await this.personaRepo.findOne({
+      where: { id: aprobadorId },
+    });
+    if (!aprobador) throw new NotFoundException('Aprobador no encontrado');
+
+    // Verificar stock disponible
+    for (const detalle of solicitud.detalles) {
+      if (detalle.material.stock < detalle.cantidad) {
+        throw new BadRequestException(
+          `Stock insuficiente para ${detalle.material.nombre}`,
+        );
+      }
+    }
+
+    // Obtener tipo de movimiento SALIDA
+    const tipoMovimientoSalida = await this.tipoMovimientoRepo.findOne({
+      where: { nombre: 'SALIDA' },
+    });
+    if (!tipoMovimientoSalida) {
+      throw new NotFoundException('Tipo de movimiento SALIDA no encontrado');
+    }
+
+    // Descontar stock y crear movimientos
+    for (const detalle of solicitud.detalles) {
+      // Descontar stock del material
+      detalle.material.stock -= detalle.cantidad;
+      await this.materialRepo.save(detalle.material);
+
+      // Crear el movimiento asociado
+      const movimiento = this.movimientoRepo.create({
+        tipoMovimiento: tipoMovimientoSalida,
+        persona: aprobador,
+        cantidad: detalle.cantidad,
+        material: detalle.material,
+        solicitud,
+      });
+      await this.movimientoRepo.save(movimiento);
+    }
+
+    // Actualizar estado de solicitud y aprobador
+    solicitud.estado = 'APROBADA';
+    solicitud.aprobador = aprobador;
+    solicitud.fechaActualizacion = new Date();
+
+    return this.solicitudRepo.save(solicitud);
+  }
+
+  async rechazarSolicitud(id: number, aprobadorId: number) {
+    const solicitud = await this.solicitudRepo.findOne({ where: { id } });
+    if (!solicitud) throw new NotFoundException('Solicitud no encontrada');
+
+    const aprobador = await this.personaRepo.findOne({
+      where: { id: aprobadorId },
+    });
+    if (!aprobador) throw new NotFoundException('Aprobador no encontrado');
+
+    solicitud.estado = 'RECHAZADA';
+    solicitud.aprobador = aprobador;
+    solicitud.fechaActualizacion = new Date();
+
+    return this.solicitudRepo.save(solicitud);
+  }
+
+  async entregarSolicitud(id: number, encargadoId: number) {
+    const solicitud = await this.solicitudRepo.findOne({
+      where: { id },
+      relations: ['detalles', 'detalles.material'],
+    });
+    if (!solicitud) throw new NotFoundException('Solicitud no encontrada');
+
+    if (solicitud.estado !== 'APROBADA') {
+      throw new BadRequestException(
+        'Solo se pueden entregar solicitudes aprobadas',
+      );
+    }
+
+    const encargado = await this.personaRepo.findOne({
+      where: { id: encargadoId },
+    });
+    if (!encargado) throw new NotFoundException('Encargado no encontrado');
+
+    const tipoSalida = await this.tipoMovimientoRepo.findOne({
+      where: { nombre: 'SALIDA' },
+    });
+    if (!tipoSalida)
+      throw new NotFoundException('Tipo de movimiento SALIDA no existe');
+
+    for (const detalle of solicitud.detalles) {
+      // Validar stock
+      if (detalle.material.stock < detalle.cantidad) {
+        throw new BadRequestException(
+          `Stock insuficiente para ${detalle.material.nombre}`,
+        );
+      }
+
+      // Descontar stock
+      detalle.material.stock -= detalle.cantidad;
+      await this.materialRepo.save(detalle.material);
+
+      // Crear movimiento
+      const movimiento = this.movimientoRepo.create({
+        persona: encargado,
+        tipoMovimiento: tipoSalida,
+        material: detalle.material,
+        cantidad: detalle.cantidad,
+        solicitud,
+      });
+
+      await this.movimientoRepo.save(movimiento);
+    }
+
+    solicitud.estado = 'ENTREGADA';
+    solicitud.encargadoEntrega = encargado;
+    solicitud.fechaActualizacion = new Date();
+
+    return this.solicitudRepo.save(solicitud);
   }
 
   findAll() {
     return this.solicitudRepo.find({
-      relations: ['persona', 'detalles', 'detalles.material'],
+      relations: [
+        'solicitante',
+        'aprobador',
+        'encargadoEntrega',
+        'detalles',
+        'detalles.material',
+        'movimientos', // Agregado
+        'movimientos.material',
+        'movimientos.tipoMovimiento',
+        'movimientos.persona',
+      ],
     });
   }
 
   findOne(id: number) {
     return this.solicitudRepo.findOne({
       where: { id },
-      relations: ['persona', 'detalles', 'detalles.material'],
+      relations: [
+        'solicitante',
+        'aprobador',
+        'encargadoEntrega',
+        'detalles',
+        'detalles.material',
+        'movimientos',
+        'movimientos.material',
+        'movimientos.tipoMovimiento',
+        'movimientos.persona',
+      ],
     });
   }
 
-  async update(id: number, dto: any) {
+  async update(id: number, dto: Partial<CreateSolicitudDto>) {
     const solicitud = await this.solicitudRepo.findOne({ where: { id } });
     if (!solicitud) {
       throw new NotFoundException(`Solicitud con id ${id} no encontrada`);
     }
 
-    // Actualiza solo campos que existen en la entidad y que sean seguros
-    if (dto.estado !== undefined) {
-      solicitud.estado = dto.estado;
-    }
-    if (dto.aprobada !== undefined) {
-      solicitud.aprobada = dto.aprobada;
-    }
-    if (dto.descripcion !== undefined) {
-      solicitud.descripcion = dto.descripcion;
-    }
-    if (dto.personaId !== undefined) {
-      solicitud.personaId = dto.personaId;
-    }
-    // 👇 NO actualices detalles aquí
+    if (dto.estado) solicitud.estado = dto.estado;
+    if (dto.descripcion) solicitud.descripcion = dto.descripcion;
 
     return this.solicitudRepo.save(solicitud);
   }
 
   remove(id: number) {
     return this.solicitudRepo.delete(id);
+  }
+
+  async getMovimientosPorSolicitud(solicitudId: number) {
+    const solicitud = await this.solicitudRepo.findOne({
+      where: { id: solicitudId },
+    });
+    if (!solicitud) {
+      throw new NotFoundException('Solicitud no encontrada');
+    }
+
+    const movimientos = await this.movimientoRepo.find({
+      where: { solicitud: { id: solicitudId } },
+      relations: ['tipoMovimiento', 'persona', 'material'],
+      order: { fechaCreacion: 'ASC' },
+    });
+
+    return movimientos.map((mov) => ({
+      id: mov.id,
+      tipo: mov.tipoMovimiento?.nombre,
+      material: mov.material.nombre,
+      cantidad: mov.cantidad,
+      persona: mov.persona?.nombre,
+      fecha: mov.fechaCreacion,
+    }));
+  }
+  async devolverSolicitud(id: number, encargadoId: number) {
+    const solicitud = await this.solicitudRepo.findOne({
+      where: { id },
+      relations: ['detalles', 'detalles.material'],
+    });
+    if (!solicitud) throw new NotFoundException('Solicitud no encontrada');
+
+    if (solicitud.estado !== 'ENTREGADA') {
+      throw new BadRequestException(
+        'Solo se pueden devolver solicitudes entregadas',
+      );
+    }
+
+    const encargado = await this.personaRepo.findOne({
+      where: { id: encargadoId },
+    });
+    if (!encargado) throw new NotFoundException('Encargado no encontrado');
+
+    const tipoEntrada = await this.tipoMovimientoRepo.findOne({
+      where: { nombre: 'ENTRADA' },
+    });
+    if (!tipoEntrada)
+      throw new NotFoundException('Tipo de movimiento ENTRADA no existe');
+
+    for (const detalle of solicitud.detalles) {
+      // Aumentar stock
+      detalle.material.stock += detalle.cantidad;
+      await this.materialRepo.save(detalle.material);
+
+      // Registrar movimiento
+      const movimiento = this.movimientoRepo.create({
+        persona: encargado,
+        tipoMovimiento: tipoEntrada,
+        material: detalle.material,
+        cantidad: detalle.cantidad,
+        solicitud,
+      });
+
+      await this.movimientoRepo.save(movimiento);
+    }
+
+    solicitud.estado = 'DEVUELTA';
+    solicitud.fechaActualizacion = new Date();
+
+    return this.solicitudRepo.save(solicitud);
   }
 }

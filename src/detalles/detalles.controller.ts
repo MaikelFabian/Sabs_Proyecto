@@ -7,21 +7,20 @@ import { Roles } from 'src/auth/guards/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { PermisosGuard } from 'src/auth/guards/permisos.guards';
 
-@UseGuards(JwtAuthGuard, PermisosGuard)
+
 @Controller('detalles')
 export class DetallesController {
   constructor(private readonly service: DetallesService) {}
 
   @Post()
-  @Roles('CREAR_DETALLES')
-  @UseGuards(JwtAuthGuard, PermisosGuard)
+  //@Roles('CREAR_DETALLES')
+  //@UseGuards(JwtAuthGuard, PermisosGuard)
   create(@Body() dto: CreateDetallesDto) {
     return this.service.create(dto);
   }
 
   @Get()
-  @Roles('VER_DETALLES')  
-  @UseGuards(JwtAuthGuard, PermisosGuard)
+  
   findAll() {
     return this.service.findAll();
   }

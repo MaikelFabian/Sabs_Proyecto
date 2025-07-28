@@ -6,9 +6,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
 import { Persona } from 'src/personas/entities/persona.entity';
 import { Detalles } from 'src/detalles/entities/detalle.entity';
+import { Movimiento } from 'src/movimientos/entities/movimiento.entity';
 
 @Entity()
 export class Solicitud {
@@ -19,7 +22,7 @@ export class Solicitud {
   descripcion: string;
 
   @Column({ default: 'PENDIENTE' })
-  estado: 'PENDIENTE' | 'APROBADA' | 'RECHAZADA' | 'ENTREGADA';
+  estado: 'PENDIENTE' | 'APROBADA' | 'RECHAZADA' | 'ENTREGADA' | 'DEVUELTA';
 
   @CreateDateColumn()
   fechaCreacion: Date;
@@ -27,23 +30,19 @@ export class Solicitud {
   @UpdateDateColumn()
   fechaActualizacion: Date;
 
-  // Quién hizo la solicitud
   @ManyToOne(() => Persona, (persona) => persona.solicitudes)
-  persona: Persona;
+  solicitante: Persona;
 
-  @Column()
-  personaId: number;
+  @ManyToOne(() => Persona, { nullable: true })
+  aprobador?: Persona;
 
-  // Detalles de la solicitud (puede incluir varios materiales)
-  @OneToMany(() => Detalles, (detalle) => detalle.solicitud)
+  @ManyToOne(() => Persona, { nullable: true })
+  encargadoEntrega?: Persona;
+
+  @OneToMany(() => Detalles, (detalle) => detalle.solicitud, { cascade: true })
   detalles: Detalles[];
 
-  @Column({ nullable: true })
-  personaApruebaId?: number;
+  @OneToMany(() => Movimiento, (movimiento) => movimiento.solicitud)
+movimientos: Movimiento[];
 
-  @Column({ nullable: true })
-  personaEncargadaId?: number;
-
-  @Column({ nullable: true })
-  aprobada?: boolean;
 }

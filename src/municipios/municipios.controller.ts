@@ -26,7 +26,7 @@ export class MunicipioController {
   }
 
   @Get(':id')
-  @Roles('VER_MUNICIPIO')
+  @Roles('VER_MUNICIPIOS')
   @UseGuards(JwtAuthGuard, PermisosGuard)
   findOne(@Param('id') id: string) {
     return this.service.findOne(+id);

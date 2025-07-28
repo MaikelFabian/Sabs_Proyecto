@@ -6,7 +6,6 @@ import { AuthController } from './auth.controller';
 import { PersonasModule } from '../personas/personas.module';
 import { LocalStrategy } from './local.strategy';
 import { JwtStrategy } from './jwt.strategy';
-import { ExtractJwt } from 'passport-jwt';
 
 @Module({
   imports: [

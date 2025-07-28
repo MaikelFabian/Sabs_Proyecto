@@ -9,6 +9,7 @@ import { Material } from 'src/materiales/entities/materiale.entity';
 import { Movimiento } from 'src/movimientos/entities/movimiento.entity';
 import { PermisosGuard } from 'src/auth/guards/permisos.guards';
 import { RolPermisoOpcion } from 'src/rol-permiso-opcion/entities/rol-permiso-opcion.entity';
+import { TipoMovimientoModule } from 'src/tipo-movimiento/tipo-movimiento.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { RolPermisoOpcion } from 'src/rol-permiso-opcion/entities/rol-permiso-op
       Movimiento,
       RolPermisoOpcion,
     ]),
+    TipoMovimientoModule, 
   ],
   controllers: [SolicitudesController],
   providers: [SolicitudesService],

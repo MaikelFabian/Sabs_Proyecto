@@ -23,34 +23,39 @@ export class MaterialController {
 
   @Post()
   @UseGuards(JwtAuthGuard, PermisosGuard)
-  @Roles('CREATE_MATERIALES')
+  @Roles('CREAR_MATERIALES')
   create(@Body() dto: CreateMaterialDto) {
     console.log('⚡️ Entró a MaterialController.create');
     return this.service.create(dto);
   }
 
   @Get('stock')
-  @Roles('VER_STOCK')
+  @Roles('VER_MATERIALES')
   async getStock() {
     return this.service.obtenerStockCompleto();
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard, PermisosGuard)
+  @Roles('VER_MATERIALES')
   findAll() {
     return this.service.findAll();
   }
 
   @Get(':id')
+  @Roles('VER_MATERIALES')
   findOne(@Param('id') id: string) {
     return this.service.findOne(+id);
   }
 
   @Patch(':id')
+  @Roles('EDITAR_MATERIALES')
   update(@Param('id') id: string, @Body() dto: UpdateMaterialDto) {
     return this.service.update(+id, dto);
   }
 
   @Delete(':id')
+  @Roles('ELIMINAR_MATERIALES')
   remove(@Param('id') id: string) {
     return this.service.remove(+id);
   }

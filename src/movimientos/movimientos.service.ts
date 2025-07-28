@@ -153,4 +153,38 @@ export class MovimientoService {
     await this.movimientoRepository.delete(id);
     return { message: 'Movimiento eliminado correctamente' };
   }
+
+  async crearDesdeSolicitud(params: {
+    materialId: number;
+    cantidad: number;
+    personaId: number;
+    tipoMovimientoNombre: string;
+    solicitudId?: number;
+  }) {
+    const {
+      materialId,
+      cantidad,
+      personaId,
+      tipoMovimientoNombre,
+      solicitudId,
+    } = params;
+
+    const tipoMovimiento = await this.tipoMovimientoRepository.findOne({
+      where: { nombre: tipoMovimientoNombre },
+    });
+
+    if (!tipoMovimiento) {
+      throw new BadRequestException(
+        `Tipo de movimiento '${tipoMovimientoNombre}' no encontrado`,
+      );
+    }
+
+    return this.create({
+      materialId,
+      cantidad,
+      personaId,
+      tipoMovimientoId: tipoMovimiento.id,
+      solicitudId,
+    });
+  }
 }
