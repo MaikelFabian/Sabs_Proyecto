@@ -30,7 +30,17 @@ export class CentroService {
   }
 
   async update(id: number, dto: UpdateCentroDto) {
-    await this.repo.update(id, dto);
+    const camposPermitidos = ['nombre', 'municipioId', 'activo'];
+    const updateData = {};
+    
+
+    camposPermitidos.forEach(campo => {
+      if (dto[campo] !== undefined) {
+        updateData[campo] = dto[campo];
+      }
+    });
+    
+    await this.repo.update(id, updateData);
     const actualizado = await this.repo.findOne({ where: { id }, relations: ['municipio', 'areasCentro', 'sedes'] });
     return { message: 'Centro actualizado', data: actualizado };
   }

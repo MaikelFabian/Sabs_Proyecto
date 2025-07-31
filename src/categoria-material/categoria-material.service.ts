@@ -31,7 +31,9 @@ export class CategoriaMaterialService {
   }
 
   async update(id: number, dto: UpdateCategoriaMaterialDto) {
-    await this.repo.update(id, dto);
+    const { materiales, ...updateData } = dto as any;
+    
+    await this.repo.update(id, updateData);
     const actualizado = await this.repo.findOne({ where: { id }, relations: ['materiales'] });
     return { message: 'CategoriaMaterial actualizada', data: actualizado };
   }

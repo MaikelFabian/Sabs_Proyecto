@@ -31,7 +31,9 @@ export class UnidadMedidaService {
   }
 
   async update(id: number, dto: UpdateUnidadMedidaDto) {
-    await this.repo.update(id, dto);
+    const { materiales, ...updateData } = dto as any;
+    
+    await this.repo.update(id, updateData);
     const actualizado = await this.repo.findOne({ where: { id }, relations: ['materiales'] });
     return { message: 'UnidadMedida actualizada', data: actualizado };
   }

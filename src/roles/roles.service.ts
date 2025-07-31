@@ -1,4 +1,3 @@
-// src/rol/roles.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -46,8 +45,32 @@ export class RolesService {
   }
 
   async update(id: number, updateRolDto: UpdateRolDto) {
-    await this.rolRepository.update(id, updateRolDto);
-    const actualizado = await this.rolRepository.findOneBy({ id });
+
+    const camposActualizables = ['nombre', 'activo', 'permisosId'];
+    const updateData = {};
+    
+
+    camposActualizables.forEach(campo => {
+      if (updateRolDto[campo] !== undefined) {
+        updateData[campo] = updateRolDto[campo];
+      }
+    });
+    
+
+    const rolExistente = await this.rolRepository.findOne({ where: { id } });
+    if (!rolExistente) {
+      throw new NotFoundException(`Rol con id ${id} no encontrado`);
+    }
+    if (Object.keys(updateData).length > 0) {
+      await this.rolRepository.update(id, updateData);
+    }
+    
+ 
+    const actualizado = await this.rolRepository.findOne({
+      where: { id },
+      relations: ['personas']
+    });
+    
     return {
       message: 'Rol actualizado exitosamente',
       data: actualizado,

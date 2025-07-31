@@ -44,7 +44,9 @@ export class MaterialService {
   }
 
   async update(id: number, dto: UpdateMaterialDto) {
-    await this.repo.update(id, dto);
+    const { detalles, movimientos, tipoMaterial, unidadMedida, categoriaMaterial, ...updateData } = dto as any;
+    
+    await this.repo.update(id, updateData);
     const actualizado = await this.repo.findOne({
       where: { id },
       relations: ['tipoMaterial', 'unidadMedida', 'categoriaMaterial', 'detalles'],

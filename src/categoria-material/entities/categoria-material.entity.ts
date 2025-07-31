@@ -14,8 +14,6 @@ export class CategoriaMaterial {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  codigo: string;
 
   @Column()
   categoria: string;

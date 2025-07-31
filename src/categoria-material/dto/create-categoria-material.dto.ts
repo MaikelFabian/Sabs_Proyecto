@@ -4,8 +4,6 @@ export class CreateCategoriaMaterialDto {
   @IsString()
   codigo: string;
 
-  @IsString()
-  categoria: string;
 
   @IsOptional()
   @IsBoolean()

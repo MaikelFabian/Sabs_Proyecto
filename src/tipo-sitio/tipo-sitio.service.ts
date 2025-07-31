@@ -33,7 +33,16 @@ export class TipoSitioService {
   }
 
   async update(id: number, dto: UpdateTipoSitioDto) {
-    await this.repo.update(id, dto);
+    const camposActualizables = ['nombre', 'activo'];
+    const updateData = {};
+    
+    camposActualizables.forEach(campo => {
+      if (dto[campo] !== undefined) {
+        updateData[campo] = dto[campo];
+      }
+    });
+    
+    await this.repo.update(id, updateData);
     const actualizado = await this.repo.findOne({
       where: { id },
       relations: ['sitios'],

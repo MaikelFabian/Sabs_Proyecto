@@ -4,6 +4,9 @@ export class CreateUnidadMedidaDto {
   @IsString()
   unidad: string;
 
+  @IsString()
+  simbolo: string;
+
   @IsOptional()
   @IsBoolean()
   activo?: boolean;

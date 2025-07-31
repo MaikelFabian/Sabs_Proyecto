@@ -21,6 +21,9 @@ export class Material {
   id: number;
 
   @Column()
+  codigo: string;
+
+  @Column()
   nombre: string;
 
   @Column()

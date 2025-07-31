@@ -1,4 +1,3 @@
-// src/tipo-material/tipo-material.service.ts
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TipoMaterial } from './entities/tipo-material.entity';
@@ -35,7 +34,9 @@ export class TipoMaterialService {
   }
 
   async update(id: number, dto: UpdateTipoMaterialDto) {
-    await this.repo.update(id, dto);
+    const { materiales, ...updateData } = dto as any;
+    
+    await this.repo.update(id, updateData);
     const actualizado = await this.repo.findOne({
       where: { id },
       relations: ['materiales'],

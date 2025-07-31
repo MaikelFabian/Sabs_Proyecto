@@ -36,11 +36,29 @@ export class AreaService {
   }
 
   async update(id: number, dto: UpdateAreaDto) {
-    await this.repo.update(id, dto);
+    const camposActualizables = ['nombre', 'activo'];
+    const updateData = {};
+
+    camposActualizables.forEach((campo) => {
+      if (dto[campo] !== undefined) {
+        updateData[campo] = dto[campo];
+      }
+    });
+
+    const areaExistente = await this.repo.findOne({ where: { id } });
+    if (!areaExistente) {
+      throw new NotFoundException(`Área no encontrada id: ${id}`);
+    }
+
+    if (Object.keys(updateData).length > 0) {
+      await this.repo.update(id, updateData);
+    }
+
     const actualizada = await this.repo.findOne({
       where: { id },
       relations: ['areasCentro', 'titulados'],
     });
+
     return { message: 'Área actualizada', data: actualizada };
   }
 

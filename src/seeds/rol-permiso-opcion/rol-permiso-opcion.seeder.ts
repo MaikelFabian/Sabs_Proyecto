@@ -16,14 +16,14 @@ export const seedRolPermisoOpcion = async (dataSource: DataSource) => {
     return;
   }
 
-  // Obtener el rol de administrador
+ 
   const rolAdmin = await repoRol.findOne({ where: { nombre: 'Administrador' } });
   if (!rolAdmin) {
     console.log('No se encontró el rol de Administrador, se omite seeding.');
     return;
   }
 
-  // Obtener todos los permisos con sus opciones
+
   const permisos = await repoPermiso.find({ relations: ['opcion'] });
   if (permisos.length === 0) {
     console.log('No hay permisos para asignar, se omite seeding.');

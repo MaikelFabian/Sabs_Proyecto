@@ -6,6 +6,9 @@ export class CreateMaterialDto {
   nombre: string;
 
   @IsString()
+  codigo: string;
+
+  @IsString()
   descripcion: string;
 
   @IsNumber()

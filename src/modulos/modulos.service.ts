@@ -30,8 +30,21 @@ export class ModulosService {
   }
 
   async update(id: number, dto: UpdateModuloDto) {
-    await this.moduloRepo.update(id, dto);
-    const actualizado = await this.moduloRepo.findOneBy({ id });
+
+    const camposActualizables = ['nombre'];
+    const updateData = {};
+    
+    camposActualizables.forEach(campo => {
+      if (dto[campo] !== undefined) {
+        updateData[campo] = dto[campo];
+      }
+    });
+    
+    await this.moduloRepo.update(id, updateData);
+    const actualizado = await this.moduloRepo.findOne({ 
+      where: { id }, 
+      relations: ['opciones'] 
+    });
     return { message: 'Modulo actualizado', data: actualizado };
   }
 

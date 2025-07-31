@@ -19,19 +19,17 @@ export const seedOpciones = async (dataSource: DataSource) => {
     return;
   }
 
-  
   const modulosPorNombre = modulos.reduce((acc, modulo) => {
     acc[modulo.nombre] = modulo;
     return acc;
   }, {});
-
 
   const opcionesPorModulo = [
     {
       modulo: 'Materiales',
       opciones: [
         { nombre: 'Gestión de Materiales', descripcion: 'Administrar materiales', rutaFrontend: '/materiales' },
-        { nombre: 'Tipos de Material', descripcion: 'Administrar tipos de material', rutaFrontend: '/tipos-material' },
+        { nombre: 'Tipos de Material', descripcion: 'Administrar tipos de material', rutaFrontend: '/tipomateriales' },
       ],
     },
     {
@@ -50,7 +48,7 @@ export const seedOpciones = async (dataSource: DataSource) => {
       modulo: 'Áreas',
       opciones: [
         { nombre: 'Gestión de Áreas', descripcion: 'Administrar áreas', rutaFrontend: '/areas' },
-        { nombre: 'Áreas por Centro', descripcion: 'Administrar áreas por centro', rutaFrontend: '/areas-centro' },
+        { nombre: 'Áreas por Centro', descripcion: 'Administrar áreas por centro', rutaFrontend: '/areacentros' },
       ],
     },
     {
@@ -69,7 +67,7 @@ export const seedOpciones = async (dataSource: DataSource) => {
       modulo: 'Movimientos',
       opciones: [
         { nombre: 'Gestión de Movimientos', descripcion: 'Administrar movimientos', rutaFrontend: '/movimientos' },
-        { nombre: 'Tipos de Movimiento', descripcion: 'Administrar tipos de movimiento', rutaFrontend: '/tipos-movimiento' },
+        { nombre: 'Tipos de Movimiento', descripcion: 'Administrar tipos de movimiento', rutaFrontend: '/tipomovimientos' },
         { nombre: 'Detalles de Movimiento', descripcion: 'Ver detalles de movimientos', rutaFrontend: '/detalles' },
       ],
     },
@@ -95,12 +93,47 @@ export const seedOpciones = async (dataSource: DataSource) => {
       modulo: 'Permisos',
       opciones: [
         { nombre: 'Gestión de Permisos', descripcion: 'Administrar permisos', rutaFrontend: '/permisos' },
-        { nombre: 'Asignación de Permisos', descripcion: 'Asignar permisos a roles', rutaFrontend: '/asignar-permisos' },
+        { nombre: 'Asignación de Permisos', descripcion: 'Asignar permisos a roles', rutaFrontend: '/asignarpermisos' },
+      ],
+    },
+    {
+      modulo: 'Sitios',
+      opciones: [
+        { nombre: 'Gestión de Sitios', descripcion: 'Administrar sitios', rutaFrontend: '/sitios' },
+      ],
+    },
+    {
+      modulo: 'Municipios',
+      opciones: [
+        { nombre: 'Gestión de Municipios', descripcion: 'Administrar municipios', rutaFrontend: '/municipios' },
+      ],
+    },
+    {
+      modulo: 'Categoría Material',
+      opciones: [
+        { nombre: 'Gestión de Categorías', descripcion: 'Administrar categorías de material', rutaFrontend: '/categoriamateriales' },
+      ],
+    },
+    {
+      modulo: 'Tipo Sitio',
+      opciones: [
+        { nombre: 'Gestión de Tipos de Sitio', descripcion: 'Administrar tipos de sitio', rutaFrontend: '/tipositios' },
+      ],
+    },
+    {
+      modulo: 'Tipo Material',
+      opciones: [
+        { nombre: 'Gestión de Tipos de Material', descripcion: 'Administrar tipos de material', rutaFrontend: '/tipomateriales' },
+      ],
+    },
+    {
+      modulo: 'Unidad Medida',
+      opciones: [
+        { nombre: 'Gestión de Unidades de Medida', descripcion: 'Administrar unidades de medida', rutaFrontend: '/unidadmedidas' },
       ],
     },
   ];
 
-  // Crear todas las opciones
   const opcionesEntities = [];
 
   for (const { modulo, opciones } of opcionesPorModulo) {

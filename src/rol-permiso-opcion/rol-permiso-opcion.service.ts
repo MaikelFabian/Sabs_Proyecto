@@ -56,4 +56,40 @@ export class RolPermisoOpcionService {
     await this.rpoRepo.delete(id);
     return { message: 'RolPermisoOpcion eliminado' };
   }
+
+  // Obtener permisos de un rol específico
+  async findPermisosByRol(rolId: number) {
+    const permisos = await this.rpoRepo.find({
+      where: { rol: { id: rolId } },
+      relations: ['rol', 'permiso', 'opcion'],
+    });
+    return { message: 'Permisos del rol', data: permisos };
+  }
+
+  async asignarPermisosARol(rolId: number, permisosData: { permisoId: number, opcionId?: number }[]) {
+    await this.rpoRepo.delete({ rol: { id: rolId } });
+    
+
+    const nuevosPermisos = permisosData.map(item => 
+      this.rpoRepo.create({
+        rol: { id: rolId },
+        permiso: { id: item.permisoId },
+        opcion: item.opcionId ? { id: item.opcionId } : undefined,
+      })
+    );
+    
+    const guardados = await this.rpoRepo.save(nuevosPermisos);
+    return { message: 'Permisos asignados al rol', data: guardados };
+  }
+
+
+async findAllPermisosDisponibles() {
+  const permisos = await this.rpoRepo.query(`
+    SELECT p.id, p.nombre, o.id as opcionId, o.nombre as opcionNombre
+    FROM permiso p
+    LEFT JOIN opcion o ON p.opcionId = o.id
+    ORDER BY p.nombre, o.nombre
+  `);
+  return { message: 'Permisos disponibles', data: permisos };
+}
 }

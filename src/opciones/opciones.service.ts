@@ -30,8 +30,29 @@ export class OpcionesService {
   }
 
   async update(id: number, dto: UpdateOpcionDto) {
-    await this.opcionRepo.update(id, dto);
-    const actualizada = await this.opcionRepo.findOneBy({ id });
+    const camposActualizables = ['nombre', 'descripcion', 'rutaFrontend', 'moduloId'];
+    const updateData = {};
+    
+    camposActualizables.forEach(campo => {
+      if (dto[campo] !== undefined) {
+        updateData[campo] = dto[campo];
+      }
+    });
+    
+    const opcionExistente = await this.opcionRepo.findOne({ where: { id } });
+    if (!opcionExistente) {
+      throw new NotFoundException(`Opcion id ${id} no encontrada`);
+    }
+    
+    if (Object.keys(updateData).length > 0) {
+      await this.opcionRepo.update(id, updateData);
+    }
+    
+    const actualizada = await this.opcionRepo.findOne({
+      where: { id },
+      relations: ['modulo', 'permisos']
+    });
+    
     return { message: 'Opcion actualizada', data: actualizada };
   }
 

@@ -4,12 +4,6 @@ import { Modulo } from 'src/modulos/entities/modulo.entity';
 export const seedModulos = async (dataSource: DataSource) => {
   const repo = dataSource.getRepository(Modulo);
 
-  const existentes = await repo.count();
-  if (existentes > 0) {
-    console.log('Módulos ya existen, se omite seeding.');
-    return;
-  }
-
   const modulos = [
     { nombre: 'Materiales' },
     { nombre: 'Sedes' },
@@ -22,14 +16,23 @@ export const seedModulos = async (dataSource: DataSource) => {
     { nombre: 'Usuarios' },
     { nombre: 'Roles' },
     { nombre: 'Permisos' },
+    { nombre: 'Sitios' },
+    { nombre: 'Municipios' },
+    { nombre: 'Categoría Material' },
+    { nombre: 'Tipo Sitio' },
+    { nombre: 'Tipo Material' },
+    { nombre: 'Unidad Medida' },
   ];
 
+  // Crear solo los módulos que no existen
+  for (const moduloData of modulos) {
+    const existeModulo = await repo.findOne({ where: { nombre: moduloData.nombre } });
+    if (!existeModulo) {
+      const modulo = repo.create(moduloData);
+      await repo.save(modulo);
+      console.log(`✔ Módulo '${moduloData.nombre}' creado`);
+    }
+  }
 
-  const modulosEntities = modulos.map(modulo => repo.create(modulo));
-
-
-  await repo.save(modulosEntities);
-
-  console.log('✔ Módulos insertados correctamente');
-  return modulosEntities; 
+  console.log('✔ Módulos verificados/creados correctamente');
 };

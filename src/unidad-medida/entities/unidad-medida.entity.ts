@@ -16,6 +16,9 @@ export class UnidadMedida {
   @Column()
   unidad: string;
 
+  @Column()
+  simbolo: string;
+
   @Column({ default: true })
   activo: boolean;
 

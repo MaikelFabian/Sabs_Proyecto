@@ -36,21 +36,21 @@ export class AreaController {
   }
 
   @Get(':id')
-  @Roles('VER_ÁREA')
+  @Roles('VER_ÁREAS')
   @UseGuards(JwtAuthGuard, PermisosGuard)
   findOne(@Param('id') id: string) {
     return this.service.findOne(+id);
   }
 
   @Patch(':id')
-  @Roles('EDITAR_AREAS')
+  @Roles('EDITAR_ÁREAS')
   @UseGuards(JwtAuthGuard, PermisosGuard)
   update(@Param('id') id: string, @Body() dto: UpdateAreaDto) {
     return this.service.update(+id, dto);
   }
 
   @Delete(':id')
-  @Roles('ELIMINAR_AREAS')
+  @Roles('ELIMINAR_ÁREAS')
   @UseGuards(JwtAuthGuard, PermisosGuard)
   remove(@Param('id') id: string) {
     return this.service.remove(+id);

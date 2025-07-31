@@ -5,14 +5,12 @@ import { Opcion } from 'src/opciones/entities/opcion.entity';
 export const seedPermisos = async (dataSource: DataSource) => {
   const repoPermiso = dataSource.getRepository(Permiso);
   const repoOpcion = dataSource.getRepository(Opcion);
-
   const existentes = await repoPermiso.count();
   if (existentes > 0) {
     console.log('Permisos ya existen, se omite seeding.');
     return;
   }
-
-  // Obtener todas las opciones
+  
   const opciones = await repoOpcion.find({ relations: ['modulo'] });
   if (opciones.length === 0) {
     console.log('No hay opciones para crear permisos, se omite seeding.');
