@@ -19,5 +19,5 @@ export class CreateMovimientoDto {
   
   @IsOptional()
   @IsNumber()
-  solicitudId?: number;
+  solicitudId?: number; // Opcional: si no se proporciona, se crea automáticamente
 }

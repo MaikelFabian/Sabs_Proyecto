@@ -23,6 +23,11 @@ export class RolPermisoOpcionController {
     return this.service.findAllPermisosDisponibles();
   }
 
+  @Get('permisos-disponibles/:rolId')
+  findAllPermisosDisponiblesConRol(@Param('rolId', ParseIntPipe) rolId: number) {
+    return this.service.findAllPermisosDisponibles(rolId);
+  }
+
   @Get('rol/:rolId')
   findPermisosByRol(@Param('rolId', ParseIntPipe) rolId: number) {
     return this.service.findPermisosByRol(rolId);
@@ -36,7 +41,7 @@ export class RolPermisoOpcionController {
     return this.service.asignarPermisosARol(rolId, permisosData);
   }
 
-  // RUTAS DINÁMICAS AL FINAL
+
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.service.findOne(id);

@@ -6,6 +6,8 @@ import { MovimientoController } from './movimientos.controller';
 import { Material } from 'src/materiales/entities/materiale.entity';
 import { TipoMovimiento } from 'src/tipo-movimiento/entities/tipo-movimiento.entity';
 import { RolPermisoOpcion } from 'src/rol-permiso-opcion/entities/rol-permiso-opcion.entity';
+import { Solicitud } from 'src/solicitudes/entities/solicitud.entity';
+import { Detalles } from 'src/detalles/entities/detalle.entity';
 
 @Module({
   imports: [
@@ -14,6 +16,8 @@ import { RolPermisoOpcion } from 'src/rol-permiso-opcion/entities/rol-permiso-op
       Material,
       TipoMovimiento,
       RolPermisoOpcion,
+      Solicitud,
+      Detalles,
     ]),
   ],
   controllers: [MovimientoController],

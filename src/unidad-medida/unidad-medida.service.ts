@@ -25,16 +25,23 @@ export class UnidadMedidaService {
   }
 
   async findOne(id: number) {
-    const encontrado = await this.repo.findOne({ where: { id }, relations: ['materiales'] });
-    if (!encontrado) throw new NotFoundException(`UnidadMedida no encontrada id: ${id}`);
+    const encontrado = await this.repo.findOne({
+      where: { id },
+      relations: ['materiales'],
+    });
+    if (!encontrado)
+      throw new NotFoundException(`UnidadMedida no encontrada id: ${id}`);
     return { message: 'UnidadMedida encontrada', data: encontrado };
   }
 
   async update(id: number, dto: UpdateUnidadMedidaDto) {
     const { materiales, ...updateData } = dto as any;
-    
+
     await this.repo.update(id, updateData);
-    const actualizado = await this.repo.findOne({ where: { id }, relations: ['materiales'] });
+    const actualizado = await this.repo.findOne({
+      where: { id },
+      relations: ['materiales'],
+    });
     return { message: 'UnidadMedida actualizada', data: actualizado };
   }
 

@@ -6,10 +6,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   JoinColumn,
+  OneToOne,
 } from 'typeorm';
 import { Material } from 'src/materiales/entities/materiale.entity';
 import { Solicitud } from 'src/solicitudes/entities/solicitud.entity';
 import { Persona } from 'src/personas/entities/persona.entity';
+import { Movimiento } from 'src/movimientos/entities/movimiento.entity';
 
 @Entity()
 export class Detalles {
@@ -26,38 +28,29 @@ export class Detalles {
   @Column()
   materialId: number;
 
+  @Column({ default: 'PENDIENTE' })
+  estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO' | 'ENTREGADO' | 'DEVUELTO';
+
   @ManyToOne(() => Solicitud, (solicitud) => solicitud.detalles, {
-    nullable: true, //
+    nullable: false,
   })
   @JoinColumn({ name: 'solicitudId' })
-  solicitud?: Solicitud;
+  solicitud: Solicitud;
 
-  @Column({ nullable: true })
-  solicitudId?: number;
+  @Column()
+  solicitudId: number;
 
-  // Persona que solicitó este detalle
-  @ManyToOne(() => Persona, { nullable: true })
-  @JoinColumn({ name: 'personaSolicitaId' })
-  personaSolicita?: Persona;
+  @OneToOne(() => Movimiento, (movimiento) => movimiento.detalle, {
+    nullable: true,
+  })
+  movimiento?: Movimiento;
 
-  @Column({ nullable: true })
-  personaSolicitaId?: number;
-
-  // Persona que aprobó este detalle
   @ManyToOne(() => Persona, { nullable: true })
   @JoinColumn({ name: 'personaApruebaId' })
   personaAprueba?: Persona;
 
   @Column({ nullable: true })
   personaApruebaId?: number;
-
-  // Persona que entrega este detalle
-  @ManyToOne(() => Persona, { nullable: true })
-  @JoinColumn({ name: 'personaEncargadaId' })
-  personaEncargada?: Persona;
-
-  @Column({ nullable: true })
-  personaEncargadaId?: number;
 
   @CreateDateColumn()
   fechaCreacion: Date;

@@ -6,11 +6,13 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   JoinColumn,
+  OneToOne,
 } from 'typeorm';
 import { TipoMovimiento } from 'src/tipo-movimiento/entities/tipo-movimiento.entity';
 import { Persona } from 'src/personas/entities/persona.entity';
 import { Material } from 'src/materiales/entities/materiale.entity';
 import { Solicitud } from 'src/solicitudes/entities/solicitud.entity';
+import { Detalles } from 'src/detalles/entities/detalle.entity';
 
 @Entity()
 export class Movimiento {
@@ -59,5 +61,19 @@ export class Movimiento {
   @ManyToOne(() => Solicitud, (solicitud) => solicitud.movimientos, {
     nullable: true,
   })
+  @JoinColumn({ name: 'solicitudId' })
   solicitud: Solicitud;
+
+  @Column({ nullable: true })
+  solicitudId?: number;
+
+  // Relación uno a uno con detalle
+  @OneToOne(() => Detalles, (detalle) => detalle.movimiento, {
+    nullable: true,
+  })
+  @JoinColumn({ name: 'detalleId' })
+  detalle?: Detalles;
+
+  @Column({ nullable: true })
+  detalleId?: number;
 }

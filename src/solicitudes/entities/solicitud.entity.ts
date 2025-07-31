@@ -30,7 +30,7 @@ export class Solicitud {
   @UpdateDateColumn()
   fechaActualizacion: Date;
 
-  @ManyToOne(() => Persona, (persona) => persona.solicitudes)
+  @ManyToOne(() => Persona)
   solicitante: Persona;
 
   @ManyToOne(() => Persona, { nullable: true })

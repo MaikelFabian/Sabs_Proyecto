@@ -83,13 +83,34 @@ export class RolPermisoOpcionService {
   }
 
 
-async findAllPermisosDisponibles() {
-  const permisos = await this.rpoRepo.query(`
-    SELECT p.id, p.nombre, o.id as opcionId, o.nombre as opcionNombre
+async findAllPermisosDisponibles(rolId?: number) {
+  let query = `
+    SELECT 
+      p.id, 
+      p.nombre, 
+      p.codigo,
+      o.id as "opcionId", 
+      o.nombre as "opcionNombre"`;
+  
+  if (rolId) {
+    query += `,
+      CASE WHEN rpo.id IS NOT NULL THEN true ELSE false END as asignado`;
+  }
+  
+  query += `
     FROM permiso p
-    LEFT JOIN opcion o ON p.opcionId = o.id
-    ORDER BY p.nombre, o.nombre
-  `);
+    LEFT JOIN opcion o ON p."opcionId" = o.id`;
+  
+  if (rolId) {
+    query += `
+    LEFT JOIN rol_permiso_opcion rpo ON p.id = rpo."permisoId" AND rpo."rolId" = ${rolId}`;
+  }
+  
+  query += `
+    WHERE p.activo = true
+    ORDER BY o.nombre, p.nombre`;
+  
+  const permisos = await this.rpoRepo.query(query);
   return { message: 'Permisos disponibles', data: permisos };
 }
 }

@@ -16,7 +16,7 @@ export class UnidadMedida {
   @Column()
   unidad: string;
 
-  @Column()
+  @Column({ default: 'N/A' })
   simbolo: string;
 
   @Column({ default: true })

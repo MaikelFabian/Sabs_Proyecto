@@ -65,12 +65,7 @@ export class Persona {
   @Column({ nullable: true })
   fichaId?: number;
 
-  @OneToMany(() => Detalles, (detalle) => detalle.personaEncargada)
-  encargos?: Detalles[];
-
-  @OneToMany(() => Detalles, (detalle) => detalle.personaSolicita)
-  solicitudes?: Detalles[];
-
+ 
   @OneToMany(() => Detalles, (detalle) => detalle.personaAprueba)
   aprobaciones?: Detalles[];
 

@@ -1,21 +1,4 @@
-import {
-  IsArray,
-  IsInt,
-  IsNotEmpty,
-  IsString,
-  ValidateNested,
-  Min,
-} from 'class-validator';
-import { Type } from 'class-transformer';
-
-class MaterialCantidadDto {
-  @IsInt()
-  materialId: number;
-
-  @IsInt()
-  @Min(1)
-  cantidad: number;
-}
+import { IsInt, IsNotEmpty, IsString, IsOptional } from 'class-validator';
 
 export class CreateSolicitudDto {
   @IsString()
@@ -25,12 +8,7 @@ export class CreateSolicitudDto {
   @IsInt()
   personaId: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  estado: 'PENDIENTE' | 'APROBADA' | 'RECHAZADA' | 'ENTREGADA' | 'DEVUELTA';
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => MaterialCantidadDto)
-  detalles: MaterialCantidadDto[];
+  estado?: 'PENDIENTE' | 'APROBADA' | 'RECHAZADA' | 'ENTREGADA' | 'DEVUELTA';
 }

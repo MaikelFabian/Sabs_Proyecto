@@ -23,6 +23,16 @@ export class PersonaController {
     return this.personaService.findOne(+id);
   }
 
+  @Get('completa')
+  findAllCompleta() {
+    return this.personaService.findPersonaCompleta();
+  }
+
+  @Get('completa/:id')
+  findOneCompleta(@Param('id') id: string) {
+    return this.personaService.findPersonaCompleta(+id);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updatePersonaDto: UpdatePersonaDto) {
     return this.personaService.update(+id, updatePersonaDto);
