@@ -34,7 +34,7 @@ export class MovimientoService {
     return await this.dataSource.transaction(async (manager) => {
       console.log('🚀 Iniciando creación de movimiento con transacción');
       console.log('📝 DTO recibido:', JSON.stringify(dto, null, 2));
-
+  
       // 1. Validar material
       const material = await manager.findOne(Material, {
         where: { id: dto.materialId }
@@ -43,19 +43,17 @@ export class MovimientoService {
         throw new BadRequestException(`Material con ID ${dto.materialId} no encontrado`);
       }
       console.log('✅ Material encontrado:', material.nombre);
-
+  
       const tipoMovimiento = await manager.findOne(TipoMovimiento, {
         where: { id: dto.tipoMovimientoId }
       });
       if (!tipoMovimiento) {
         throw new BadRequestException(`Tipo de movimiento con ID ${dto.tipoMovimientoId} no encontrado`);
       }
-
-
-      let solicitud: Solicitud;
-
+  
+      let solicitud: Solicitud | undefined;
+  
       if (dto.solicitudId) {
-        // Fix: Handle potential null return
         const foundSolicitud = await manager.findOne(Solicitud, {
           where: { id: dto.solicitudId }
         });
@@ -66,56 +64,38 @@ export class MovimientoService {
           throw new BadRequestException(`La solicitud debe estar en estado PENDIENTE. Estado actual: ${foundSolicitud.estado}`);
         }
         solicitud = foundSolicitud;
-      } else {
-        // Fix: Use correct property name 'solicitante' instead of 'solicitanteId'
-        solicitud = manager.create(Solicitud, {
-          descripcion: dto.descripcion || `Solicitud automática: ${tipoMovimiento.nombre} - ${material.nombre}`,
-          estado: 'PENDIENTE',
-          solicitante: { id: dto.personaId } as any, // Reference to Persona entity
-          fechaCreacion: new Date(),
-        });
-        solicitud = await manager.save(Solicitud, solicitud);
-      }
-
+      }  // Eliminada la creación automática de solicitud si no se proporciona ID
+  
       // 4. Crear el detalle PRIMERO
       const detalle = manager.create(Detalles, {
         cantidad: dto.cantidad,
         materialId: dto.materialId,
         estado: 'PENDIENTE',
-        solicitudId: solicitud.id,
+        solicitudId: solicitud?.id,  // Solo se asigna si existe solicitud
         fechaCreacion: new Date(),
       });
       const detalleGuardado = await manager.save(Detalles, detalle);
       console.log(' Detalle creado:', detalleGuardado.id);
-
-
+  
+      // 5. Crear el movimiento
       const movimiento = manager.create(Movimiento, {
         cantidad: dto.cantidad,
         descripcion: dto.descripcion,
         materialId: dto.materialId,
         tipoMovimientoId: dto.tipoMovimientoId,
         personaId: dto.personaId,
-        solicitudId: solicitud.id,
+        solicitudId: solicitud?.id,  // Solo se asigna si existe solicitud
         detalleId: detalleGuardado.id, 
         fechaCreacion: new Date(),
       });
       const movimientoGuardado = await manager.save(Movimiento, movimiento);
       console.log(' Movimiento creado:', movimientoGuardado.id);
-
+  
       console.log('     Transacción completada exitosamente');
-      console.log('     Resumen:');
-      console.log(`   - Solicitud: ${solicitud.id} (${solicitud.estado})`);
-      console.log(`   - Movimiento: ${movimientoGuardado.id}`);
-      console.log(`   - Detalle: ${detalleGuardado.id} (${detalleGuardado.estado})`);
-
       return {
-        message: 'Movimiento, solicitud y detalle creados exitosamente. El detalle está pendiente de aprobación.',
-        data: {
-          movimiento: movimientoGuardado,
-          detalle: detalleGuardado,
-          solicitud: solicitud,
-        },
-      };
+        message: 'Movimiento creado exitosamente',
+        data: movimientoGuardado
+      };  // Envuelto para consistencia
     });
   }
 

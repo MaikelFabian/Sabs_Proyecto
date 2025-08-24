@@ -4,11 +4,14 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
+  OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
   JoinColumn,
 } from 'typeorm';
 import { TipoSitio } from 'src/tipo-sitio/entities/tipo-sitio.entity';
+import { Material } from 'src/materiales/entities/materiale.entity';
+import { Movimiento } from 'src/movimientos/entities/movimiento.entity';
 
 @Entity()
 export class Sitio {
@@ -33,4 +36,11 @@ export class Sitio {
   @ManyToOne(() => TipoSitio, (tipoSitio) => tipoSitio.sitios, { nullable: true })
   @JoinColumn({ name: 'tipoSitioId' })
   tipoSitio?: TipoSitio;
+
+  // ✅ NUEVAS RELACIONES INVERSAS
+  @OneToMany(() => Material, (material) => material.sitio)
+  materiales?: Material[];
+
+  @OneToMany(() => Movimiento, (movimiento) => movimiento.sitio)
+  movimientos?: Movimiento[];
 }

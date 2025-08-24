@@ -39,10 +39,15 @@ export class Solicitud {
   @ManyToOne(() => Persona, { nullable: true })
   encargadoEntrega?: Persona;
 
-  @OneToMany(() => Detalles, (detalle) => detalle.solicitud, { cascade: true })
+  // ✅ Añadir cascade: ['remove'] para eliminar detalles automáticamente
+  @OneToMany(() => Detalles, (detalle) => detalle.solicitud, { 
+    cascade: ['remove'] 
+  })
   detalles: Detalles[];
 
-  @OneToMany(() => Movimiento, (movimiento) => movimiento.solicitud)
-movimientos: Movimiento[];
-
+  // ✅ Añadir cascade: ['remove'] para eliminar movimientos automáticamente
+  @OneToMany(() => Movimiento, (movimiento) => movimiento.solicitud, { 
+    cascade: ['remove'] 
+  })
+  movimientos: Movimiento[];
 }

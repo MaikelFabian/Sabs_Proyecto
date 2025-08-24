@@ -14,6 +14,7 @@ import { UnidadMedida } from 'src/unidad-medida/entities/unidad-medida.entity';
 import { CategoriaMaterial } from 'src/categoria-material/entities/categoria-material.entity';
 import { Detalles } from 'src/detalles/entities/detalle.entity';
 import { Movimiento } from 'src/movimientos/entities/movimiento.entity';
+import { Sitio } from 'src/sitios/entities/sitio.entity';
 
 @Entity()
 export class Material {
@@ -68,10 +69,17 @@ export class Material {
   @Column({ nullable: true })
   categoriaMaterialId?: number;
 
+  // ✅ NUEVO CAMPO: Relación con Sitio
+  @ManyToOne(() => Sitio, { nullable: true })
+  @JoinColumn({ name: 'sitioId' })
+  sitio?: Sitio;
+
+  @Column({ nullable: true })
+  sitioId?: number;
+
   @OneToMany(() => Detalles, (detalle) => detalle.material)
   detalles?: Detalles[];
 
- 
   @OneToMany(() => Movimiento, (movimiento) => movimiento.material)
   movimientos?: Movimiento[];
 }

@@ -13,6 +13,7 @@ import { Persona } from 'src/personas/entities/persona.entity';
 import { Material } from 'src/materiales/entities/materiale.entity';
 import { Solicitud } from 'src/solicitudes/entities/solicitud.entity';
 import { Detalles } from 'src/detalles/entities/detalle.entity';
+import { Sitio } from 'src/sitios/entities/sitio.entity';
 
 @Entity()
 export class Movimiento {
@@ -27,6 +28,10 @@ export class Movimiento {
 
   @Column()
   cantidad: number;
+
+  // ✅ NUEVO CAMPO: Descripción
+  @Column({ nullable: true })
+  descripcion?: string;
 
   @Column({ default: true })
   activo: boolean;
@@ -66,6 +71,14 @@ export class Movimiento {
 
   @Column({ nullable: true })
   solicitudId?: number;
+
+  // ✅ NUEVO CAMPO: Relación con Sitio
+  @ManyToOne(() => Sitio, { nullable: true })
+  @JoinColumn({ name: 'sitioId' })
+  sitio?: Sitio;
+
+  @Column({ nullable: true })
+  sitioId?: number;
 
   // Relación uno a uno con detalle
   @OneToOne(() => Detalles, (detalle) => detalle.movimiento, {

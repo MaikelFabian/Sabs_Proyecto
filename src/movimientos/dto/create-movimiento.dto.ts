@@ -1,23 +1,29 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString, IsInt } from 'class-validator';
 
 export class CreateMovimientoDto {
-  @IsNumber()
+  @IsNumber()  // Asegura que sea número
   cantidad: number;
+
+  @IsInt()
+  materialId: number;
+
+  @IsInt()
+  tipoMovimientoId: number;
+
+  @IsInt()
+  personaId: number;
 
   @IsOptional()
   @IsString()
   descripcion?: string;
 
-  @IsNumber()
-  materialId: number;
-
-  @IsNumber()
-  tipoMovimientoId: number;
-
-  @IsNumber()
-  personaId: number;
-  
   @IsOptional()
-  @IsNumber()
-  solicitudId?: number; // Opcional: si no se proporciona, se crea automáticamente
+  @IsInt()
+  solicitudId?: number;
+
+  @IsOptional()
+  @IsInt()
+  sitioId?: number;
+
+  // Otros campos si existen
 }

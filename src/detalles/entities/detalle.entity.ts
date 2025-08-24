@@ -32,13 +32,13 @@ export class Detalles {
   estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO' | 'ENTREGADO' | 'DEVUELTO';
 
   @ManyToOne(() => Solicitud, (solicitud) => solicitud.detalles, {
-    nullable: false,
+    nullable: true,  // Cambiado a true para permitir detalles sin solicitud
   })
   @JoinColumn({ name: 'solicitudId' })
-  solicitud: Solicitud;
-
-  @Column()
-  solicitudId: number;
+  solicitud?: Solicitud;  // Cambiado a opcional
+  
+  @Column({ nullable: true })  // Añadido nullable: true
+  solicitudId?: number;
 
   @OneToOne(() => Movimiento, (movimiento) => movimiento.detalle, {
     nullable: true,

@@ -1,21 +1,28 @@
 import {
   Injectable,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { Solicitud } from './entities/solicitud.entity';
 import { CreateSolicitudDto } from './dto/create-solicitud.dto';
 import { Persona } from 'src/personas/entities/persona.entity';
+import { Movimiento } from 'src/movimientos/entities/movimiento.entity';
+import { Detalles } from 'src/detalles/entities/detalle.entity';
 
 @Injectable()
 export class SolicitudesService {
   constructor(
     @InjectRepository(Solicitud)
     private readonly solicitudRepo: Repository<Solicitud>,
-
     @InjectRepository(Persona)
     private readonly personaRepo: Repository<Persona>,
+    @InjectRepository(Movimiento)
+    private readonly movimientoRepo: Repository<Movimiento>,
+    @InjectRepository(Detalles)
+    private readonly detallesRepo: Repository<Detalles>,
+    private readonly dataSource: DataSource,
   ) {}
 
   // Crear solicitud independiente
@@ -127,10 +134,37 @@ export class SolicitudesService {
   }
 
   async remove(id: number) {
+    // 1. Verificar que la solicitud existe
+    const solicitud = await this.solicitudRepo.findOne({ 
+      where: { id },
+      relations: ['movimientos', 'detalles']
+    });
+    
+    if (!solicitud) {
+      throw new NotFoundException(`Solicitud con ID ${id} no encontrada`);
+    }
+  
+    // 2. Verificar si tiene movimientos o detalles asociados
+    if (solicitud.movimientos && solicitud.movimientos.length > 0) {
+      throw new BadRequestException(
+        `No se puede eliminar la solicitud porque tiene ${solicitud.movimientos.length} movimiento(s) asociado(s). ` +
+        'Elimine primero los movimientos relacionados.'
+      );
+    }
+  
+    if (solicitud.detalles && solicitud.detalles.length > 0) {
+      throw new BadRequestException(
+        `No se puede eliminar la solicitud porque tiene ${solicitud.detalles.length} detalle(s) asociado(s). ` +
+        'Elimine primero los detalles relacionados.'
+      );
+    }
+  
+    // 3. Si no hay elementos asociados, proceder con la eliminación
     const result = await this.solicitudRepo.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Solicitud con ID ${id} no encontrada`);
     }
+    
     return { message: 'Solicitud eliminada exitosamente' };
   }
 }

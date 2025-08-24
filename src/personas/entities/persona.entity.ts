@@ -14,6 +14,7 @@ import { Rol } from 'src/roles/entities/role.entity';
 import { Ficha } from 'src/fichas/entities/ficha.entity';
 import { Detalles } from 'src/detalles/entities/detalle.entity';
 import { Movimiento } from 'src/movimientos/entities/movimiento.entity';
+import { Notificacion } from 'src/notificaciones/entities/notificacion.entity';
 
 @Entity()
 export class Persona {
@@ -65,10 +66,12 @@ export class Persona {
   @Column({ nullable: true })
   fichaId?: number;
 
- 
   @OneToMany(() => Detalles, (detalle) => detalle.personaAprueba)
   aprobaciones?: Detalles[];
 
   @OneToMany(() => Movimiento, (movimiento) => movimiento.persona)
   movimientos?: Movimiento[];
+
+  @OneToMany(() => Notificacion, (notificacion) => notificacion.persona)
+  notificaciones?: Notificacion[];
 }

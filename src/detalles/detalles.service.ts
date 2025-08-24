@@ -46,11 +46,10 @@ export class DetallesService {
         throw new BadRequestException(`El detalle debe estar en estado PENDIENTE. Estado actual: ${detalle.estado}`);
       }
 
-      console.log(' Detalle encontrado:', detalle.id);
-      console.log(' Material:', detalle.material?.nombre);
-      console.log(' Cantidad a procesar:', detalle.cantidad);
+      console.log('✅ Detalle encontrado:', detalle.id);
+      console.log('📦 Material:', detalle.material?.nombre);
+      console.log('📊 Cantidad a procesar:', detalle.cantidad);
 
-    
       const movimiento = await manager.findOne(Movimiento, {
         where: { detalleId: detalle.id },
         relations: {
@@ -63,43 +62,48 @@ export class DetallesService {
         throw new BadRequestException('No se encontró movimiento asociado al detalle');
       }
 
-      console.log(' Movimiento encontrado:', movimiento.id, 'Tipo:', movimiento.tipoMovimiento?.nombre);
+      console.log('✅ Movimiento encontrado:', movimiento.id, 'Tipo:', movimiento.tipoMovimiento?.nombre);
 
+      // ✅ SOLO actualizar el estado del detalle
       detalle.estado = 'APROBADO';
       if (personaApruebaId) {
         detalle.personaApruebaId = personaApruebaId;
       }
       detalle.fechaActualizacion = new Date();
       await manager.save(Detalles, detalle);
-      console.log(' Detalle aprobado');
-
+      console.log('✅ Detalle aprobado');
   
-      const detallesPendientes = await manager.count(Detalles, {
-        where: {
-          solicitudId: detalle.solicitudId,
-          estado: 'PENDIENTE'
-        }
-      });
-
-      if (detallesPendientes === 0) {
-        const solicitud = await manager.findOne(Solicitud, {
-          where: { id: detalle.solicitudId }
-        });
-        if (solicitud) {
-          solicitud.estado = 'APROBADA';
-          solicitud.fechaActualizacion = new Date();
-          await manager.save(Solicitud, solicitud);
-          console.log(' Solicitud completamente aprobada');
-        }
-      }
-
+      // ❌ ELIMINAR ESTA SECCIÓN COMPLETA - NO actualizar la solicitud automáticamente
+      // const detallesPendientes = await manager.count(Detalles, {
+      //   where: {
+      //     solicitudId: detalle.solicitudId,
+      //     estado: 'PENDIENTE'
+      //   }
+      // });
+      // 
+      // if (detallesPendientes === 0) {
+      //   const solicitud = await manager.findOne(Solicitud, {
+      //     where: { id: detalle.solicitudId }
+      //   });
+      //   if (solicitud) {
+      //     solicitud.estado = 'APROBADA';
+      //     solicitud.fechaActualizacion = new Date();
+      //     await manager.save(Solicitud, solicitud);
+      //     console.log('✅ Solicitud completamente aprobada');
+      //   }
+      // }
+  
+      // ✅ Ejecutar el movimiento de inventario (esto sí debe mantenerse)
+      // ❌ NO incluir actualización de solicitud
       await this.ejecutarMovimientoInventario(manager, movimiento, detalle.material);
-
+  
       console.log('🎉 Aprobación completada exitosamente');
       return {
-        detalle,
-        movimiento,
-        message: 'Detalle aprobado y movimiento de inventario ejecutado'
+        message: 'Detalle aprobado y movimiento de inventario ejecutado',
+        data: {
+          detalle,
+          movimiento
+        }
       };
     });
   }
@@ -144,20 +148,21 @@ export class DetallesService {
       if (detalle.estado !== 'PENDIENTE') {
         throw new BadRequestException('Solo se pueden rechazar detalles pendientes');
       }
-
+  
+      // ✅ SOLO actualizar el estado del detalle
       detalle.estado = 'RECHAZADO';
       if (personaApruebaId) {
         detalle.personaApruebaId = personaApruebaId;
       }
       detalle.fechaActualizacion = new Date();
       await manager.save(Detalles, detalle);
-
-      // Actualizar solicitud
-      const solicitud = detalle.solicitud;
-      solicitud.estado = 'RECHAZADA';
-      solicitud.fechaActualizacion = new Date();
-      await manager.save(Solicitud, solicitud);
-
+  
+      // ❌ ELIMINAR ESTA SECCIÓN - NO actualizar la solicitud automáticamente
+      // const solicitud = detalle.solicitud;
+      // solicitud.estado = 'RECHAZADA';
+      // solicitud.fechaActualizacion = new Date();
+      // await manager.save(Solicitud, solicitud);
+  
       return { message: 'Detalle rechazado', data: detalle };
     });
   }

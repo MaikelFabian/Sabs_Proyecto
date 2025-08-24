@@ -32,4 +32,9 @@ export class CreateMaterialDto {
   @IsOptional()
   @IsNumber()
   categoriaMaterialId?: number;
+
+  // ✅ NUEVO CAMPO: Sitio
+  @IsOptional()
+  @IsNumber()
+  sitioId?: number;
 }

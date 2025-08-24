@@ -27,6 +27,7 @@ import { OpcionesModule } from './opciones/opciones.module';
 import { ModulosModule } from './modulos/modulos.module';
 import { RolPermisoOpcionModule } from './rol-permiso-opcion/rol-permiso-opcion.module';
 import { SolicitudesModule } from './solicitudes/solicitudes.module';
+import { NotificationsModule } from './notificaciones/notificaciones.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { SolicitudesModule } from './solicitudes/solicitudes.module';
     ModulosModule,
     RolPermisoOpcionModule,
     SolicitudesModule,
+    NotificationsModule, // Agregado aquí
   ],
 })
 export class AppModule {}
