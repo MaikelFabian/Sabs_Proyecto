@@ -23,7 +23,18 @@ export class PersonasService {
       data.rol = { id: data.rolId } as any;
     }
 
-    if (data.fichaId) {
+    // Manejo de fichaId: verificar si es inválido (cadena vacía, null/undefined, o no numérico)
+    const fichaIdValue = data.fichaId;
+    if (
+      fichaIdValue == null ||
+      (typeof fichaIdValue === 'string' && (fichaIdValue === '' || isNaN(Number(fichaIdValue)))) ||
+      (typeof fichaIdValue === 'number' && isNaN(fichaIdValue))
+    ) {
+      delete data.fichaId;
+      delete data.ficha;
+    } else {
+      // Convertir a número si es cadena
+      data.fichaId = typeof fichaIdValue === 'string' ? Number(fichaIdValue) : fichaIdValue;
       data.ficha = { id: data.fichaId } as any;
     }
 
@@ -166,5 +177,9 @@ export class PersonasService {
       message: personaId ? 'Información completa de persona' : 'Listado completo de personas',
       data: personas,
     };
+  }
+
+  async updatePassword(id: number, newPassword: string): Promise<void> {
+    await this.personaRepository.update(id, { contrasena: newPassword });
   }
 }

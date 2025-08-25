@@ -15,6 +15,7 @@ import { CategoriaMaterial } from 'src/categoria-material/entities/categoria-mat
 import { Detalles } from 'src/detalles/entities/detalle.entity';
 import { Movimiento } from 'src/movimientos/entities/movimiento.entity';
 import { Sitio } from 'src/sitios/entities/sitio.entity';
+import { Persona } from 'src/personas/entities/persona.entity';
 
 @Entity()
 export class Material {
@@ -55,19 +56,26 @@ export class Material {
   @Column({ nullable: true })
   tipoMaterialId?: number;
 
-  @ManyToOne(() => UnidadMedida, (unidad) => unidad.materiales, { nullable: true })
+  @ManyToOne(() => UnidadMedida, (unidad) => unidad.materiales, {
+    nullable: true,
+  })
   @JoinColumn({ name: 'unidadMedidaId' })
   unidadMedida?: UnidadMedida;
 
   @Column({ nullable: true })
   unidadMedidaId?: number;
 
-  @ManyToOne(() => CategoriaMaterial, (categoria) => categoria.materiales, { nullable: true })
+  @ManyToOne(() => CategoriaMaterial, (categoria) => categoria.materiales, {
+    nullable: true,
+  })
   @JoinColumn({ name: 'categoriaMaterialId' })
   categoriaMaterial?: CategoriaMaterial;
 
   @Column({ nullable: true })
   categoriaMaterialId?: number;
+
+  @Column({ default: false })
+  requiereDevolucion: boolean;
 
   // ✅ NUEVO CAMPO: Relación con Sitio
   @ManyToOne(() => Sitio, { nullable: true })
@@ -76,6 +84,25 @@ export class Material {
 
   @Column({ nullable: true })
   sitioId?: number;
+
+  // ✅ NUEVO CAMPO: Relación con Persona que registró el material
+  @ManyToOne(() => Persona, { nullable: true })
+  @JoinColumn({ name: 'registradoPorId' })
+  registradoPor?: Persona;
+
+  @Column({ nullable: true })
+  registradoPorId?: number;
+
+  // ✅ NUEVOS CAMPOS: Para identificar materiales originales vs prestados
+  @Column({ default: true })
+  esOriginal: boolean;
+
+  @ManyToOne(() => Material, { nullable: true })
+  @JoinColumn({ name: 'materialOrigenId' })
+  materialOrigen?: Material;
+
+  @Column({ nullable: true })
+  materialOrigenId?: number;
 
   @OneToMany(() => Detalles, (detalle) => detalle.material)
   detalles?: Detalles[];

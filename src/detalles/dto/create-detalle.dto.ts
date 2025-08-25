@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsString } from "class-validator";
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateDetallesDto {
   @IsNumber()
@@ -7,12 +7,32 @@ export class CreateDetallesDto {
   @IsNumber()
   materialId: number;
 
+  @IsOptional()
   @IsNumber()
-  solicitudId: number;
+  solicitudId?: number;
+
+  // ✅ NUEVO: Campos adicionales requeridos
+  @IsOptional()
+  @IsString()
+  numeroFactura?: string;
 
   @IsOptional()
   @IsString()
-  estado?: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO' | 'ENTREGADO' | 'DEVUELTO';
+  accion?: string;
+
+  @IsOptional()
+  @IsNumber()
+  solicitanteId?: number;
+
+  @IsOptional()
+  @IsString()
+  estado?:
+    | 'PENDIENTE'
+    | 'APROBADO'
+    | 'RECHAZADO'
+    | 'PRESTADO'
+    | 'DEVUELTO'
+    | 'CONSUMIDO';
 
   @IsOptional()
   @IsNumber()

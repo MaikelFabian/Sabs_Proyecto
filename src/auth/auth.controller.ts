@@ -4,6 +4,9 @@ import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { Body, Param } from '@nestjs/common';
+import { PasswordRecoveryRequestDto } from './dto/password-recovery-request.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -51,5 +54,20 @@ export class AuthController {
       user: req.user,
       message: 'Perfil obtenido exitosamente',
     };
+  }
+
+  @Post('password-recovery/request')
+  async requestReset(@Body() dto: PasswordRecoveryRequestDto) {
+    return this.authService.requestPasswordReset(dto);
+  }
+
+  @Get('password-recovery/verify/:token')
+  async verifyToken(@Param('token') token: string) {
+    return this.authService.verifyResetToken(token);
+  }
+
+  @Post('password-recovery/reset')
+  async reset(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto.token, dto.nuevaContrasena, dto.confirmarContrasena);
   }
 }

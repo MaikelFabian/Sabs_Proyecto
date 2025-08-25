@@ -67,4 +67,48 @@ export class SolicitudesController {
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.service.remove(id);
   }
+
+  // Aprobar solicitud
+  @Post(':id/aprobar')
+  //@Roles('APROBAR_SOLICITUDES')
+  //@UseGuards(JwtAuthGuard, PermisosGuard)
+  aprobar(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: { aprobadorId: number }
+  ) {
+    return this.service.aprobar(id, dto.aprobadorId);
+  }
+
+  // Entregar solicitud
+  @Post(':id/entregar')
+  //@Roles('ENTREGAR_SOLICITUDES')
+  //@UseGuards(JwtAuthGuard, PermisosGuard)
+  entregar(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: { encargadoId: number }
+  ) {
+    return this.service.entregar(id, dto.encargadoId);
+  }
+
+  // Devolver solicitud
+  @Post(':id/devolver')
+  //@Roles('DEVOLVER_SOLICITUDES')
+  //@UseGuards(JwtAuthGuard, PermisosGuard)
+  devolver(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: { encargadoId: number }
+  ) {
+    return this.service.devolver(id, dto.encargadoId);
+  }
+
+  // Rechazar solicitud
+  @Post(':id/rechazar')
+  //@Roles('RECHAZAR_SOLICITUDES')
+  //@UseGuards(JwtAuthGuard, PermisosGuard)
+  rechazar(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: { aprobadorId: number }
+  ) {
+    return this.service.rechazar(id, dto.aprobadorId);
+  }
 }

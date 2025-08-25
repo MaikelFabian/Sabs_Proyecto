@@ -167,4 +167,215 @@ export class SolicitudesService {
     
     return { message: 'Solicitud eliminada exitosamente' };
   }
+
+  async aprobar(id: number, aprobadorId: number) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const solicitud = await queryRunner.manager.findOne(Solicitud, {
+        where: { id },
+        relations: ['solicitante', 'detalles']
+      });
+
+      if (!solicitud) {
+        throw new NotFoundException(`Solicitud con ID ${id} no encontrada`);
+      }
+
+      if (solicitud.estado !== 'PENDIENTE') {
+        throw new BadRequestException(`Solo se pueden aprobar solicitudes en estado PENDIENTE`);
+      }
+
+      const aprobador = await queryRunner.manager.findOne(Persona, {
+        where: { id: aprobadorId }
+      });
+
+      if (!aprobador) {
+        throw new NotFoundException(`Persona aprobadora con ID ${aprobadorId} no encontrada`);
+      }
+
+      solicitud.estado = 'APROBADA';
+      solicitud.aprobador = aprobador;
+      
+      const solicitudActualizada = await queryRunner.manager.save(solicitud);
+      
+      // Aprobar automáticamente todos los detalles asociados
+      if (solicitud.detalles && solicitud.detalles.length > 0) {
+        await queryRunner.manager.update(
+          Detalles,
+          { solicitudId: id },
+          { 
+            estado: 'APROBADO',
+            personaApruebaId: aprobadorId
+          }
+        );
+      }
+
+      await queryRunner.commitTransaction();
+      return await this.findOne(id);
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async entregar(id: number, encargadoId: number) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const solicitud = await queryRunner.manager.findOne(Solicitud, {
+        where: { id },
+        relations: ['detalles']
+      });
+
+      if (!solicitud) {
+        throw new NotFoundException(`Solicitud con ID ${id} no encontrada`);
+      }
+
+      if (solicitud.estado !== 'APROBADA') {
+        throw new BadRequestException(`Solo se pueden entregar solicitudes APROBADAS`);
+      }
+
+      const encargado = await queryRunner.manager.findOne(Persona, {
+        where: { id: encargadoId }
+      });
+
+      if (!encargado) {
+        throw new NotFoundException(`Persona encargada con ID ${encargadoId} no encontrada`);
+      }
+
+      solicitud.estado = 'ENTREGADA';
+      solicitud.encargadoEntrega = encargado;
+      
+      const solicitudActualizada = await queryRunner.manager.save(solicitud);
+      
+      // Marcar detalles como entregados
+      // Cambiar 'ENTREGADO' por 'PRESTADO'
+      if (solicitud.detalles && solicitud.detalles.length > 0) {
+        await queryRunner.manager.update(
+          Detalles,
+          { solicitudId: id },
+          { estado: 'PRESTADO' } // Cambiar de 'ENTREGADO' a 'PRESTADO'
+        );
+      }
+
+      await queryRunner.commitTransaction();
+      return await this.findOne(id);
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async devolver(id: number, encargadoId: number) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const solicitud = await queryRunner.manager.findOne(Solicitud, {
+        where: { id },
+        relations: ['detalles']
+      });
+
+      if (!solicitud) {
+        throw new NotFoundException(`Solicitud con ID ${id} no encontrada`);
+      }
+
+      if (solicitud.estado !== 'ENTREGADA') {
+        throw new BadRequestException(`Solo se pueden devolver solicitudes ENTREGADAS`);
+      }
+
+      const encargado = await queryRunner.manager.findOne(Persona, {
+        where: { id: encargadoId }
+      });
+
+      if (!encargado) {
+        throw new NotFoundException(`Persona encargada con ID ${encargadoId} no encontrada`);
+      }
+
+      solicitud.estado = 'DEVUELTA';
+      solicitud.encargadoEntrega = encargado;
+      
+      const solicitudActualizada = await queryRunner.manager.save(solicitud);
+      
+      // Marcar detalles como devueltos
+      if (solicitud.detalles && solicitud.detalles.length > 0) {
+        await queryRunner.manager.update(
+          Detalles,
+          { solicitudId: id },
+          { estado: 'DEVUELTO' }
+        );
+      }
+
+      await queryRunner.commitTransaction();
+      return await this.findOne(id);
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async rechazar(id: number, aprobadorId: number) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const solicitud = await queryRunner.manager.findOne(Solicitud, {
+        where: { id },
+        relations: ['detalles']
+      });
+
+      if (!solicitud) {
+        throw new NotFoundException(`Solicitud con ID ${id} no encontrada`);
+      }
+
+      if (solicitud.estado !== 'PENDIENTE') {
+        throw new BadRequestException(`Solo se pueden rechazar solicitudes en estado PENDIENTE`);
+      }
+
+      const aprobador = await queryRunner.manager.findOne(Persona, {
+        where: { id: aprobadorId }
+      });
+
+      if (!aprobador) {
+        throw new NotFoundException(`Persona aprobadora con ID ${aprobadorId} no encontrada`);
+      }
+
+      solicitud.estado = 'RECHAZADA';
+      solicitud.aprobador = aprobador;
+      
+      const solicitudActualizada = await queryRunner.manager.save(solicitud);
+      
+      // Rechazar automáticamente todos los detalles asociados
+      if (solicitud.detalles && solicitud.detalles.length > 0) {
+        await queryRunner.manager.update(
+          Detalles,
+          { solicitudId: id },
+          { 
+            estado: 'RECHAZADO',
+            personaApruebaId: aprobadorId
+          }
+        );
+      }
+
+      await queryRunner.commitTransaction();
+      return await this.findOne(id);
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
 }

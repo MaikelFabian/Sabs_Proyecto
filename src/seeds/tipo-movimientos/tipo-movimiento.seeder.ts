@@ -12,8 +12,9 @@ export const seedTipoMovimiento = async (dataSource: DataSource) => {
 
   const entrada = repo.create({ nombre: 'ENTRADA' });
   const salida = repo.create({ nombre: 'SALIDA' });
+  const devolucion = repo.create({ nombre: 'DEVOLUCION' }); // Add this line
 
-  await repo.save([entrada, salida]);
+  await repo.save([entrada, salida, devolucion]); // Update this line
 
   console.log('✔ Tipos de movimiento insertados correctamente');
 };

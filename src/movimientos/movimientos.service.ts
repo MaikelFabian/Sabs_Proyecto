@@ -42,7 +42,6 @@ export class MovimientoService {
       if (!material) {
         throw new BadRequestException(`Material con ID ${dto.materialId} no encontrado`);
       }
-      console.log('✅ Material encontrado:', material.nombre);
   
       const tipoMovimiento = await manager.findOne(TipoMovimiento, {
         where: { id: dto.tipoMovimientoId }
@@ -52,7 +51,6 @@ export class MovimientoService {
       }
   
       let solicitud: Solicitud | undefined;
-  
       if (dto.solicitudId) {
         const foundSolicitud = await manager.findOne(Solicitud, {
           where: { id: dto.solicitudId }
@@ -64,38 +62,59 @@ export class MovimientoService {
           throw new BadRequestException(`La solicitud debe estar en estado PENDIENTE. Estado actual: ${foundSolicitud.estado}`);
         }
         solicitud = foundSolicitud;
-      }  // Eliminada la creación automática de solicitud si no se proporciona ID
+      }
   
-      // 4. Crear el detalle PRIMERO
+      // 2. Crear el detalle PRIMERO
       const detalle = manager.create(Detalles, {
         cantidad: dto.cantidad,
         materialId: dto.materialId,
         estado: 'PENDIENTE',
-        solicitudId: solicitud?.id,  // Solo se asigna si existe solicitud
+        solicitudId: solicitud?.id,
         fechaCreacion: new Date(),
       });
       const detalleGuardado = await manager.save(Detalles, detalle);
-      console.log(' Detalle creado:', detalleGuardado.id);
+      console.log('✅ Detalle creado:', detalleGuardado.id);
   
-      // 5. Crear el movimiento
+      // 3. Crear el movimiento
       const movimiento = manager.create(Movimiento, {
         cantidad: dto.cantidad,
         descripcion: dto.descripcion,
         materialId: dto.materialId,
         tipoMovimientoId: dto.tipoMovimientoId,
         personaId: dto.personaId,
-        solicitudId: solicitud?.id,  // Solo se asigna si existe solicitud
-        detalleId: detalleGuardado.id, 
+        solicitudId: solicitud?.id,
+        detalleId: detalleGuardado.id,
+        sitioId: dto.sitioId,
+        activo: true,
         fechaCreacion: new Date(),
       });
       const movimientoGuardado = await manager.save(Movimiento, movimiento);
-      console.log(' Movimiento creado:', movimientoGuardado.id);
+      console.log('✅ Movimiento creado:', movimientoGuardado.id);
   
-      console.log('     Transacción completada exitosamente');
+      // 4. CRÍTICO: Recuperar el movimiento completo con todas las relaciones
+      const movimientoCompleto = await manager.findOne(Movimiento, {
+        where: { id: movimientoGuardado.id },
+        relations: {
+          material: true,
+          tipoMovimiento: true,
+          persona: true,
+          solicitud: {
+            solicitante: true
+          },
+          detalle: true,
+          sitio: true
+        }
+      });
+  
+      if (!movimientoCompleto) {
+        throw new BadRequestException('Error al recuperar el movimiento creado');
+      }
+  
+      console.log('✅ Transacción completada exitosamente');
       return {
         message: 'Movimiento creado exitosamente',
-        data: movimientoGuardado
-      };  // Envuelto para consistencia
+        data: movimientoCompleto  // Devolver el objeto completo
+      };
     });
   }
 
@@ -164,8 +183,11 @@ export class MovimientoService {
         material: true,
         tipoMovimiento: true,
         persona: true,
-        solicitud: true,
-        detalle: true
+        solicitud: {
+          solicitante: true
+        },
+        detalle: true,
+        sitio: true
       },
       order: { fechaCreacion: 'DESC' },
     });
@@ -183,8 +205,11 @@ export class MovimientoService {
         material: true,
         tipoMovimiento: true,
         persona: true,
-        solicitud: true,
-        detalle: true
+        solicitud: {
+          solicitante: true
+        },
+        detalle: true,
+        sitio: true
       },
     });
     

@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
   UseGuards,
+  BadRequestException, // ✅ Agregar esta importación
 } from '@nestjs/common';
 import { MovimientoService } from './movimientos.service';
 import { CreateMovimientoDto } from './dto/create-movimiento.dto';
@@ -51,14 +52,24 @@ export class MovimientoController {
   @Patch(':id')
   @Roles('EDITAR_MOVIMIENTOS')
   @UseGuards(JwtAuthGuard, PermisosGuard)
-  update(@Param('id') id: string, @Body() dto: UpdateMovimientoDto) {
+  async update(@Param('id') id: string, @Body() dto: UpdateMovimientoDto) {
+    // ✅ RESTRICCIÓN: No permitir edición después de creación
+    const movimiento = await this.service.findOne(+id);
+    if (movimiento.data.detalle?.estado !== 'PENDIENTE') {
+      throw new BadRequestException('No se puede editar un movimiento que ya ha sido procesado');
+    }
     return this.service.update(+id, dto);
   }
 
   @Delete(':id')
   @Roles('ELIMINAR_MOVIMIENTOS')
   @UseGuards(JwtAuthGuard, PermisosGuard)
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string) {
+    // ✅ RESTRICCIÓN: No permitir eliminación después de creación
+    const movimiento = await this.service.findOne(+id);
+    if (movimiento.data.detalle?.estado !== 'PENDIENTE') {
+      throw new BadRequestException('No se puede eliminar un movimiento que ya ha sido procesado');
+    }
     return this.service.remove(+id);
   }
 }

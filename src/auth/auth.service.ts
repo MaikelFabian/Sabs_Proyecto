@@ -2,6 +2,9 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PersonasService } from '../personas/personas.service';
 import * as bcrypt from 'bcryptjs';
+import { NotFoundException } from '@nestjs/common';
+import * as crypto from 'crypto';
+import { PasswordRecoveryRequestDto } from './dto/password-recovery-request.dto'; // Ajusta la ruta si es necesario
 
 @Injectable()
 export class AuthService {
@@ -79,5 +82,60 @@ export class AuthService {
         modulos,
       },
     };
+  }
+
+  async requestPasswordReset(dto: PasswordRecoveryRequestDto): Promise<{ message: string; token?: string }> {
+    const { correo, identificacion } = dto;
+  
+    const user = await this.personasService.findByEmail(correo);
+  
+    if (!user || user.identificacion !== identificacion) {
+      throw new NotFoundException('Usuario no encontrado o identificación incorrecta');
+    }
+  
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hora
+  
+    user.resetToken = resetToken;
+    user.resetTokenExpiry = resetTokenExpiry;
+  
+    await this.personasService.update(user.id, user);
+  
+
+    return { message: 'Enlace de recuperación enviado al correo', token: resetToken };
+  }
+
+  async verifyResetToken(token: string): Promise<{ valid: boolean; email?: string }> {
+    try {
+      const decoded = this.jwtService.verify(token);
+      if (decoded.type !== 'password_reset') {
+        return { valid: false };
+      }
+      const userResponse = await this.personasService.findOne(decoded.sub);
+      const user = userResponse.data;
+      return { valid: true, email: user?.correo };
+    } catch (error) {
+      return { valid: false };
+    }
+  }
+
+  async resetPassword(token: string, nuevaContrasena: string, confirmarContrasena: string): Promise<{ message: string }> {
+    if (nuevaContrasena !== confirmarContrasena) {
+      throw new UnauthorizedException('Las contraseñas no coinciden');
+    }
+
+    try {
+      const decoded = this.jwtService.verify(token);
+      if (decoded.type !== 'password_reset') {
+        throw new UnauthorizedException('Token inválido');
+      }
+
+      const hashedPassword = await bcrypt.hash(nuevaContrasena, 10);
+      await this.personasService.updatePassword(decoded.sub, hashedPassword);
+
+      return { message: 'Contraseña restablecida exitosamente' };
+    } catch (error) {
+      throw new UnauthorizedException('Token inválido o expirado');
+    }
   }
 }

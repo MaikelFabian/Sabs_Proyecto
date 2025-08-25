@@ -69,6 +69,22 @@ export class DetallesController {
     return this.service.rechazar(+id, personaApruebaId);
   }
 
+  @Patch(':id/entregar')
+  async entregar(
+    @Param('id') id: string,
+    @Body('personaId') personaId: number,
+  ) {
+    return this.service.entregar(+id, personaId);
+  }
+
+  @Patch(':id/devolver')
+  async devolver(
+    @Param('id') id: string,
+    @Body('personaId') personaId: number,
+  ) {
+    return this.service.devolver(+id, personaId);
+  }
+
   @Get('pendientes')
   async findPendientes() {
     return this.service.findPendientes();

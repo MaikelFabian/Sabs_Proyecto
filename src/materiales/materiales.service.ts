@@ -29,7 +29,7 @@ export class MaterialService {
 
   async findAll() {
     const lista = await this.repo.find({
-      relations: ['tipoMaterial', 'unidadMedida', 'categoriaMaterial', 'detalles'],
+      relations: ['tipoMaterial', 'unidadMedida', 'categoriaMaterial', 'detalles', 'sitio', 'registradoPor'],
     });
     return { message: 'Listado de materiales', data: lista };
   }
@@ -37,19 +37,19 @@ export class MaterialService {
   async findOne(id: number) {
     const encontrado = await this.repo.findOne({
       where: { id },
-      relations: ['tipoMaterial', 'unidadMedida', 'categoriaMaterial', 'detalles'],
+      relations: ['tipoMaterial', 'unidadMedida', 'categoriaMaterial', 'detalles', 'sitio', 'registradoPor'],
     });
     if (!encontrado) throw new NotFoundException(`Material no encontrado id: ${id}`);
     return { message: 'Material encontrado', data: encontrado };
   }
 
   async update(id: number, dto: UpdateMaterialDto) {
-    const { detalles, movimientos, tipoMaterial, unidadMedida, categoriaMaterial, ...updateData } = dto as any;
+    const { detalles, movimientos, tipoMaterial, unidadMedida, categoriaMaterial, registradoPor, ...updateData } = dto as any;
     
     await this.repo.update(id, updateData);
     const actualizado = await this.repo.findOne({
       where: { id },
-      relations: ['tipoMaterial', 'unidadMedida', 'categoriaMaterial', 'detalles'],
+      relations: ['tipoMaterial', 'unidadMedida', 'categoriaMaterial', 'detalles', 'sitio', 'registradoPor'],
     });
     return { message: 'Material actualizado', data: actualizado };
   }

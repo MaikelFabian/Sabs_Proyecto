@@ -21,6 +21,14 @@ export class Detalles {
   @Column()
   cantidad: number;
 
+  // ✅ NUEVO: Campo para número de factura
+  @Column({ nullable: true })
+  numeroFactura?: string;
+
+  // ✅ NUEVO: Campo para descripción de la acción
+  @Column({ nullable: true })
+  accion?: string;
+
   @ManyToOne(() => Material, (material) => material.detalles, { eager: true })
   @JoinColumn({ name: 'materialId' })
   material: Material;
@@ -29,16 +37,24 @@ export class Detalles {
   materialId: number;
 
   @Column({ default: 'PENDIENTE' })
-  estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO' | 'ENTREGADO' | 'DEVUELTO';
+  estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO' | 'PRESTADO' | 'DEVUELTO' | 'CONSUMIDO';
 
   @ManyToOne(() => Solicitud, (solicitud) => solicitud.detalles, {
-    nullable: true,  // Cambiado a true para permitir detalles sin solicitud
+    nullable: true,
   })
   @JoinColumn({ name: 'solicitudId' })
-  solicitud?: Solicitud;  // Cambiado a opcional
+  solicitud?: Solicitud;
   
-  @Column({ nullable: true })  // Añadido nullable: true
+  @Column({ nullable: true })
   solicitudId?: number;
+
+  // ✅ MEJORADO: Relación con solicitante directo
+  @ManyToOne(() => Persona, { nullable: true, eager: true })
+  @JoinColumn({ name: 'solicitanteId' })
+  solicitante?: Persona;
+
+  @Column({ nullable: true })
+  solicitanteId?: number;
 
   @OneToOne(() => Movimiento, (movimiento) => movimiento.detalle, {
     nullable: true,
@@ -51,6 +67,22 @@ export class Detalles {
 
   @Column({ nullable: true })
   personaApruebaId?: number;
+
+  // ✅ NUEVO: Persona que entrega
+  @ManyToOne(() => Persona, { nullable: true })
+  @JoinColumn({ name: 'personaEntregaId' })
+  personaEntrega?: Persona;
+
+  @Column({ nullable: true })
+  personaEntregaId?: number;
+
+  // ✅ NUEVO: Persona que devuelve
+  @ManyToOne(() => Persona, { nullable: true })
+  @JoinColumn({ name: 'personaDevuelveId' })
+  personaDevuelve?: Persona;
+
+  @Column({ nullable: true })
+  personaDevuelveId?: number;
 
   @CreateDateColumn()
   fechaCreacion: Date;

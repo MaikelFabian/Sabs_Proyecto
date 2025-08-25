@@ -37,4 +37,14 @@ export class CreateMaterialDto {
   @IsOptional()
   @IsNumber()
   sitioId?: number;
+
+  // ✅ NUEVO CAMPO: Persona que registra el material
+  @IsOptional()
+  @IsNumber()
+  registradoPorId?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  requiereDevolucion?: boolean;
 }
+

@@ -60,8 +60,7 @@ export class Persona {
   rolId?: number;
 
   @ManyToOne(() => Ficha, (ficha) => ficha.personas, { nullable: true })
-  @JoinColumn({ name: 'fichaId' })
-  ficha?: Ficha;
+  ficha: Ficha;
 
   @Column({ nullable: true })
   fichaId?: number;
@@ -74,4 +73,10 @@ export class Persona {
 
   @OneToMany(() => Notificacion, (notificacion) => notificacion.persona)
   notificaciones?: Notificacion[];
+
+  @Column({ type: 'varchar', nullable: true })
+  resetToken: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  resetTokenExpiry: Date | null;
 }

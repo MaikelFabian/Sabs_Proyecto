@@ -29,6 +29,7 @@ import { RolPermisoOpcionModule } from './rol-permiso-opcion/rol-permiso-opcion.
 import { SolicitudesModule } from './solicitudes/solicitudes.module';
 import { NotificationsModule } from './notificaciones/notificaciones.module';
 
+
 @Module({
   imports: [
     ConfigModule.forRoot(),
