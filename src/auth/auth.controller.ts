@@ -20,12 +20,15 @@ export class AuthController {
     console.log('🔐 Token generado:', result.access_token ? 'Token creado correctamente' : 'Error al crear token');
     console.log('📦 Datos de usuario a devolver:', result.user);
     
+    // ✅ CONFIGURACIÓN CORREGIDA - SIN DOMAIN
     res.cookie('access_token', result.access_token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', 
-      sameSite: 'lax', 
-      maxAge: 1000 * 60 * 60 * 24, 
+      secure: false,
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000, // 24 horas
     });
+    
+    console.log('🍪 COOKIE ESTABLECIDA:', result.access_token.substring(0, 20) + '...'); // Log temporal
     
     return {
       user: result.user,
@@ -35,10 +38,9 @@ export class AuthController {
 
   @Post('logout')
   async logout(@Res({ passthrough: true }) res: Response) {
-    // Eliminar la cookie de acceso
     res.clearCookie('access_token', {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false,
       sameSite: 'lax',
     });
     

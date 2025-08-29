@@ -5,71 +5,107 @@ import {
   Body,
   Param,
   Patch,
-  Delete,
   Query,
   UseGuards,
-  BadRequestException, // ✅ Agregar esta importación
+  BadRequestException,
 } from '@nestjs/common';
 import { MovimientoService } from './movimientos.service';
 import { CreateMovimientoDto } from './dto/create-movimiento.dto';
-import { UpdateMovimientoDto } from './dto/update-movimiento.dto';
-import { FiltrarMovimientosDto } from './dto/filtrar-movimientos.dto';
+import { AprobarMovimientoDto } from './dto/aprobar-movimiento.dto';
 import { PermisosGuard } from 'src/auth/guards/permisos.guards';
 import { Roles } from 'src/auth/guards/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 
 @Controller('movimientos')
 export class MovimientoController {
   constructor(private readonly service: MovimientoService) {}
 
   @Post()
-  create(@Body() dto: CreateMovimientoDto) {
+  @UseGuards(JwtAuthGuard, PermisosGuard)
+  @Roles('CREAR_MOVIMIENTO')
+  create(@Body() dto: CreateMovimientoDto, @CurrentUser() user: any) {
+    // Establecer automáticamente el solicitante como el usuario autenticado
+    dto.solicitanteId = user.sub;
     return this.service.create(dto);
   }
 
+  // NUEVOS ENDPOINTS CON FILTRADO POR USUARIO
+  
+  // Obtener movimientos pendientes donde el usuario es aprobador
+  @Get('mis-pendientes')
   @UseGuards(JwtAuthGuard, PermisosGuard)
   @Roles('VER_MOVIMIENTOS')
-  @Get('filtrar')
-  async filtrar(@Query() dto: FiltrarMovimientosDto) {
-    return this.service.filtrarMovimientos(dto);
+  findMyPendientes(@CurrentUser() user: any) {
+    return this.service.findPendientesByAprobador(user.sub);
   }
 
+  // Obtener movimientos solicitados por el usuario
+  @Get('mis-solicitudes')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
+  @Roles('VER_MOVIMIENTOS')
+  findMySolicitudes(@Query() filtros: any, @CurrentUser() user: any) {
+    return this.service.findSolicitadosByUser(user.sub, filtros);
+  }
+
+  // Obtener todos los movimientos del usuario (como solicitante o aprobador)
+  @Get('mis-movimientos')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
+  @Roles('VER_MOVIMIENTOS')
+  findMyMovimientos(@Query() filtros: any, @CurrentUser() user: any) {
+    return this.service.findByUser(user.sub, filtros);
+  }
+
+  // Aprobar/rechazar con validación de usuario
+  @Patch(':id/aprobar-rechazar-seguro')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
+  @Roles('APROBAR_MOVIMIENTOS')
+  aprobarRechazarSeguro(
+    @Param('id') id: string, 
+    @Body() dto: AprobarMovimientoDto,
+    @CurrentUser() user: any
+  ) {
+    return this.service.aprobarRechazarByUser(+id, dto, user.sub);
+  }
+
+  // Obtener movimiento específico del usuario
+  @Get('mis-movimientos/:id')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
+  @Roles('VER_MOVIMIENTOS')
+  findMyMovimiento(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.service.findOneByUser(+id, user.sub);
+  }
+
+  // ENDPOINTS ORIGINALES (mantenidos para compatibilidad)
+  
+  // Aprobar o rechazar movimiento (método original)
+  @Patch(':id/aprobar-rechazar')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
+  @Roles('APROBAR_MOVIMIENTOS')
+  aprobarRechazar(@Param('id') id: string, @Body() dto: AprobarMovimientoDto) {
+    return this.service.aprobarRechazar(+id, dto);
+  }
+
+  @Get('pendientes')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
+  @Roles('VER_MOVIMIENTOS')
+  findPendientes() {
+    return this.service.findPendientes();
+  }
+
+  // Obtener todos los movimientos con filtros opcionales
   @Get()
-  @Roles('VER_MOVIMIENTOS')
   @UseGuards(JwtAuthGuard, PermisosGuard)
-  findAll() {
-    return this.service.findAll();
+  @Roles('VER_MOVIMIENTOS')
+  findAll(@Query() filtros?: any) {
+    return this.service.findAll(filtros);
   }
 
+  // Obtener un movimiento específico por ID
   @Get(':id')
-  @Roles('VER_MOVIMIENTO')
   @UseGuards(JwtAuthGuard, PermisosGuard)
+  @Roles('VER_MOVIMIENTOS')
   findOne(@Param('id') id: string) {
     return this.service.findOne(+id);
-  }
-
-  @Patch(':id')
-  @Roles('EDITAR_MOVIMIENTOS')
-  @UseGuards(JwtAuthGuard, PermisosGuard)
-  async update(@Param('id') id: string, @Body() dto: UpdateMovimientoDto) {
-    // ✅ RESTRICCIÓN: No permitir edición después de creación
-    const movimiento = await this.service.findOne(+id);
-    if (movimiento.data.detalle?.estado !== 'PENDIENTE') {
-      throw new BadRequestException('No se puede editar un movimiento que ya ha sido procesado');
-    }
-    return this.service.update(+id, dto);
-  }
-
-  @Delete(':id')
-  @Roles('ELIMINAR_MOVIMIENTOS')
-  @UseGuards(JwtAuthGuard, PermisosGuard)
-  async remove(@Param('id') id: string) {
-    // ✅ RESTRICCIÓN: No permitir eliminación después de creación
-    const movimiento = await this.service.findOne(+id);
-    if (movimiento.data.detalle?.estado !== 'PENDIENTE') {
-      throw new BadRequestException('No se puede eliminar un movimiento que ya ha sido procesado');
-    }
-    return this.service.remove(+id);
   }
 }

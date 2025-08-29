@@ -36,11 +36,15 @@ export class Sitio {
   @ManyToOne(() => TipoSitio, (tipoSitio) => tipoSitio.sitios, { nullable: true })
   @JoinColumn({ name: 'tipoSitioId' })
   tipoSitio?: TipoSitio;
-
-  // ✅ NUEVAS RELACIONES INVERSAS
+  
   @OneToMany(() => Material, (material) => material.sitio)
   materiales?: Material[];
 
-  @OneToMany(() => Movimiento, (movimiento) => movimiento.sitio)
-  movimientos?: Movimiento[];
+  // Movimientos donde este sitio es el destino
+  @OneToMany(() => Movimiento, (movimiento) => movimiento.sitioDestino)
+  movimientosDestino?: Movimiento[];
+
+  // Movimientos donde este sitio es el origen
+  @OneToMany(() => Movimiento, (movimiento) => movimiento.sitioOrigen)
+  movimientosOrigen?: Movimiento[];
 }

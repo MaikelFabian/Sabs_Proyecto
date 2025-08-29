@@ -14,9 +14,8 @@ export class CategoriaMaterial {
   @PrimaryGeneratedColumn()
   id: number;
 
-
   @Column()
-  categoria: string;
+  categoria: string;  // ✅ CORRECTO
 
   @Column({ default: true })
   activo: boolean;

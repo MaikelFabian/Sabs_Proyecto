@@ -1,17 +1,32 @@
 // src/material/material.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Material } from './entities/materiale.entity';
 import { MaterialService } from './materiales.service';
 import { MaterialController } from './materiales.controller';
-import { RolPermisoOpcionModule } from 'src/rol-permiso-opcion/rol-permiso-opcion.module';
-import { PermisosGuard } from 'src/auth/guards/permisos.guards';
-
+import { Material } from './entities/materiale.entity';
+import { Movimiento } from '../movimientos/entities/movimiento.entity';
+import { Detalles } from '../detalles/entities/detalle.entity';
+import { Stock } from '../stock/entities/stock.entity';
+import { Persona } from '../personas/entities/persona.entity';
+import { Sitio } from '../sitios/entities/sitio.entity'; // Agregar import
+import { StockModule } from '../stock/stock.module';
+import { RolPermisoOpcionModule } from '../rol-permiso-opcion/rol-permiso-opcion.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Material]), RolPermisoOpcionModule],
+  imports: [
+    TypeOrmModule.forFeature([
+      Material, 
+      Movimiento, 
+      Detalles, 
+      Stock, 
+      Persona,
+      Sitio // Agregar Sitio
+    ]),
+    StockModule,
+    RolPermisoOpcionModule // Agregar esta línea
+  ],
   controllers: [MaterialController],
-  providers: [MaterialService, PermisosGuard,],
-  exports: [MaterialService],
+  providers: [MaterialService],
+  exports: [MaterialService]
 })
-export class MaterialModule {}
+export class MaterialesModule {}

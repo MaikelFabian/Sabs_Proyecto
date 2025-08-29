@@ -1,5 +1,5 @@
-// src/area/area.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Area } from './entities/area.entity';
 import { Repository } from 'typeorm';
@@ -63,7 +63,38 @@ export class AreaService {
   }
 
   async remove(id: number) {
-    await this.repo.delete(id);
-    return { message: 'Área eliminada' };
+    // 1. Verificar que el área existe y cargar sus relaciones
+    const area = await this.repo.findOne({
+      where: { id },
+      relations: ['areasCentro', 'titulados']
+    });
+    
+    if (!area) {
+      throw new NotFoundException(`Área con ID ${id} no encontrada`);
+    }
+  
+    // 2. Verificar si tiene relaciones en area_centro
+    if (area.areasCentro && area.areasCentro.length > 0) {
+      throw new BadRequestException(
+        `No se puede eliminar el área "${area.nombre}" porque tiene ${area.areasCentro.length} relación(es) con centro(s). ` +
+        'Elimine primero las relaciones área-centro asociadas.'
+      );
+    }
+  
+    // 3. Verificar si tiene titulados asociados
+    if (area.titulados && area.titulados.length > 0) {
+      throw new BadRequestException(
+        `No se puede eliminar el área "${area.nombre}" porque tiene ${area.titulados.length} titulado(s) asociado(s). ` +
+        'Elimine primero los titulados relacionados.'
+      );
+    }
+  
+    // 4. Si no hay elementos asociados, proceder con la eliminación
+    const result = await this.repo.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Área con ID ${id} no encontrada`);
+    }
+    
+    return { message: `Área "${area.nombre}" eliminada exitosamente` };
   }
 }

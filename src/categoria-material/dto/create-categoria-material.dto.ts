@@ -2,8 +2,7 @@ import { IsString, IsOptional, IsBoolean } from 'class-validator';
 
 export class CreateCategoriaMaterialDto {
   @IsString()
-  codigo: string;
-
+  categoria: string;  // ✅ CORREGIDO: cambié de 'codigo' a 'categoria'
 
   @IsOptional()
   @IsBoolean()

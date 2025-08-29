@@ -15,6 +15,7 @@ import { UpdateMaterialDto } from './dto/update-materiale.dto';
 import { PermisosGuard } from 'src/auth/guards/permisos.guards';
 import { Roles } from 'src/auth/guards/roles.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 
 @UseGuards(JwtAuthGuard, PermisosGuard)
 @Controller('materiales')
@@ -58,5 +59,24 @@ export class MaterialController {
   @Roles('ELIMINAR_MATERIALES')
   remove(@Param('id') id: string) {
     return this.service.remove(+id);
+  }
+
+  // Nuevos endpoints con filtrado por usuario
+  @Get('mis-materiales')
+  @Roles('VER_MATERIALES')
+  findMyMaterials(@CurrentUser() user: any) {
+    return this.service.findByUserSite(user.sub);
+  }
+  
+  @Get('mis-materiales/stock')
+  @Roles('VER_MATERIALES')
+  getMyStock(@CurrentUser() user: any) {
+    return this.service.obtenerStockCompletoByUser(user.sub);
+  }
+  
+  @Get('mis-materiales/:id')
+  @Roles('VER_MATERIALES')
+  findMyMaterial(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.service.findOneByUser(+id, user.sub);
   }
 }

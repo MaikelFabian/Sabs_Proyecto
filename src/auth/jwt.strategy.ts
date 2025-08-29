@@ -8,8 +8,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     super({
       secretOrKey: process.env.JWT_SECRET || 'Sabs',
       jwtFromRequest: ExtractJwt.fromExtractors([
-        (request: Request & { cookies?: any }) => {
-          const token = request?.cookies?.access_token;
+        (request) => {
+          console.log('🍪 Todas las cookies:', request.cookies);
+          console.log('🍪 Headers:', request.headers.cookie);
+          const token = request.cookies?.access_token;
           console.log('🍪 Cookie JWT en extractor:', token);
           return token;
         },

@@ -9,7 +9,7 @@ import { Reflector } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RolPermisoOpcion } from 'src/rol-permiso-opcion/entities/rol-permiso-opcion.entity';
-import { PERMISSIONS_KEY } from '../guards/permisos.decorator';
+import { PERMISSIONS_KEY } from './permisos.decorator';
 import { mapMetodoToPermiso } from '../helpers/map-metodo-to-permiso';
 
 @Injectable()

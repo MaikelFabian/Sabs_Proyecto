@@ -14,14 +14,12 @@ export class FichaController {
 
   @Post()
   @Roles('CREAR_FICHAS')
-  @UseGuards(JwtAuthGuard, PermisosGuard)
   create(@Body() dto: CreateFichaDto) {
     return this.service.create(dto);
   }
 
   @Get()
   @Roles('VER_FICHAS')
-  @UseGuards(JwtAuthGuard, PermisosGuard)
   findAll() {
     return this.service.findAll();
   }

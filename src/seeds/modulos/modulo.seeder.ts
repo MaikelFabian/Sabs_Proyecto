@@ -22,6 +22,14 @@ export const seedModulos = async (dataSource: DataSource) => {
     { nombre: 'Tipo Sitio' },
     { nombre: 'Tipo Material' },
     { nombre: 'Unidad Medida' },
+    // Nuevos módulos para completar el sistema de permisos
+    { nombre: 'Gráficos' },
+    { nombre: 'Notificaciones' },
+    { nombre: 'Reportes' },
+    { nombre: 'Inventario' },
+    { nombre: 'Bodega' },
+    { nombre: 'Dashboard' },
+    { nombre: 'Personas' },
   ];
 
   // Crear solo los módulos que no existen

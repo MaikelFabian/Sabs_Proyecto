@@ -29,7 +29,7 @@ export const seedOpciones = async (dataSource: DataSource) => {
       modulo: 'Materiales',
       opciones: [
         { nombre: 'Gestión de Materiales', descripcion: 'Administrar materiales', rutaFrontend: '/materiales' },
-        { nombre: 'Tipos de Material', descripcion: 'Administrar tipos de material', rutaFrontend: '/tipomateriales' },
+        { nombre: 'Gestión de Stock', descripcion: 'Administrar stock de materiales', rutaFrontend: '/stock' },
       ],
     },
     {
@@ -72,12 +72,6 @@ export const seedOpciones = async (dataSource: DataSource) => {
       ],
     },
     {
-      modulo: 'Solicitudes',
-      opciones: [
-        { nombre: 'Gestión de Solicitudes', descripcion: 'Administrar solicitudes', rutaFrontend: '/solicitudes' },
-      ],
-    },
-    {
       modulo: 'Usuarios',
       opciones: [
         { nombre: 'Gestión de Usuarios', descripcion: 'Administrar usuarios', rutaFrontend: '/usuarios' },
@@ -109,27 +103,54 @@ export const seedOpciones = async (dataSource: DataSource) => {
       ],
     },
     {
-      modulo: 'Categoría Material',
+      modulo: 'Gráficos',
       opciones: [
-        { nombre: 'Gestión de Categorías', descripcion: 'Administrar categorías de material', rutaFrontend: '/categoriamateriales' },
+        { nombre: 'Ver Gráficos', descripcion: 'Visualizar gráficos y estadísticas', rutaFrontend: '/graficos' },
+        { nombre: 'Exportar Gráficos', descripcion: 'Exportar gráficos en diferentes formatos', rutaFrontend: '/graficos' },
       ],
     },
     {
-      modulo: 'Tipo Sitio',
+      modulo: 'Notificaciones',
       opciones: [
-        { nombre: 'Gestión de Tipos de Sitio', descripcion: 'Administrar tipos de sitio', rutaFrontend: '/tipositios' },
+        { nombre: 'Ver Notificaciones', descripcion: 'Visualizar notificaciones del sistema', rutaFrontend: '/notificaciones' },
+        { nombre: 'Gestionar Notificaciones', descripcion: 'Administrar notificaciones', rutaFrontend: '/notificaciones' },
+        { nombre: 'Marcar como Leída', descripcion: 'Marcar notificaciones como leídas', rutaFrontend: '/notificaciones' },
       ],
     },
     {
-      modulo: 'Tipo Material',
+      modulo: 'Reportes',
       opciones: [
-        { nombre: 'Gestión de Tipos de Material', descripcion: 'Administrar tipos de material', rutaFrontend: '/tipomateriales' },
+        { nombre: 'Generar Reportes', descripcion: 'Generar reportes del sistema', rutaFrontend: '/reportes' },
+        { nombre: 'Ver Reportes', descripcion: 'Visualizar reportes generados', rutaFrontend: '/reportes' },
+        { nombre: 'Exportar Reportes', descripcion: 'Exportar reportes en diferentes formatos', rutaFrontend: '/reportes' },
       ],
     },
     {
-      modulo: 'Unidad Medida',
+      modulo: 'Inventario',
       opciones: [
-        { nombre: 'Gestión de Unidades de Medida', descripcion: 'Administrar unidades de medida', rutaFrontend: '/unidadmedidas' },
+        { nombre: 'Gestión de Inventario', descripcion: 'Administrar inventario general', rutaFrontend: '/gestion-inventario' },
+        { nombre: 'Ver Estado Inventario', descripcion: 'Visualizar estado del inventario', rutaFrontend: '/gestion-inventario' },
+      ],
+    },
+    {
+      modulo: 'Bodega',
+      opciones: [
+        { nombre: 'Gestión de Bodegas', descripcion: 'Administrar bodegas', rutaFrontend: '/bodega' },
+        { nombre: 'Ver Sitios por Tipo', descripcion: 'Visualizar sitios por tipo de bodega', rutaFrontend: '/bodega/tipo' },
+        { nombre: 'Ver Materiales por Sitio', descripcion: 'Visualizar materiales por sitio', rutaFrontend: '/bodega/sitio' },
+      ],
+    },
+    {
+      modulo: 'Dashboard',
+      opciones: [
+        { nombre: 'Ver Dashboard', descripcion: 'Acceder al panel principal', rutaFrontend: '/' },
+        { nombre: 'Ver Estadísticas Generales', descripcion: 'Visualizar estadísticas del dashboard', rutaFrontend: '/' },
+      ],
+    },
+    {
+      modulo: 'Personas',
+      opciones: [
+        { nombre: 'Gestión de Personas', descripcion: 'Administrar personas del sistema', rutaFrontend: '/personas' },
       ],
     },
   ];

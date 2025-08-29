@@ -48,8 +48,10 @@ export class PersonasService {
   async findAll() {
     const listar = await this.personaRepository.find({
       relations: [
-        'aprobaciones',
-        'movimientos',
+        'detallesSolicitados',
+        'movimientosSolicitados',
+        'movimientosAprobados',
+        'notificaciones',
         'ficha',
         'rol',
       ],
@@ -64,8 +66,10 @@ export class PersonasService {
     const buscar = await this.personaRepository.findOne({
       where: { id },
       relations: [
-        'aprobaciones',
-        'movimientos',
+        'detallesSolicitados',
+        'movimientosSolicitados',
+        'movimientosAprobados',
+        'notificaciones',
         'ficha',
         'rol',
       ],

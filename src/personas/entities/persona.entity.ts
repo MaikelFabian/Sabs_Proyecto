@@ -65,11 +65,17 @@ export class Persona {
   @Column({ nullable: true })
   fichaId?: number;
 
-  @OneToMany(() => Detalles, (detalle) => detalle.personaAprueba)
-  aprobaciones?: Detalles[];
+  // Detalles donde esta persona es el solicitante
+  @OneToMany(() => Detalles, (detalle) => detalle.solicitante)
+  detallesSolicitados?: Detalles[];
 
-  @OneToMany(() => Movimiento, (movimiento) => movimiento.persona)
-  movimientos?: Movimiento[];
+  // Movimientos donde esta persona es el solicitante
+  @OneToMany(() => Movimiento, (movimiento) => movimiento.solicitante)
+  movimientosSolicitados?: Movimiento[];
+
+  // Movimientos donde esta persona es el aprobador
+  @OneToMany(() => Movimiento, (movimiento) => movimiento.aprobador)
+  movimientosAprobados?: Movimiento[];
 
   @OneToMany(() => Notificacion, (notificacion) => notificacion.persona)
   notificaciones?: Notificacion[];

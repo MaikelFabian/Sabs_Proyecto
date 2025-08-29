@@ -1,8 +1,17 @@
 import { IsEnum, IsString, IsInt, IsOptional, IsBoolean } from 'class-validator';
 
 export class CreateNotificacionDto {
-  @IsEnum(['movimiento', 'caducidad', 'stock_bajo', 'nuevo_material'])
-  tipo: 'movimiento' | 'caducidad' | 'stock_bajo' | 'nuevo_material';
+  @IsEnum([
+    'solicitud_material', 
+    'solicitud_aprobada', 
+    'solicitud_rechazada',
+    'material_caducidad', 
+    'stock_bajo', 
+    'nuevo_material',
+    'solicitud_pendiente'
+  ])
+  tipo: 'solicitud_material' | 'solicitud_aprobada' | 'solicitud_rechazada' | 
+        'material_caducidad' | 'stock_bajo' | 'nuevo_material' | 'solicitud_pendiente';
 
   @IsString()
   mensaje: string;
@@ -16,5 +25,9 @@ export class CreateNotificacionDto {
 
   @IsOptional()
   @IsInt()
-  relacionadoId?: number;
+  relacionadoId?: number; // ID del movimiento, material, etc.
+
+  @IsOptional()
+  @IsString()
+  titulo?: string;
 }

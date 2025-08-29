@@ -16,6 +16,7 @@ import { Detalles } from 'src/detalles/entities/detalle.entity';
 import { Movimiento } from 'src/movimientos/entities/movimiento.entity';
 import { Sitio } from 'src/sitios/entities/sitio.entity';
 import { Persona } from 'src/personas/entities/persona.entity';
+import { Stock } from 'src/stock/entities/stock.entity';
 
 @Entity()
 export class Material {
@@ -23,16 +24,12 @@ export class Material {
   id: number;
 
   @Column()
-  codigo: string;
-
-  @Column()
   nombre: string;
 
   @Column()
   descripcion: string;
 
-  @Column()
-  stock: number;
+  // ❌ ELIMINADO: stock: number; - Ahora se maneja solo por Stock entities
 
   @Column({ default: true })
   caduca: boolean;
@@ -77,7 +74,6 @@ export class Material {
   @Column({ default: false })
   requiereDevolucion: boolean;
 
-  // ✅ NUEVO CAMPO: Relación con Sitio
   @ManyToOne(() => Sitio, { nullable: true })
   @JoinColumn({ name: 'sitioId' })
   sitio?: Sitio;
@@ -85,7 +81,6 @@ export class Material {
   @Column({ nullable: true })
   sitioId?: number;
 
-  // ✅ NUEVO CAMPO: Relación con Persona que registró el material
   @ManyToOne(() => Persona, { nullable: true })
   @JoinColumn({ name: 'registradoPorId' })
   registradoPor?: Persona;
@@ -93,7 +88,6 @@ export class Material {
   @Column({ nullable: true })
   registradoPorId?: number;
 
-  // ✅ NUEVOS CAMPOS: Para identificar materiales originales vs prestados
   @Column({ default: true })
   esOriginal: boolean;
 
@@ -103,6 +97,13 @@ export class Material {
 
   @Column({ nullable: true })
   materialOrigenId?: number;
+
+  // ✅ NUEVA PROPIEDAD: Cantidad total para materiales prestados (reemplaza stock)
+  @Column({ nullable: true })
+  cantidadPrestada?: number;
+
+  @OneToMany(() => Stock, (stock) => stock.material)
+  stocks?: Stock[];
 
   @OneToMany(() => Detalles, (detalle) => detalle.material)
   detalles?: Detalles[];

@@ -4,89 +4,59 @@ import {
   Column,
   ManyToOne,
   CreateDateColumn,
-  UpdateDateColumn,
   JoinColumn,
-  OneToOne,
 } from 'typeorm';
 import { Material } from 'src/materiales/entities/materiale.entity';
-import { Solicitud } from 'src/solicitudes/entities/solicitud.entity';
 import { Persona } from 'src/personas/entities/persona.entity';
-import { Movimiento } from 'src/movimientos/entities/movimiento.entity';
+import { TipoMovimiento } from 'src/tipo-movimiento/entities/tipo-movimiento.entity';
 
 @Entity()
 export class Detalles {
   @PrimaryGeneratedColumn()
   id: number;
 
+  // Información del tipo de movimiento
+  @ManyToOne(() => TipoMovimiento, { eager: true })
+  @JoinColumn({ name: 'tipoMovimientoId' })
+  tipoMovimiento: TipoMovimiento;
+
   @Column()
-  cantidad: number;
+  tipoMovimientoId: number;
 
-  // ✅ NUEVO: Campo para número de factura
-  @Column({ nullable: true })
-  numeroFactura?: string;
-
-  // ✅ NUEVO: Campo para descripción de la acción
-  @Column({ nullable: true })
-  accion?: string;
-
-  @ManyToOne(() => Material, (material) => material.detalles, { eager: true })
+  // Material y cantidad (solo informativo)
+  @ManyToOne(() => Material, { eager: true })
   @JoinColumn({ name: 'materialId' })
   material: Material;
 
   @Column()
   materialId: number;
 
-  @Column({ default: 'PENDIENTE' })
-  estado: 'PENDIENTE' | 'APROBADO' | 'RECHAZADO' | 'PRESTADO' | 'DEVUELTO' | 'CONSUMIDO';
+  @Column()
+  cantidad: number;
 
-  @ManyToOne(() => Solicitud, (solicitud) => solicitud.detalles, {
-    nullable: true,
+  // Estado del movimiento (copiado desde Movimiento)
+  @Column({ 
+    type: 'enum', 
+    enum: ['NO_APROBADO', 'APROBADO', 'RECHAZADO']
   })
-  @JoinColumn({ name: 'solicitudId' })
-  solicitud?: Solicitud;
-  
-  @Column({ nullable: true })
-  solicitudId?: number;
+  estado: 'NO_APROBADO' | 'APROBADO' | 'RECHAZADO';
 
-  // ✅ MEJORADO: Relación con solicitante directo
-  @ManyToOne(() => Persona, { nullable: true, eager: true })
+  // Quien lo solicitó
+  @ManyToOne(() => Persona, { eager: true })
   @JoinColumn({ name: 'solicitanteId' })
-  solicitante?: Persona;
+  solicitante: Persona;
 
-  @Column({ nullable: true })
-  solicitanteId?: number;
+  @Column()
+  solicitanteId: number;
 
-  @OneToOne(() => Movimiento, (movimiento) => movimiento.detalle, {
-    nullable: true,
-  })
-  movimiento?: Movimiento;
-
-  @ManyToOne(() => Persona, { nullable: true })
-  @JoinColumn({ name: 'personaApruebaId' })
-  personaAprueba?: Persona;
-
-  @Column({ nullable: true })
-  personaApruebaId?: number;
-
-  // ✅ NUEVO: Persona que entrega
-  @ManyToOne(() => Persona, { nullable: true })
-  @JoinColumn({ name: 'personaEntregaId' })
-  personaEntrega?: Persona;
-
-  @Column({ nullable: true })
-  personaEntregaId?: number;
-
-  // ✅ NUEVO: Persona que devuelve
-  @ManyToOne(() => Persona, { nullable: true })
-  @JoinColumn({ name: 'personaDevuelveId' })
-  personaDevuelve?: Persona;
-
-  @Column({ nullable: true })
-  personaDevuelveId?: number;
-
+  // Fecha de la solicitud
   @CreateDateColumn()
-  fechaCreacion: Date;
+  fecha: Date;
 
-  @UpdateDateColumn()
-  fechaActualizacion: Date;
+  // Referencia al movimiento original (para trazabilidad)
+  @Column()
+  movimientoId: number;
+
+  @Column({ default: true })
+  activo: boolean;
 }

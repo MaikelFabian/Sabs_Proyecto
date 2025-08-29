@@ -36,19 +36,19 @@ export class AuthService {
   async login(user: any) {
     const permisos =
       user.rol?.rolesPermisosOpciones?.map((rpo) => rpo.permiso?.codigo) || [];
-
+  
     const opciones = user.rol?.rolesPermisosOpciones
       ?.map((rpo) => ({
         id: rpo.opcion?.id,
         nombre: rpo.opcion?.nombre,
         rutaFrontend: rpo.opcion?.rutaFrontend,
       }))
-      .filter((opcion) => opcion && opcion.id) // filtrar nulls
+      .filter((opcion) => opcion && opcion.id)
       .reduce((acc, curr) => {
         if (!acc.find((o) => o.id === curr.id)) acc.push(curr);
         return acc;
       }, []);
-
+  
     const modulos = user.rol?.rolesPermisosOpciones
       ?.map((rpo) => ({
         id: rpo.opcion?.modulo?.id,
@@ -59,16 +59,17 @@ export class AuthService {
         if (!acc.find((m) => m.id === curr.id)) acc.push(curr);
         return acc;
       }, []);
-
+  
+    // ✅ PAYLOAD REDUCIDO - Solo datos esenciales en JWT
     const payload = {
       sub: user.id,
       correo: user.correo,
       nombre: user.nombre,
       rol: user.rol?.nombre,
       rolId: user.rol?.id,
-      permisos,
+      // ❌ REMOVIDO: permisos - demasiado grande para cookie
     };
-
+  
     return {
       access_token: this.jwtService.sign(payload),
       user: {
@@ -77,7 +78,7 @@ export class AuthService {
         nombre: user.nombre,
         rol: user.rol?.nombre,
         rolId: user.rol?.id,
-        permisos,
+        permisos, // ✅ Los permisos se devuelven en la respuesta, no en JWT
         opciones,
         modulos,
       },
