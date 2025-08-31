@@ -19,31 +19,31 @@ export class PermisosGuard implements CanActivate {
     @InjectRepository(RolPermisoOpcion)
     private readonly repo: Repository<RolPermisoOpcion>,
   ) {
-    console.log('✅ PermisosGuard construido');
+   // console.log('✅ PermisosGuard construido');
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    console.log('🔐 JwtAuthGuard activado');
+    //console.log('🔐 JwtAuthGuard activado');
     
 
     const request = context.switchToHttp().getRequest();
     const user = request.user;
-    console.log('👤 User en PermisosGuard:', JSON.stringify(user, null, 2));
+    //console.log('👤 User en PermisosGuard:', JSON.stringify(user, null, 2));
     const path = request.route.path;
     const metodo = request.method;
-    console.log('========= PermisosGuard =========');
-    console.log('Usuario:', user);
-    console.log('Path:', path);
-    console.log('Method:', metodo);
-    console.log('Permiso encontrado, acceso concedido');
-    console.log('NO se encontró permiso, acceso denegado');
+    //console.log('========= PermisosGuard =========');
+    //console.log('Usuario:', user);
+    //console.log('Path:', path);
+    //console.log('Method:', metodo);
+    //console.log('Permiso encontrado, acceso concedido');
+    //console.log('NO se encontró permiso, acceso denegado');
 
     // Leer permisos explícitos del decorator
     const permisosRequeridos = this.reflector.getAllAndOverride<string[]>(
       PERMISSIONS_KEY,
       [context.getHandler(), context.getClass()],
     );
-    console.log('🔒 Permisos requeridos por decorator:', permisosRequeridos);
+    //console.log('🔒 Permisos requeridos por decorator:', permisosRequeridos);
 
     // Si hay permisos específicos, validar contra ellos
     if (permisosRequeridos && permisosRequeridos.length > 0) {
@@ -59,8 +59,8 @@ export class PermisosGuard implements CanActivate {
         .andWhere(':path LIKE opcion.rutaFrontend || \'%\'', { path })
 
         .getOne();
-      console.log('path', path);
-      console.log('permisosRequeridos', permisosRequeridos);
+      //console.log('path', path);
+      //console.log('permisosRequeridos', permisosRequeridos);  
 
       if (!tienePermiso) {
         throw new ForbiddenException(

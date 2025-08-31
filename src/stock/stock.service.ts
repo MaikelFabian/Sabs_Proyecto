@@ -61,18 +61,60 @@ export class StockService {
     };
   }
 
-  async findAll() {
-    const stocks = await this.stockRepository.find({
+  // 🚀 OPTIMIZADO: findAll con paginación
+  async findAll(page: number = 1, limit: number = 50) {
+    const maxLimit = Math.min(limit, 100); // Máximo 100 registros
+    const skip = (page - 1) * maxLimit;
+
+    const [stocks, total] = await this.stockRepository.findAndCount({
       relations: ['material'],
-      order: { fechaCreacion: 'DESC' }
+      order: { fechaCreacion: 'DESC' },
+      skip,
+      take: maxLimit
     });
 
     return {
       message: 'Lista de stocks',
-      data: stocks
+      data: stocks,
+      pagination: {
+        page,
+        limit: maxLimit,
+        total,
+        totalPages: Math.ceil(total / maxLimit)
+      }
     };
   }
 
+  // 🚀 OPTIMIZADO: findAllByUser con paginación
+  async findAllByUser(userId: number, page: number = 1, limit: number = 50) {
+    const maxLimit = Math.min(limit, 100);
+    const skip = (page - 1) * maxLimit;
+    const userSites = await this.getUserSites(userId);
+    
+    const [stocks, total] = await this.stockRepository.findAndCount({
+      relations: ['material'],
+      where: {
+        material: {
+          sitioId: In(userSites),
+          activo: true
+        }
+      },
+      order: { fechaCreacion: 'DESC' },
+      skip,
+      take: maxLimit
+    });
+  
+    return {
+      message: 'Lista de stocks del usuario',
+      data: stocks,
+      pagination: {
+        page,
+        limit: maxLimit,
+        total,
+        totalPages: Math.ceil(total / maxLimit)
+      }
+    };
+  }
   async findByMaterial(materialId: number) {
     const stocks = await this.stockRepository.find({
       where: { materialId },
@@ -102,11 +144,50 @@ export class StockService {
     };
   }
 
+  // 🔒 NUEVA VALIDACIÓN: Verificar si stock está en uso antes de editar
+  private async verificarStockEnUso(stockId: number): Promise<boolean> {
+    const stock = await this.stockRepository.findOne({
+      where: { id: stockId },
+      relations: ['material']
+    });
+
+    if (!stock) return false;
+
+    // Si el material es un préstamo activo, no se puede editar el stock
+    if (stock.material.materialOrigenId && (stock.material.cantidadPrestada ?? 0) > 0) {
+      return true;
+    }
+
+    // Verificar si hay préstamos activos que usen este material
+    const prestamosActivos = await this.materialRepository.count({
+      where: {
+        materialOrigenId: stock.materialId,
+        activo: true,
+        cantidadPrestada: { $gt: 0 } as any
+      }
+    });
+
+    return prestamosActivos > 0;
+  }
+
+  // 🚀 OPTIMIZADO: update con validaciones de integridad
   async update(id: number, dto: UpdateStockDto) {
-    const stock = await this.stockRepository.findOne({ where: { id } });
+    const stock = await this.stockRepository.findOne({ 
+      where: { id },
+      relations: ['material']
+    });
     
     if (!stock) {
       throw new NotFoundException(`Stock con ID ${id} no encontrado`);
+    }
+
+    // 🔒 VALIDACIÓN CRÍTICA: Verificar si el stock está en uso
+    const stockEnUso = await this.verificarStockEnUso(id);
+    if (stockEnUso) {
+      throw new BadRequestException(
+        `No se puede editar el stock porque está siendo usado en préstamos activos. ` +
+        `Debe procesarse la devolución primero.`
+      );
     }
 
     // Si se está actualizando el código, verificar que no esté duplicado
@@ -128,6 +209,34 @@ export class StockService {
     };
   }
 
+  // 🚀 OPTIMIZADO: remove con validaciones de integridad
+  async remove(id: number) {
+    const stock = await this.stockRepository.findOne({ 
+      where: { id },
+      relations: ['material']
+    });
+    
+    if (!stock) {
+      throw new NotFoundException(`Stock con ID ${id} no encontrado`);
+    }
+
+    // 🔒 VALIDACIÓN CRÍTICA: Verificar si el stock está en uso
+    const stockEnUso = await this.verificarStockEnUso(id);
+    if (stockEnUso) {
+      throw new BadRequestException(
+        `No se puede eliminar el stock porque está siendo usado en préstamos activos. ` +
+        `Debe procesarse la devolución primero.`
+      );
+    }
+
+    await this.stockRepository.delete(id);
+    
+    return {
+      message: 'Stock eliminado exitosamente'
+    };
+  }
+
+  // Métodos para activar y desactivar stock
   async activar(id: number) {
     const stock = await this.stockRepository.findOne({ where: { id } });
     
@@ -135,15 +244,12 @@ export class StockService {
       throw new NotFoundException(`Stock con ID ${id} no encontrado`);
     }
 
-    if (stock.activo) {
-      throw new BadRequestException('El stock ya está activo');
-    }
-
-    await this.stockRepository.update(id, { activo: true });
+    stock.activo = true;
+    await this.stockRepository.save(stock);
     
     return {
       message: 'Stock activado exitosamente',
-      data: await this.findOne(id)
+      data: stock
     };
   }
 
@@ -154,25 +260,20 @@ export class StockService {
       throw new NotFoundException(`Stock con ID ${id} no encontrado`);
     }
 
-    await this.stockRepository.update(id, { activo: false });
+    // Verificar si el stock está en uso antes de desactivar
+    const stockEnUso = await this.verificarStockEnUso(id);
+    if (stockEnUso) {
+      throw new BadRequestException(
+        `No se puede desactivar el stock porque está siendo usado en préstamos activos.`
+      );
+    }
+
+    stock.activo = false;
+    await this.stockRepository.save(stock);
     
     return {
       message: 'Stock desactivado exitosamente',
-      data: await this.findOne(id)
-    };
-  }
-
-  async remove(id: number) {
-    const stock = await this.stockRepository.findOne({ where: { id } });
-    
-    if (!stock) {
-      throw new NotFoundException(`Stock con ID ${id} no encontrado`);
-    }
-
-    await this.stockRepository.delete(id);
-    
-    return {
-      message: 'Stock eliminado exitosamente'
+      data: stock
     };
   }
 
@@ -204,26 +305,8 @@ export class StockService {
     };
   }
 
-  // Nuevos métodos con filtrado por usuario
-  async findAllByUser(userId: number) {
-    const userSites = await this.getUserSites(userId);
-    
-    const stocks = await this.stockRepository.find({
-      relations: ['material'],
-      where: {
-        material: {
-          sitioId: In(userSites),
-          activo: true
-        }
-      },
-      order: { fechaCreacion: 'DESC' }
-    });
-  
-    return {
-      message: 'Lista de stocks del usuario',
-      data: stocks
-    };
-  }
+  // ELIMINAR ESTA FUNCIÓN DUPLICADA - mantener solo la versión con paginación
+  // async findAllByUser(userId: number) { ... }
   
   async findByMaterialAndUser(materialId: number, userId: number) {
     const userSites = await this.getUserSites(userId);

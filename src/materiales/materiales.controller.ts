@@ -8,6 +8,8 @@ import {
   Param,
   Delete,
   UseGuards,
+  BadRequestException,
+  Query, 
 } from '@nestjs/common';
 import { MaterialService } from './materiales.service';
 import { CreateMaterialDto } from './dto/create-materiale.dto';
@@ -36,32 +38,7 @@ export class MaterialController {
     return this.service.obtenerStockCompleto();
   }
 
-  @Get()
-  @UseGuards(JwtAuthGuard, PermisosGuard)
-  @Roles('VER_MATERIALES')
-  findAll() {
-    return this.service.findAll();
-  }
-
-  @Get(':id')
-  @Roles('VER_MATERIALES')
-  findOne(@Param('id') id: string) {
-    return this.service.findOne(+id);
-  }
-
-  @Patch(':id')
-  @Roles('EDITAR_MATERIALES')
-  update(@Param('id') id: string, @Body() dto: UpdateMaterialDto) {
-    return this.service.update(+id, dto);
-  }
-
-  @Delete(':id')
-  @Roles('ELIMINAR_MATERIALES')
-  remove(@Param('id') id: string) {
-    return this.service.remove(+id);
-  }
-
-  // Nuevos endpoints con filtrado por usuario
+  // Mover estos endpoints específicos ANTES del genérico :id
   @Get('mis-materiales')
   @Roles('VER_MATERIALES')
   findMyMaterials(@CurrentUser() user: any) {
@@ -74,9 +51,75 @@ export class MaterialController {
     return this.service.obtenerStockCompletoByUser(user.sub);
   }
   
+  // ✅ MOVER AQUÍ - antes del endpoint genérico :id
+  @Get('mis-materiales/prestados-pendientes')
+  @Roles('VER_MATERIALES')
+  findMyMaterialesPrestadosPendientes(
+    @CurrentUser() user: any,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string
+  ) {
+    const pageNum = page ? parseInt(page, 10) : 1;
+    const limitNum = limit ? parseInt(limit, 10) : 50;
+    
+    // Validar parámetros
+    if (pageNum < 1) {
+      throw new BadRequestException('La página debe ser mayor a 0');
+    }
+    if (limitNum < 1 || limitNum > 100) {
+      throw new BadRequestException('El límite debe estar entre 1 y 100');
+    }
+    
+    return this.service.findMaterialesPrestadosConSaldoPendiente(user.sub, pageNum, limitNum);
+  }
+  
   @Get('mis-materiales/:id')
   @Roles('VER_MATERIALES')
   findMyMaterial(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.service.findOneByUser(+id, user.sub);
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId) || numericId <= 0) {
+      throw new BadRequestException('ID debe ser un número válido mayor a 0');
+    }
+    return this.service.findOneByUser(numericId, user.id);
   }
+
+  @Get()
+  @UseGuards(JwtAuthGuard, PermisosGuard)
+  @Roles('VER_MATERIALES')
+  findAll() {
+    return this.service.findAll();
+  }
+
+  // Ahora el endpoint genérico :id va después de los específicos
+  @Get(':id')
+  @Roles('VER_MATERIALES')
+  findOne(@Param('id') id: string) {
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId) || numericId <= 0) {
+      throw new BadRequestException('ID debe ser un número válido mayor a 0');
+    }
+    return this.service.findOne(numericId);
+  }
+
+  @Patch(':id')
+  @Roles('EDITAR_MATERIALES')
+  update(@Param('id') id: string, @Body() dto: UpdateMaterialDto) {
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId) || numericId <= 0) {
+      throw new BadRequestException('ID debe ser un número válido mayor a 0');
+    }
+    return this.service.update(numericId, dto);
+  }
+
+  @Delete(':id')
+  @Roles('ELIMINAR_MATERIALES')
+  remove(@Param('id') id: string) {
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId) || numericId <= 0) {
+      throw new BadRequestException('ID debe ser un número válido mayor a 0');
+    }
+    return this.service.remove(numericId);
+  }
+
+  // }
 }

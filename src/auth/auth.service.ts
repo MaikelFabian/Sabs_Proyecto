@@ -60,14 +60,14 @@ export class AuthService {
         return acc;
       }, []);
   
-    // ✅ PAYLOAD REDUCIDO - Solo datos esenciales en JWT
+   
     const payload = {
       sub: user.id,
       correo: user.correo,
       nombre: user.nombre,
       rol: user.rol?.nombre,
       rolId: user.rol?.id,
-      // ❌ REMOVIDO: permisos - demasiado grande para cookie
+    
     };
   
     return {
@@ -78,7 +78,7 @@ export class AuthService {
         nombre: user.nombre,
         rol: user.rol?.nombre,
         rolId: user.rol?.id,
-        permisos, // ✅ Los permisos se devuelven en la respuesta, no en JWT
+        permisos, 
         opciones,
         modulos,
       },

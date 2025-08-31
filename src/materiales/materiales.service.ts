@@ -256,4 +256,82 @@ export class MaterialService {
     
     return sitiosActivos.map(sitio => sitio.id);
   }
+  
+  // Agregar después de la línea 259
+  // 🚀 VERSIÓN OPTIMIZADA - Reemplaza el método existente
+  async findMaterialesPrestadosConSaldoPendiente(userId: number, page: number = 1, limit: number = 50) {
+    const userSites = await this.getUserSites(userId);
+    const maxLimit = Math.min(limit, 100); // Máximo 100 registros
+    const skip = (page - 1) * maxLimit;
+  
+    // 🚀 UNA SOLA CONSULTA OPTIMIZADA con paginación
+    const query = this.repo
+      .createQueryBuilder('material')
+      .leftJoinAndSelect('material.tipoMaterial', 'tipoMaterial')
+      .leftJoinAndSelect('material.unidadMedida', 'unidadMedida')
+      .leftJoinAndSelect('material.categoriaMaterial', 'categoriaMaterial')
+      .leftJoinAndSelect('material.sitio', 'sitio')
+      .leftJoinAndSelect('material.registradoPor', 'registradoPor')
+      // 🚀 JOIN OPTIMIZADO para calcular saldo en una sola consulta
+      .leftJoin(
+        (subQuery) => {
+          return subQuery
+            .select('mov.materialId', '"materialId"') 
+            .addSelect('COALESCE(SUM(mov.cantidad), 0)', 'totalDevuelto')
+            .from(Movimiento, 'mov')
+            .innerJoin('mov.tipoMovimiento', 'tipo')
+            .where('tipo.nombre ILIKE :tipoNombre', { tipoNombre: '%devolucion%' })
+            .andWhere('mov.estado = :estado', { estado: 'APROBADO' })
+            .groupBy('mov.materialId');
+        },
+        'devoluciones',
+        'devoluciones."materialId" = material.id'
+      )
+      .addSelect('COALESCE(devoluciones.totalDevuelto, 0)', 'totalDevuelto')
+      .addSelect(
+        'CASE WHEN material.cantidadPrestada > COALESCE(devoluciones.totalDevuelto, 0) THEN material.cantidadPrestada - COALESCE(devoluciones.totalDevuelto, 0) ELSE 0 END',
+        'saldoPendiente'
+      )
+      .where('material.activo = :activo', { activo: true })
+      .andWhere('material.esOriginal = :esOriginal', { esOriginal: false })
+      .andWhere('material.requiereDevolucion = :requiereDevolucion', { requiereDevolucion: true })
+      .andWhere('material.sitioId IN (:...userSites)', { userSites })
+      .andWhere('material.cantidadPrestada > 0')
+      // 🚀 FILTRAR solo materiales con saldo pendiente
+      .having('saldoPendiente > 0')
+      .orderBy('material.id', 'DESC')
+      .skip(skip)
+      .take(maxLimit);
+  
+    const [materialesRaw, total] = await Promise.all([
+      query.getRawAndEntities(),
+      query.getCount()
+    ]);
+  
+    // 🚀 MAPEAR resultados eficientemente
+    const materialesConSaldo = materialesRaw.entities.map((material, index) => {
+      const rawData = materialesRaw.raw[index];
+      return {
+        ...material,
+        saldoPendiente: parseInt(rawData.saldoPendiente) || 0,
+        cantidadPrestada: parseInt(rawData.saldoPendiente) || material.cantidadPrestada
+      };
+    });
+  
+    return {
+      message: 'Materiales prestados con saldo pendiente',
+      data: materialesConSaldo,
+      pagination: {
+        page,
+        limit: maxLimit,
+        total,
+        totalPages: Math.ceil(total / maxLimit)
+      }
+    };
+  }
+  
+  // 🗑️ ELIMINAR el método calcularSaldoPendiente (ya no se necesita)
+  // private async calcularSaldoPendiente(materialPrestadoId: number): Promise<number> {
+  //   // MÉTODO ELIMINADO - causaba consultas N+1
+  // }
 }

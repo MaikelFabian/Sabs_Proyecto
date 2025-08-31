@@ -15,10 +15,10 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Request() req, @Res({ passthrough: true }) res: Response) {
-    console.log('👤 Usuario autenticado:', req.user);
+    //console.log('👤 Usuario autenticado:', req.user);
     const result = await this.authService.login(req.user);
-    console.log('🔐 Token generado:', result.access_token ? 'Token creado correctamente' : 'Error al crear token');
-    console.log('📦 Datos de usuario a devolver:', result.user);
+    //console.log('🔐 Token generado:', result.access_token ? 'Token creado correctamente' : 'Error al crear token');
+    //console.log('📦 Datos de usuario a devolver:', result.user);
     
     // ✅ CONFIGURACIÓN CORREGIDA - SIN DOMAIN
     res.cookie('access_token', result.access_token, {
@@ -28,7 +28,7 @@ export class AuthController {
       maxAge: 24 * 60 * 60 * 1000, // 24 horas
     });
     
-    console.log('🍪 COOKIE ESTABLECIDA:', result.access_token.substring(0, 20) + '...'); // Log temporal
+    //console.log('🍪 COOKIE ESTABLECIDA:', result.access_token.substring(0, 20) + '...'); // Log temporal
     
     return {
       user: result.user,

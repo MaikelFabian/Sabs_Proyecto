@@ -40,8 +40,6 @@ export class MovimientoService {
   // Crear nueva petición de movimiento
   async create(dto: CreateMovimientoDto) {
     return await this.dataSource.transaction(async (manager) => {
-      console.log('🚀 Creando nueva petición de movimiento');
-
       // Validar que el material existe
       const material = await manager.findOne(Material, {
         where: { id: dto.materialId, activo: true },
@@ -131,7 +129,6 @@ export class MovimientoService {
 
       await manager.save(Detalles, detalle);
 
-      console.log('✅ Petición de movimiento creada exitosamente');
       // Cargar el movimiento con sus relaciones dentro de la transacción
       const movimientoCompleto = await manager.findOne(Movimiento, {
         where: { id: movimientoGuardado.id },
@@ -178,10 +175,6 @@ export class MovimientoService {
   // Aprobar o rechazar movimiento
   async aprobarRechazar(id: number, dto: AprobarMovimientoDto) {
     return await this.dataSource.transaction(async (manager) => {
-      console.log(
-        `🔄 ${dto.estado === 'APROBADO' ? 'Aprobando' : 'Rechazando'} movimiento ${id}`,
-      );
-
       const movimiento = await manager.findOne(Movimiento, {
         where: { id },
         relations: [
@@ -259,7 +252,6 @@ export class MovimientoService {
   // Lógica principal de movimiento de stock
   private async ejecutarMovimientoStock(manager: any, movimiento: Movimiento) {
     const tipoMovimiento = movimiento.tipoMovimiento.nombre.toLowerCase();
-    console.log(`📦 Ejecutando movimiento de tipo: ${tipoMovimiento}`);
 
     switch (tipoMovimiento) {
       case 'entrada':
@@ -283,10 +275,8 @@ export class MovimientoService {
     }
   }
 
-  // MÉTODO procesarEntrada - Líneas 248, 254
+  // MÉTODO procesarEntrada - Optimizado sin logs
   private async procesarEntrada(manager: any, movimiento: Movimiento) {
-    console.log('📥 Procesando entrada de material - USANDO STOCK ENTITIES');
-
     // Buscar material en sitio destino
     let materialDestino = await manager.findOne(Material, {
       where: {
@@ -298,7 +288,7 @@ export class MovimientoService {
     });
 
     if (materialDestino) {
-      // ✅ CORREGIDO: Crear nueva entidad Stock en lugar de sumar a material.stock
+      // Crear nueva entidad Stock en lugar de sumar a material.stock
       const nuevoStock = manager.create(Stock, {
         materialId: materialDestino.id,
         cantidad: movimiento.cantidad,
@@ -306,11 +296,8 @@ export class MovimientoService {
         requiereCodigo: false,
       });
       await manager.save('stock', nuevoStock);
-      console.log(
-        `✅ Stock agregado mediante Stock entity: +${movimiento.cantidad}`,
-      );
     } else {
-      // ✅ CORREGIDO: Crear nuevo material sin propiedad stock
+      // Crear nuevo material sin propiedad stock
       materialDestino = manager.create(Material, {
         nombre: movimiento.material.nombre,
         descripcion: movimiento.material.descripcion,
@@ -335,19 +322,12 @@ export class MovimientoService {
         requiereCodigo: false,
       });
       await manager.save('stock', stockInicial);
-      console.log(
-        `✅ Nuevo material creado con Stock entity: ${movimiento.cantidad}`,
-      );
     }
   }
 
-  // Procesar salida de material
+  // Procesar salida de material - Optimizado sin logs
   private async procesarSalida(manager: any, movimiento: Movimiento) {
     const material = movimiento.material;
-
-    console.log('📤 Procesando salida - USANDO STOCK ENTITIES');
-    console.log(`📋 Material: ${material.nombre} (ID: ${material.id})`);
-    console.log(`📦 Cantidad a sacar: ${movimiento.cantidad}`);
 
     // 1. Verificar stock disponible mediante Stock entities
     const stocksActivos = await manager.find('stock', {
@@ -385,21 +365,13 @@ export class MovimientoService {
       }
     }
 
-    console.log(`✅ Salida procesada: -${movimiento.cantidad}`);
-
-    // ✅ NUEVO: Verificar y eliminar material si stock llega a cero
+    // Verificar y eliminar material si stock llega a cero
     await this.verificarYEliminarMaterialSinStock(manager, material.id);
   }
 
-  // Procesar préstamo con rastreo de stocks específicos
-  // ✅ NUEVA LÓGICA: Procesar préstamo sin propiedad stock
+  // Procesar préstamo - Optimizado sin logs
   private async procesarPrestamo(manager: any, movimiento: Movimiento) {
     const material = movimiento.material;
-
-    console.log('🔄 Procesando préstamo - SIN PROPIEDAD STOCK');
-    console.log(`📋 Material origen: ${material.nombre} (ID: ${material.id})`);
-    console.log(`📦 Cantidad a prestar: ${movimiento.cantidad}`);
-    console.log(`🎯 Sitio destino: ${movimiento.sitioDestinoId}`);
 
     // 1. Verificar stock disponible mediante Stock entities
     const stocksActivos = await manager.find('stock', {
@@ -441,7 +413,7 @@ export class MovimientoService {
     const materialPrestado = manager.create(Material, {
       nombre: material.nombre,
       descripcion: `${material.descripcion} (PRESTADO)`,
-      cantidadPrestada: movimiento.cantidad, // ✅ USAR cantidadPrestada en lugar de stock
+      cantidadPrestada: movimiento.cantidad,
       caduca: material.caduca,
       fechaVencimiento: material.fechaVencimiento,
       activo: true,
@@ -456,10 +428,8 @@ export class MovimientoService {
     });
 
     await manager.save(Material, materialPrestado);
-    console.log(`✅ Material prestado creado: ID ${materialPrestado.id}`);
 
-    // Método procesarPrestamo - PASO 4 CRÍTICO
-    // 4. ✅ NUEVO: Crear entidad Stock para el material prestado
+    // 4. Crear entidad Stock para el material prestado
     const stockPrestado = manager.create('stock', {
       materialId: materialPrestado.id,
       cantidad: movimiento.cantidad,
@@ -467,11 +437,8 @@ export class MovimientoService {
       requiereCodigo: false,
     });
     await manager.save('stock', stockPrestado);
-    console.log(
-      `✅ Stock creado para material prestado: +${movimiento.cantidad}`,
-    );
 
-    // ✅ NUEVO: Verificar y eliminar material origen si stock llega a cero
+    // Verificar y eliminar material origen si stock llega a cero
     await this.verificarYEliminarMaterialSinStock(manager, material.id);
 
     // 5. Actualizar el movimiento con referencia al material prestado
@@ -479,30 +446,17 @@ export class MovimientoService {
     await manager.save(Movimiento, movimiento);
   }
 
-  // ✅ NUEVA LÓGICA: Procesar devolución con eliminación completa vs resta parcial
+  // Procesar devolución - Optimizado sin logs
   private async procesarDevolucion(manager: any, movimiento: Movimiento) {
     const materialPrestado = movimiento.material;
 
-    console.log('🔙 Procesando devolución - LÓGICA COMPLETA vs PARCIAL');
-    console.log(
-      `📋 Material prestado: ${materialPrestado.nombre} (ID: ${materialPrestado.id})`,
-    );
-    console.log(
-      `📦 Cantidad prestada actual: ${materialPrestado.cantidadPrestada}`,
-    );
-    console.log(`📦 Cantidad a devolver: ${movimiento.cantidad}`);
-
     // 1. Validaciones básicas
     if (materialPrestado.esOriginal) {
-      throw new BadRequestException(
-        'No se puede devolver un material original',
-      );
+      throw new BadRequestException('No se puede devolver un material original');
     }
 
     if (!materialPrestado.materialOrigenId) {
-      throw new BadRequestException(
-        'Material prestado sin referencia al origen',
-      );
+      throw new BadRequestException('Material prestado sin referencia al origen');
     }
 
     if (!materialPrestado.cantidadPrestada) {
@@ -511,116 +465,105 @@ export class MovimientoService {
 
     if (materialPrestado.cantidadPrestada < movimiento.cantidad) {
       throw new BadRequestException(
-        `Cantidad a devolver excede la cantidad prestada. Disponible: ${materialPrestado.cantidadPrestada}, A devolver: ${movimiento.cantidad}`,
+        `Cantidad a devolver excede la cantidad prestada. Disponible: ${materialPrestado.cantidadPrestada}, A devolver: ${movimiento.cantidad}`
       );
     }
 
     // 2. Encontrar el material origen
-    // ANTES (incorrecto):
-    // where: { materialPrestado.materialOrigenId, activo: true }
-    
-    // DESPUÉS (corregido):
     const materialOrigen = await manager.findOne(Material, {
-    where: { id: materialPrestado.materialOrigenId, activo: true },
+      where: { id: materialPrestado.materialOrigenId, activo: true },
     });
 
     if (!materialOrigen) {
       throw new BadRequestException('Material origen no encontrado o inactivo');
     }
 
+    // 3. Devolver stock al material de origen (TRATAR COMO ENTRADA)
+    let stockOrigen = await manager.findOne(Stock, {
+      where: { materialId: materialOrigen.id, activo: true },
+    });
 
-    // Corregir línea 478 - cambiar de:
-    // await manager.update(Detalles, {... }, {...}) ;
-    
-    // A una sintaxis válida como:
-    // Líneas 495-497 - procesarDevolucion
-    // Cambiar de:
-    // await manager.update(
-    //   'detalles',
-    //   { materialId: materialPrestado.id },
-    //   { activo: false },
-    // );
-    // A:
+    if (stockOrigen) {
+      // Si existe stock, agregar la cantidad devuelta
+      stockOrigen.cantidad += movimiento.cantidad;
+      await manager.save(Stock, stockOrigen);
+    } else {
+      // Si no existe stock, crear uno nuevo
+      const nuevoStock = manager.create(Stock, {
+        materialId: materialOrigen.id,
+        cantidad: movimiento.cantidad,
+        activo: true,
+        fechaCreacion: new Date(),
+      });
+      await manager.save(Stock, nuevoStock);
+    }
+
+    // 4. Desactivar detalles relacionados al material prestado
     await manager.update(
       Detalles,
       { materialId: materialPrestado.id },
-      { activo: false },
+      { activo: false }
     );
-    
-    // Línea 607 - verificarYEliminarMaterialSinStock
-    // Cambiar de:
-    // await manager.update('detalles', { materialId }, { activo: false });
-    // A:
-    await manager.update(Detalles, { materialOrigenId: materialOrigen.id }, { activo: false });
-    console.log(`✅ Stock devuelto al origen: +${movimiento.cantidad}`);
 
-    // 4. ✅ LÓGICA CRÍTICA: Devolución completa vs parcial
+    // 5. Lógica de devolución (TRATAR COMO SALIDA DEL MATERIAL PRESTADO)
     if (movimiento.cantidad === materialPrestado.cantidadPrestada) {
-      // 🗑️ DEVOLUCIÓN COMPLETA: Eliminar material prestado completamente
-      console.log('🗑️ DEVOLUCIÓN COMPLETA - Eliminando material prestado');
-
-      // Desactivar detalles relacionados para preservar historial
+      // DEVOLUCIÓN COMPLETA: Marcar material prestado como inactivo
+      
+      // Desactivar todos los stocks del material prestado
       await manager.update(
-        'detalles',
+        Stock,
         { materialId: materialPrestado.id },
-        { activo: false },
+        { activo: false, cantidad: 0 }
       );
-
-      // Eliminar el material prestado completamente
-      await manager.remove(Material, materialPrestado);
-      console.log('✅ Material prestado eliminado completamente');
+      
+      // CORRECCIÓN: Marcar como inactivo en lugar de eliminar
+      materialPrestado.activo = false;
+      materialPrestado.cantidadPrestada = 0;
+      await manager.save(Material, materialPrestado);
     } else {
-      // ➖ DEVOLUCIÓN PARCIAL: Restar cantidad del material prestado Y su stock
-      console.log('➖ DEVOLUCIÓN PARCIAL - Restando cantidad y stock');
-
-      // Método procesarDevolucion - DEVOLUCIÓN PARCIAL CORREGIDA
-      // ✅ NUEVO: Reducir stock del material prestado
-      const stocksPrestados = await manager.find('stock', {
+      // DEVOLUCIÓN PARCIAL: Reducir cantidad prestada y stock (TRATAR COMO SALIDA)
+  
+      // Reducir stock del material prestado (SALIDA)
+      const stocksPrestados = await manager.find(Stock, {
         where: { materialId: materialPrestado.id, activo: true },
       });
-
+  
       let cantidadAReducir = movimiento.cantidad;
       for (const stock of stocksPrestados) {
         if (cantidadAReducir <= 0) break;
-
+  
         if (stock.cantidad >= cantidadAReducir) {
           stock.cantidad -= cantidadAReducir;
           if (stock.cantidad === 0) {
             stock.activo = false;
           }
-          await manager.save('stock', stock);
+          await manager.save(Stock, stock);
           cantidadAReducir = 0;
         } else {
           cantidadAReducir -= stock.cantidad;
           stock.cantidad = 0;
           stock.activo = false;
-          await manager.save('stock', stock);
+          await manager.save(Stock, stock);
         }
       }
-      console.log(
-        `✅ Stock del material prestado reducido: -${movimiento.cantidad}`,
-      );
-
-      // Actualizar cantidadPrestada
-      if (materialPrestado.cantidadPrestada! < movimiento.cantidad) {
-        materialPrestado.cantidadPrestada = 0;
-      } else {
-        materialPrestado.cantidadPrestada! -= movimiento.cantidad;
-      }
+  
+      // Actualizar cantidadPrestada (RESTA)
+      materialPrestado.cantidadPrestada! -= movimiento.cantidad;
       await manager.save(Material, materialPrestado);
-      console.log(
-        `✅ Cantidad prestada actualizada: ${materialPrestado.cantidadPrestada}`,
-      );
+      
+      // CORRECCIÓN: Si la cantidad prestada llega a 0, marcar como inactivo
+      if (materialPrestado.cantidadPrestada === 0) {
+        materialPrestado.activo = false;
+        await manager.save(Material, materialPrestado);
+      }
     }
   }
 
-  // ✅ NUEVO: Método auxiliar para eliminar materiales cuando stock llega a cero
+  // Método auxiliar optimizado sin logs
   private async verificarYEliminarMaterialSinStock(
     manager: any,
     materialId: number,
   ) {
-    console.log(`🔍 Verificando stock total del material ID: ${materialId}`);
-
     // 1. Calcular stock total activo del material
     const stocksActivos = await manager.find('stock', {
       where: { materialId, activo: true },
@@ -630,28 +573,19 @@ export class MovimientoService {
       (total, stock) => total + stock.cantidad,
       0,
     );
-    console.log(`📊 Stock total calculado: ${stockTotal}`);
 
     // 2. Si el stock total es cero, eliminar el material
     if (stockTotal === 0) {
-      console.log(
-        `🗑️ ELIMINACIÓN AUTOMÁTICA: Material ID ${materialId} tiene stock cero`,
-      );
-
       // Verificar que el material existe y es original (no prestado)
       const material = await manager.findOne(Material, {
         where: { id: materialId, activo: true },
       });
 
       if (!material) {
-        console.log(`⚠️ Material ID ${materialId} no encontrado o ya inactivo`);
         return;
       }
 
       if (material.esOriginal === false) {
-        console.log(
-          `⚠️ Material ID ${materialId} es prestado, no se elimina automáticamente`,
-        );
         return;
       }
 
@@ -661,9 +595,6 @@ export class MovimientoService {
       });
 
       if (prestamosActivos > 0) {
-        console.log(
-          `⚠️ Material ID ${materialId} tiene ${prestamosActivos} préstamos activos, no se puede eliminar`,
-        );
         return;
       }
 
@@ -676,16 +607,78 @@ export class MovimientoService {
 
         // 5. Eliminar el material
         await manager.remove(Material, material);
-
-        console.log(
-          `✅ Material "${material.nombre}" eliminado automáticamente por stock cero`,
-        );
       } catch (error) {
-        console.error(`❌ Error al eliminar material ID ${materialId}:`, error);
+        // Error silencioso para evitar logs
       }
-    } else {
-      console.log(`✅ Material ID ${materialId} mantiene stock: ${stockTotal}`);
     }
+  }
+
+  /**
+   * 🚀 OPTIMIZADO: Calcula saldos pendientes con una sola consulta
+   */
+  private async calcularSaldosPendientesBatch(prestamoIds: number[]): Promise<Map<number, number>> {
+    if (prestamoIds.length === 0) {
+      return new Map();
+    }
+
+    // Una sola consulta para obtener todos los materiales prestados
+    const materialesPrestados = await this.materialRepository
+      .createQueryBuilder('material')
+      .select(['material.id', 'material.cantidadPrestada'])
+      .innerJoin('movimiento', 'mov', 'mov.materialPrestamoId = material.id')
+      .where('mov.id IN (:...prestamoIds)', { prestamoIds })
+      .andWhere('material.activo = true')
+      .andWhere('material.cantidadPrestada > 0')
+      .getRawMany();
+
+    const saldosMap = new Map<number, number>();
+    
+    // Mapear resultados
+    for (const prestamo of materialesPrestados) {
+      const prestamoId = prestamo.mov_id;
+      const saldo = prestamo.material_cantidadPrestada || 0;
+      saldosMap.set(prestamoId, saldo);
+    }
+
+    return saldosMap;
+  }
+
+  /**
+   * 🚀 OPTIMIZADO: Filtra préstamos con saldo pendiente sin consultas N+1
+   */
+  private async filtrarPrestamosConSaldoPendienteOptimizado(movimientos: Movimiento[]): Promise<Movimiento[]> {
+    const movimientosFiltrados: Movimiento[] = [];
+    const prestamoIds: number[] = [];
+
+    // Separar préstamos de otros movimientos
+    for (const movimiento of movimientos) {
+      if (movimiento.tipoMovimiento?.nombre !== 'PRESTAMO') {
+        movimientosFiltrados.push(movimiento);
+      } else {
+        prestamoIds.push(movimiento.id);
+      }
+    }
+
+    // Si no hay préstamos, retornar solo los otros movimientos
+    if (prestamoIds.length === 0) {
+      return movimientosFiltrados;
+    }
+
+    // Obtener saldos pendientes con una sola consulta
+    const saldosMap = await this.calcularSaldosPendientesBatch(prestamoIds);
+
+    // Agregar préstamos con saldo pendiente
+    for (const movimiento of movimientos) {
+      if (movimiento.tipoMovimiento?.nombre === 'PRESTAMO') {
+        const saldoPendiente = saldosMap.get(movimiento.id) || 0;
+        if (saldoPendiente > 0) {
+          (movimiento as any).saldoPendiente = saldoPendiente;
+          movimientosFiltrados.push(movimiento);
+        }
+      }
+    }
+
+    return movimientosFiltrados;
   }
 
   async findPendientes() {
@@ -699,6 +692,7 @@ export class MovimientoService {
         'sitioDestino',
       ],
       order: { fechaPeticion: 'DESC' },
+      take: 50, // 🚀 PAGINACIÓN: Limitar a 50 registros
     });
 
     return {
@@ -727,75 +721,94 @@ export class MovimientoService {
     return movimiento;
   }
 
+  // 🚀 OPTIMIZADO: findAll con paginación y consultas optimizadas
   async findAll(filtros?: any) {
-    const query = this.movimientoRepository
-      .createQueryBuilder('movimiento')
+    const page = filtros?.page || 1;
+    const limit = Math.min(filtros?.limit || 50, 100); // Máximo 100 registros
+    const skip = (page - 1) * limit;
+
+    const queryBuilder = this.movimientoRepository.createQueryBuilder('movimiento')
       .leftJoinAndSelect('movimiento.material', 'material')
       .leftJoinAndSelect('movimiento.tipoMovimiento', 'tipoMovimiento')
       .leftJoinAndSelect('movimiento.solicitante', 'solicitante')
       .leftJoinAndSelect('movimiento.aprobador', 'aprobador')
-      .leftJoinAndSelect('movimiento.sitioDestino', 'sitioDestino')
       .leftJoinAndSelect('movimiento.sitioOrigen', 'sitioOrigen')
-      .where('movimiento.activo = :activo', { activo: true })
-      .orderBy('movimiento.fechaPeticion', 'DESC');
+      .leftJoinAndSelect('movimiento.sitioDestino', 'sitioDestino');
 
+    // Aplicar filtros existentes
     if (filtros?.estado) {
-      query.andWhere('movimiento.estado = :estado', { estado: filtros.estado });
+      queryBuilder.andWhere('movimiento.estado = :estado', { estado: filtros.estado });
     }
     if (filtros?.materialId) {
-      query.andWhere('movimiento.materialId = :materialId', {
-        materialId: filtros.materialId,
-      });
+      queryBuilder.andWhere('movimiento.materialId = :materialId', { materialId: filtros.materialId });
     }
     if (filtros?.tipoMovimientoId) {
-      query.andWhere('movimiento.tipoMovimientoId = :tipoMovimientoId', {
-        tipoMovimientoId: filtros.tipoMovimientoId,
-      });
+      queryBuilder.andWhere('movimiento.tipoMovimientoId = :tipoMovimientoId', { tipoMovimientoId: filtros.tipoMovimientoId });
     }
 
-    const movimientos = await query.getMany();
+    const [movimientos, total] = await queryBuilder
+      .orderBy('movimiento.fechaPeticion', 'DESC')
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
+
+    // Filtrar préstamos completamente devueltos con consulta optimizada
+    const movimientosFiltrados = await this.filtrarPrestamosConSaldoPendienteOptimizado(movimientos);
 
     return {
-      message: 'Movimientos obtenidos exitosamente',
-      data: movimientos,
+      data: movimientosFiltrados,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
     };
   }
 
-  // NUEVOS MÉTODOS - Agregar al final del archivo antes del cierre de clase
-  
-  // Obtener movimientos donde el usuario es solicitante o aprobador
+  // 🚀 OPTIMIZADO: findByUser con paginación
   async findByUser(userId: number, filtros?: any) {
-    const query = this.movimientoRepository
-      .createQueryBuilder('movimiento')
+    const page = filtros?.page || 1;
+    const limit = Math.min(filtros?.limit || 50, 100);
+    const skip = (page - 1) * limit;
+
+    const queryBuilder = this.movimientoRepository.createQueryBuilder('movimiento')
       .leftJoinAndSelect('movimiento.material', 'material')
       .leftJoinAndSelect('movimiento.tipoMovimiento', 'tipoMovimiento')
       .leftJoinAndSelect('movimiento.solicitante', 'solicitante')
       .leftJoinAndSelect('movimiento.aprobador', 'aprobador')
-      .leftJoinAndSelect('movimiento.sitioDestino', 'sitioDestino')
       .leftJoinAndSelect('movimiento.sitioOrigen', 'sitioOrigen')
-      .where('movimiento.activo = :activo', { activo: true })
-      .andWhere('(movimiento.solicitanteId = :userId OR movimiento.aprobadorId = :userId)', { userId })
-      .orderBy('movimiento.fechaPeticion', 'DESC');
+      .leftJoinAndSelect('movimiento.sitioDestino', 'sitioDestino')
+      .where('movimiento.solicitanteId = :userId', { userId });
 
+    // Aplicar filtros existentes
     if (filtros?.estado) {
-      query.andWhere('movimiento.estado = :estado', { estado: filtros.estado });
+      queryBuilder.andWhere('movimiento.estado = :estado', { estado: filtros.estado });
     }
     if (filtros?.materialId) {
-      query.andWhere('movimiento.materialId = :materialId', {
-        materialId: filtros.materialId,
-      });
+      queryBuilder.andWhere('movimiento.materialId = :materialId', { materialId: filtros.materialId });
     }
     if (filtros?.tipoMovimientoId) {
-      query.andWhere('movimiento.tipoMovimientoId = :tipoMovimientoId', {
-        tipoMovimientoId: filtros.tipoMovimientoId,
-      });
+      queryBuilder.andWhere('movimiento.tipoMovimientoId = :tipoMovimientoId', { tipoMovimientoId: filtros.tipoMovimientoId });
     }
 
-    const movimientos = await query.getMany();
+    const [movimientos, total] = await queryBuilder
+      .orderBy('movimiento.fechaPeticion', 'DESC')
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
+
+    // Filtrar préstamos completamente devueltos con consulta optimizada
+    const movimientosFiltrados = await this.filtrarPrestamosConSaldoPendienteOptimizado(movimientos);
 
     return {
-      message: 'Movimientos del usuario obtenidos exitosamente',
-      data: movimientos,
+      data: movimientosFiltrados,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
     };
   }
 
@@ -811,6 +824,7 @@ export class MovimientoService {
         'sitioDestino',
       ],
       order: { fechaPeticion: 'DESC' },
+      take: 50, // 🚀 PAGINACIÓN: Limitar a 50 registros
     });
 
     return {
@@ -831,7 +845,8 @@ export class MovimientoService {
       .leftJoinAndSelect('movimiento.sitioOrigen', 'sitioOrigen')
       .where('movimiento.activo = :activo', { activo: true })
       .andWhere('movimiento.solicitanteId = :solicitanteId', { solicitanteId })
-      .orderBy('movimiento.fechaPeticion', 'DESC');
+      .orderBy('movimiento.fechaPeticion', 'DESC')
+      .take(50); // 🚀 PAGINACIÓN: Limitar a 50 registros
 
     if (filtros?.estado) {
       query.andWhere('movimiento.estado = :estado', { estado: filtros.estado });
@@ -869,11 +884,9 @@ export class MovimientoService {
     return movimiento;
   }
 
-  // Versión segura de aprobar/rechazar que verifica el aprobador
+  // Versión segura de aprobar/rechazar que verifica el aprobador - Optimizada sin logs
   async aprobarRechazarByUser(id: number, dto: AprobarMovimientoDto, aprobadorId: number) {
     return await this.dataSource.transaction(async (manager) => {
-      console.log(`🔄 ${dto.estado === 'APROBADO' ? 'Aprobando' : 'Rechazando'} movimiento ${id} por usuario ${aprobadorId}`);
-
       const movimiento = await manager.findOne(Movimiento, {
         where: { id, aprobadorId }, // Verificar que el usuario sea el aprobador
         relations: [

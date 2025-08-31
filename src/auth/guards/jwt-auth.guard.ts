@@ -4,9 +4,7 @@ import { AuthGuard } from '@nestjs/passport';
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
   handleRequest(err, user, info) {
-    console.log('🔑 JwtAuthGuard - user:', user);
-    console.log('🔑 JwtAuthGuard - err:', err);
-    console.log('🔑 JwtAuthGuard - info:', info);
+   
     
     if (err || !user) {
       console.log(
@@ -19,7 +17,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       );
     }
     
-    console.log('✅ Usuario autenticado correctamente:', user.email || user.id);
+  //  console.log('✅ Usuario autenticado correctamente:', user.email || user.id);
     return user;
   }
 }
