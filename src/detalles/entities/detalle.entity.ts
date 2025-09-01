@@ -24,12 +24,12 @@ export class Detalles {
   tipoMovimientoId: number;
 
   // Material y cantidad (solo informativo)
-  @ManyToOne(() => Material, { eager: true })
+  @ManyToOne(() => Material, { eager: true, nullable: true })
   @JoinColumn({ name: 'materialId' })
-  material: Material;
-
-  @Column()
-  materialId: number;
+  material?: Material;
+  
+  @Column({ nullable: true })
+  materialId?: number;
 
   @Column()
   cantidad: number;

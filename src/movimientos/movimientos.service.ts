@@ -16,6 +16,7 @@ import { Detalles } from 'src/detalles/entities/detalle.entity';
 import { Stock } from 'src/stock/entities/stock.entity';
 import { StockSelectionService } from 'src/stock/stock-selection.service';
 import { NotificationsService } from '../notificaciones/notificaciones.service';
+import { MaterialService } from '../materiales/materiales.service';
 
 @Injectable()
 export class MovimientoService {
@@ -35,6 +36,7 @@ export class MovimientoService {
     private readonly dataSource: DataSource,
     private readonly stockSelectionService: StockSelectionService,
     private readonly notificationsService: NotificationsService,
+    private readonly materialService: MaterialService,
   ) {}
 
   // Crear nueva petición de movimiento
@@ -414,6 +416,13 @@ export class MovimientoService {
     // 2. Reducir stock del material origen
     await this.reducirStockFIFO(manager, material.id, movimiento.cantidad);
 
+    // 🆕 3. DESACTIVAR el material original si se presta completamente
+    const stockRestante = await this.calcularStockDisponible(manager, material.id);
+    if (stockRestante === 0) {
+      material.activo = false;
+      await manager.save(Material, material);
+    }
+
     // 3. NUEVA VALIDACIÓN: Verificar si ya existe un material prestado activo
     let materialPrestado = await manager.findOne(Material, {
       where: {
@@ -472,16 +481,35 @@ export class MovimientoService {
   private async procesarDevolucion(manager: any, movimiento: Movimiento) {
     const materialPrestado = movimiento.material;
 
+    // 🆕 NUEVA VALIDACIÓN: Verificar que el material prestado aún existe y está activo
+    const materialPrestadoActual = await manager.findOne(Material, {
+      where: { 
+        id: materialPrestado.id, 
+        activo: true,
+        esOriginal: false,
+        requiereDevolucion: true
+      }
+    });
+
+    if (!materialPrestadoActual) {
+      throw new BadRequestException(
+        `El material prestado con ID ${materialPrestado.id} no existe, ya fue desactivado o no requiere devolución`
+      );
+    }
+
+    // Usar el material actualizado de la base de datos
+    const materialActualizado = materialPrestadoActual;
+
     // 1. Validaciones básicas
-    if (materialPrestado.esOriginal) {
+    if (materialActualizado.esOriginal) {
       throw new BadRequestException(
         'No se puede devolver un material original',
       );
     }
 
     if (
-      !materialPrestado.materialOrigenId ||
-      !materialPrestado.cantidadPrestada
+      !materialActualizado.materialOrigenId ||
+      !materialActualizado.cantidadPrestada
     ) {
       throw new BadRequestException(
         'Material prestado sin referencia válida al origen',
@@ -490,7 +518,7 @@ export class MovimientoService {
 
     // 2. Encontrar el material origen
     const materialOrigen = await manager.findOne(Material, {
-      where: { id: materialPrestado.materialOrigenId, activo: true },
+      where: { id: materialActualizado.materialOrigenId, activo: true },
     });
 
     if (!materialOrigen) {
@@ -499,9 +527,9 @@ export class MovimientoService {
 
     // 3. Determinar tipo de devolución
     const esDevolucionCompleta =
-      movimiento.cantidad >= materialPrestado.cantidadPrestada;
+      movimiento.cantidad >= materialActualizado.cantidadPrestada;
     const cantidadADevolver = esDevolucionCompleta
-      ? materialPrestado.cantidadPrestada
+      ? materialActualizado.cantidadPrestada
       : movimiento.cantidad;
 
     // 4. Devolver stock al material origen
@@ -511,21 +539,46 @@ export class MovimientoService {
       cantidadADevolver,
     );
 
-    // 5. DESACTIVAR AUTOMÁTICAMENTE el material prestado (tanto para devolución completa como parcial)
-    materialPrestado.activo = false;
-    materialPrestado.cantidadPrestada = 0;
+    // 🆕 5. REACTIVAR el material original al recibir devolución
+    if (!materialOrigen.activo) {
+      // ✅ USAR MaterialService.cambiarEstado para reactivar el material original
+      await this.materialService.cambiarEstado(
+        materialOrigen.id, 
+        true, 
+        `Reactivado automáticamente por devolución de ${cantidadADevolver} unidades`,
+        movimiento.solicitanteId
+      );
+      console.log(`✅ Material original ${materialOrigen.nombre} reactivado por devolución`);
+    }
 
-    // Desactivar todos los stocks del material prestado
-    await manager.update(
-      Stock,
-      { materialId: materialPrestado.id },
-      { activo: false, cantidad: 0 },
-    );
+ 
+    if (esDevolucionCompleta) {
+     
+      await this.materialService.cambiarEstado(
+        materialActualizado.id, 
+        false, 
+        `Material desactivado automáticamente por devolución completa de ${cantidadADevolver} unidades`,
+        movimiento.solicitanteId
+      );
+      
+      // Actualizar cantidad prestada a 0
+      materialActualizado.cantidadPrestada = 0;
+      await manager.save(Material, materialActualizado);
+      
+      console.log(`✅ Material prestado ${materialActualizado.nombre} DESACTIVADO por devolución completa via PUT`);
+    } else {
+      // Devolución parcial: solo reducir la cantidad prestada
+      materialActualizado.cantidadPrestada -= cantidadADevolver;
+      await manager.save(Material, materialActualizado);
+      console.log(`✅ Devolución parcial: ${cantidadADevolver} unidades. Cantidad restante: ${materialActualizado.cantidadPrestada}`);
+    }
 
-    await manager.save(Material, materialPrestado);
-
-    // 6. Actualizar cantidad del movimiento para reflejar la devolución real
+    // 7. Actualizar cantidad del movimiento para reflejar la devolución real
     movimiento.cantidad = cantidadADevolver;
+
+    console.log(
+      `✅ Devolución procesada: ${cantidadADevolver} unidades de ${materialActualizado.nombre}. Material ${esDevolucionCompleta ? 'DESACTIVADO via PUT' : 'cantidad reducida'}`
+    );
   }
 
   // Método auxiliar para devolver stock al origen
@@ -963,6 +1016,47 @@ export class MovimientoService {
         message: `Movimiento ${dto.estado.toLowerCase()} exitosamente`,
         data: movimiento,
       };
+    });
+  }
+
+  // ✅ NUEVO MÉTODO: Aprobar movimiento y cambiar estado del material
+  async aprobarYCambiarEstadoMaterial(
+    movimientoId: number,
+    materialId: number,
+    nuevoEstado: boolean,
+    dto: AprobarMovimientoDto,
+    usuarioId: number
+  ) {
+    return this.dataSource.transaction(async (manager) => {
+      try {
+        // 1. Aprobar el movimiento normalmente
+        const movimientoAprobado = await this.aprobarRechazarByUser(
+          movimientoId, 
+          dto, 
+          usuarioId
+        );
+
+        // 2. Cambiar el estado del material directamente
+        await this.materialService.cambiarEstado(
+          materialId,
+          nuevoEstado,
+          `Estado cambiado automáticamente por aprobación de movimiento ${movimientoId}`,
+          usuarioId
+        );
+
+        console.log(`✅ Movimiento ${movimientoId} aprobado y material ${materialId} ${nuevoEstado ? 'activado' : 'desactivado'}`);
+
+        return {
+          message: `Movimiento aprobado y material ${nuevoEstado ? 'activado' : 'desactivado'} exitosamente`,
+          movimiento: movimientoAprobado,
+          materialEstado: nuevoEstado
+        };
+      } catch (error) {
+        console.error('Error en aprobarYCambiarEstadoMaterial:', error);
+        throw new BadRequestException(
+          `Error al aprobar movimiento y cambiar estado del material: ${error.message}`
+        );
+      }
     });
   }
 }

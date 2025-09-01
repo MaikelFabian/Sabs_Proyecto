@@ -174,23 +174,18 @@ export class MaterialService {
         console.log(`✅ Stocks eliminados: ${stocksCount} registros`);
       }
 
-      // 5. Desvincular referencias en Detalles (preservar historial)
+      // 5. Eliminar completamente los detalles relacionados
       const detallesCount = await this.detallesRepo.count({
         where: { materialId: id },
       });
       console.log(
         `📊 Detalles encontrados que referencian el material: ${detallesCount}`,
       );
-
+      
       if (detallesCount > 0) {
-        const updateResult = await this.detallesRepo.update(
-          { materialId: id },
-          {
-            activo: false, // Marcar como inactivo para indicar que el material fue eliminado
-          },
-        );
+        await this.detallesRepo.delete({ materialId: id });
         console.log(
-          `✅ Detalles desvinculados: ${updateResult.affected} registros`,
+          `✅ Detalles eliminados: ${detallesCount} registros`,
         );
       }
 
@@ -513,5 +508,59 @@ export class MaterialService {
     console.log(
       `✅ Devolución automática procesada: ${materialPrestado.nombre}`,
     );
+  }
+
+  async cambiarEstado(id: number, activo: boolean, observaciones?: string, usuarioId?: number) {
+    // Buscar el material
+    const material = await this.repo.findOne({
+      where: { id },
+      relations: ['sitio', 'persona']
+    });
+
+    if (!material) {
+      throw new NotFoundException(`Material con ID ${id} no encontrado`);
+    }
+
+    // Verificar si el material tiene préstamos pendientes
+    if (!activo) {
+      const prestamosPendientes = await this.movimientoRepo.count({
+        where: {
+          material: { id },
+          tipoMovimiento: { nombre: 'prestamo' },
+          estado: 'APROBADO'
+        }
+      });
+
+      if (prestamosPendientes > 0) {
+        throw new BadRequestException(
+          'No se puede desactivar el material porque tiene préstamos pendientes de devolución'
+        );
+      }
+    }
+
+    // Actualizar el estado del material
+    material.activo = activo;
+    material.fechaActualizacion = new Date().toISOString();
+    
+    const materialActualizado = await this.repo.save(material);
+
+    // Si se está desactivando, también desactivar el stock asociado
+    if (!activo) {
+      await this.stockRepo.update(
+        { materialId: id },
+        { activo: false }
+      );
+    } else {
+      // Si se está reactivando, reactivar el stock asociado
+      await this.stockRepo.update(
+        { materialId: id },
+        { activo: true }
+      );
+    }
+
+    return {
+      message: `Material ${activo ? 'activado' : 'desactivado'} correctamente`,
+      data: materialActualizado
+    };
   }
 }

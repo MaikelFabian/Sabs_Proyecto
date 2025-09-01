@@ -121,5 +121,15 @@ export class MaterialController {
     return this.service.remove(numericId);
   }
 
+  @Patch(':id/estado')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
+  @Roles('EDITAR_MATERIALES')
+  async cambiarEstado(
+    @Param('id') id: string,
+    @Body() dto: { activo: boolean; observaciones?: string },
+    @CurrentUser() user: any
+  ) {
+    return this.service.cambiarEstado(+id, dto.activo, dto.observaciones, user.sub);
+  }
   // }
 }

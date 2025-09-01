@@ -45,6 +45,27 @@ export class MovimientoController {
     return this.service.findSolicitadosByUser(user.sub, filtros);
   }
 
+  // ✅ NUEVA RUTA: Aprobar movimiento y cambiar estado del material
+  @Patch(':id/aprobar/material/:materialId/estado/:estado')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
+  @Roles('APROBAR_MOVIMIENTOS')
+  async aprobarYCambiarEstadoMaterial(
+    @Param('id') movimientoId: string,
+    @Param('materialId') materialId: string,
+    @Param('estado') estado: string,
+    @Body() dto: AprobarMovimientoDto,
+    @CurrentUser() user: any
+  ) {
+    const estadoBoolean = estado === 'true';
+    return this.service.aprobarYCambiarEstadoMaterial(
+      +movimientoId, 
+      +materialId, 
+      estadoBoolean, 
+      dto, 
+      user.sub
+    );
+  }
+
   // Aprobar o rechazar movimiento con validación de usuario
   @Patch(':id/aprobar')
   @UseGuards(JwtAuthGuard, PermisosGuard)

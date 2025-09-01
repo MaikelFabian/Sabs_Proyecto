@@ -19,14 +19,6 @@ const normalizarNombrePermiso = (nombre: string): string => {
 
 // Mapeo manual para casos especiales
 const mapeoEspecial: { [key: string]: string } = {
-  // Eliminar o comentar estas líneas del mapeoEspecial:
-  // CATEGORÍAS: 'CATEGORIASMATERIAL',
-  // TIPOSDESITIO: 'TIPOSITIOS',
-  // TIPOSDEMATERIAL: 'TIPOMATERIALES',
-  // UNIDADESDEMEDIDA: 'UNIDADESMEDIDA',
-  // GESTIÓNDECATEGORÍAS: 'CATEGORIASMATERIAL',
-  // GESTIÓNDETIPOSDESITIO: 'TIPOSITIOS',
-  // GESTIÓNDETIPOSDEMATERIAL: 'TIPOMATERIALES',
   ÁREASPORCENTRO: 'AREACENTROS',
   UNIDADESDEMEDIDA: 'UNIDADESMEDIDA',
   TIPOSDEMATERIAL: 'TIPOMATERIALES',

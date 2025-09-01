@@ -11,6 +11,7 @@ import { Sitio } from 'src/sitios/entities/sitio.entity';
 import { Detalles } from 'src/detalles/entities/detalle.entity';
 import { StockModule } from 'src/stock/stock.module';
 import { NotificationsModule } from '../notificaciones/notificaciones.module';
+import { MaterialesModule } from '../materiales/materiales.module'; // ✅ NUEVO: Importar MaterialesModule
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { NotificationsModule } from '../notificaciones/notificaciones.module';
     ]),
     StockModule,
     NotificationsModule, // Importar el módulo de notificaciones
+    MaterialesModule, // ✅ NUEVO: Agregar MaterialesModule para usar MaterialService
   ],
   controllers: [MovimientoController],
   providers: [MovimientoService],
