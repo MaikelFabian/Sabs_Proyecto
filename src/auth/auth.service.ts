@@ -112,7 +112,7 @@ export class AuthService {
       if (decoded.type !== 'password_reset') {
         return { valid: false };
       }
-      const userResponse = await this.personasService.findOne(decoded.sub);
+      const userResponse = await this.personasService.findOneComplete(decoded.sub);
       const user = userResponse.data;
       return { valid: true, email: user?.correo };
     } catch (error) {

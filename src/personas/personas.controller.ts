@@ -1,5 +1,5 @@
 
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, ParseIntPipe } from '@nestjs/common';
 // Cambiar línea 3 de:
 // import { PersonasService } from './personas.service'
 // A:
@@ -24,10 +24,18 @@ export class PersonaController {
   @Get()
   @UseGuards(JwtAuthGuard, PermisosGuard)
   @Roles('VER_PERSONAS')
-  findAll() {
-    return this.personaService.findAll();
+  findAll(@Query('page') page?: string, @Query('limit') limit?: string) {
+    const pageNum = page ? Math.max(1, parseInt(page)) : 1;
+    const limitNum = limit ? Math.min(100, Math.max(1, parseInt(limit))) : 50;
+    return this.personaService.findAll(pageNum, limitNum);
   }
 
+  @Get(':id/complete')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
+  @Roles('VER_PERSONAS')
+  findOneComplete(@Param('id', ParseIntPipe) id: number) {
+    return this.personaService.findOneComplete(id);
+  }
   // ✅ MOVIDO: Rutas específicas ANTES de rutas con parámetros
   @Get('completa')
   @UseGuards(JwtAuthGuard, PermisosGuard)
@@ -47,7 +55,7 @@ export class PersonaController {
   @UseGuards(JwtAuthGuard, PermisosGuard)
   @Roles('VER_PERSONAS')
   findOne(@Param('id') id: string) {
-    return this.personaService.findOne(+id);
+    return this.personaService.findOneComplete(+id);
   }
 
   @Patch(':id')

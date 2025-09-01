@@ -1,5 +1,8 @@
-
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Material } from './entities/materiale.entity';
 import { Movimiento } from '../movimientos/entities/movimiento.entity';
@@ -7,7 +10,7 @@ import { Detalles } from '../detalles/entities/detalle.entity';
 import { Stock } from '../stock/entities/stock.entity';
 import { Persona } from '../personas/entities/persona.entity';
 import { Sitio } from '../sitios/entities/sitio.entity'; // Agregar import
-import { In, Repository } from 'typeorm';
+import { In, Repository, MoreThan } from 'typeorm';
 import { CreateMaterialDto } from './dto/create-materiale.dto';
 import { UpdateMaterialDto } from './dto/update-materiale.dto';
 import { StockService } from '../stock/stock.service';
@@ -39,134 +42,191 @@ export class MaterialService {
   async obtenerStockCompleto() {
     return this.repo.find({
       select: ['id', 'nombre', 'descripcion', 'activo', 'fechaVencimiento'],
-      relations: ['tipoMaterial', 'unidadMedida', 'categoriaMaterial', 'stocks'],
-      where: { activo: true }
+      relations: [
+        'tipoMaterial',
+        'unidadMedida',
+        'categoriaMaterial',
+        'stocks',
+      ],
+      where: { activo: true },
     });
   }
 
   async findAll() {
     const lista = await this.repo.find({
-      relations: ['tipoMaterial', 'unidadMedida', 'categoriaMaterial', 'detalles', 'sitio', 'registradoPor', 'stocks'],
+      where: { activo: true },
+      relations: [
+        'tipoMaterial',
+        'unidadMedida',
+        'categoriaMaterial',
+        'detalles',
+        'sitio',
+        'registradoPor',
+        'stocks',
+      ],
     });
     return { message: 'Listado de materiales', data: lista };
   }
 
   async findOne(id: number) {
     const encontrado = await this.repo.findOne({
-      where: { id },
-      relations: ['tipoMaterial', 'unidadMedida', 'categoriaMaterial', 'detalles', 'sitio', 'registradoPor', 'stocks'],
+      where: { id, activo: true },
+      relations: [
+        'tipoMaterial',
+        'unidadMedida',
+        'categoriaMaterial',
+        'detalles',
+        'sitio',
+        'registradoPor',
+        'stocks',
+      ],
     });
-    if (!encontrado) throw new NotFoundException(`Material no encontrado id: ${id}`);
+    if (!encontrado)
+      throw new NotFoundException(`Material no encontrado id: ${id}`);
     return { message: 'Material encontrado', data: encontrado };
   }
 
   async update(id: number, dto: UpdateMaterialDto) {
-    const { detalles, movimientos, tipoMaterial, unidadMedida, categoriaMaterial, registradoPor, stocks, ...updateData } = dto as any;
-    
+    const {
+      detalles,
+      movimientos,
+      tipoMaterial,
+      unidadMedida,
+      categoriaMaterial,
+      registradoPor,
+      stocks,
+      ...updateData
+    } = dto as any;
+
     await this.repo.update(id, updateData);
     const actualizado = await this.repo.findOne({
       where: { id },
-      relations: ['tipoMaterial', 'unidadMedida', 'categoriaMaterial', 'detalles', 'sitio', 'registradoPor', 'stocks'],
+      relations: [
+        'tipoMaterial',
+        'unidadMedida',
+        'categoriaMaterial',
+        'detalles',
+        'sitio',
+        'registradoPor',
+        'stocks',
+      ],
     });
     return { message: 'Material actualizado', data: actualizado };
   }
 
   async remove(id: number) {
     // 1. Verificar si el material existe
-    const material = await this.repo.findOne({ 
+    const material = await this.repo.findOne({
       where: { id },
-      relations: ['materialOrigen', 'stocks']
+      relations: ['materialOrigen', 'stocks'],
     });
     if (!material) {
       throw new NotFoundException(`Material no encontrado con ID: ${id}`);
     }
 
-    console.log(`🗑️ Iniciando eliminación del material ID ${id}: ${material.nombre}`);
+    console.log(
+      `🗑️ Iniciando eliminación del material ID ${id}: ${material.nombre}`,
+    );
 
     try {
-      // 2. Si es un material prestado, verificar si se puede eliminar
+      // 2. Si es un material prestado con cantidad pendiente, procesar devolución automática
       if (material.materialOrigenId && (material.cantidadPrestada ?? 0) > 0) {
-        throw new BadRequestException(
-          `No se puede eliminar el material "${material.nombre}" porque es un préstamo activo. ` +
-          `Debe procesarse la devolución primero.`
+        console.log(
+          `🔄 Procesando devolución automática de ${material.cantidadPrestada} unidades`,
         );
+
+        // Procesar devolución automática completa
+        await this.procesarDevolucionAutomatica(material);
+
+        console.log(`✅ Devolución automática completada`);
       }
 
-      // 3. Si es un material original con préstamos activos, verificar
+      // 3. Si es un material original con préstamos activos, procesar devoluciones automáticas
       if (material.esOriginal) {
-        const prestamosActivos = await this.repo.count({
-          where: { 
+        const prestamosActivos = await this.repo.find({
+          where: {
             materialOrigenId: id,
-            cantidadPrestada: { $gt: 0 } as any
-          }
+            cantidadPrestada: MoreThan(0),
+          },
         });
-        
-        if (prestamosActivos > 0) {
-          throw new BadRequestException(
-            `No se puede eliminar el material "${material.nombre}" porque tiene ${prestamosActivos} préstamos activos. ` +
-            `Debe procesarse la devolución de todos los préstamos primero.`
+
+        if (prestamosActivos.length > 0) {
+          console.log(
+            `🔄 Procesando ${prestamosActivos.length} devoluciones automáticas de préstamos activos`,
           );
+
+          for (const prestamo of prestamosActivos) {
+            await this.procesarDevolucionAutomatica(prestamo);
+          }
+
+          console.log(`✅ Todas las devoluciones automáticas completadas`);
         }
       }
 
       // 4. Eliminar registros de Stock asociados
-      const stocksCount = await this.stockRepo.count({ where: { materialId: id } });
+      const stocksCount = await this.stockRepo.count({
+        where: { materialId: id },
+      });
       console.log(`📊 Stocks encontrados: ${stocksCount}`);
-      
+
       if (stocksCount > 0) {
         await this.stockRepo.delete({ materialId: id });
         console.log(`✅ Stocks eliminados: ${stocksCount} registros`);
       }
 
       // 5. Desvincular referencias en Detalles (preservar historial)
-      const detallesCount = await this.detallesRepo.count({ where: { materialId: id } });
-      console.log(`📊 Detalles encontrados que referencian el material: ${detallesCount}`);
-      
+      const detallesCount = await this.detallesRepo.count({
+        where: { materialId: id },
+      });
+      console.log(
+        `📊 Detalles encontrados que referencian el material: ${detallesCount}`,
+      );
+
       if (detallesCount > 0) {
         const updateResult = await this.detallesRepo.update(
           { materialId: id },
-          { 
-            activo: false // Marcar como inactivo para indicar que el material fue eliminado
-          }
+          {
+            activo: false, // Marcar como inactivo para indicar que el material fue eliminado
+          },
         );
-        console.log(`✅ Detalles desvinculados: ${updateResult.affected} registros`);
+        console.log(
+          `✅ Detalles desvinculados: ${updateResult.affected} registros`,
+        );
       }
 
       // 6. Eliminar movimientos relacionados (tanto como material principal como préstamo)
-      const movimientosCount = await this.movimientoRepo.count({ 
-        where: [
-          { materialId: id },
-          { materialPrestamoId: id }
-        ]
+      const movimientosCount = await this.movimientoRepo.count({
+        where: [{ materialId: id }, { materialPrestamoId: id }],
       });
       console.log(`📊 Movimientos encontrados: ${movimientosCount}`);
-      
+
       if (movimientosCount > 0) {
         await this.movimientoRepo.delete({ materialId: id });
         await this.movimientoRepo.delete({ materialPrestamoId: id });
         console.log(`✅ Movimientos eliminados: ${movimientosCount} registros`);
       }
-      
+
       // 7. Eliminar el material
       await this.repo.delete(id);
       console.log(`✅ Material eliminado exitosamente`);
-      
-      return { 
+
+      return {
         message: `Material "${material.nombre}" eliminado exitosamente. Historial preservado en ${detallesCount} detalles.`,
         data: {
           materialEliminado: material.nombre,
           stocksEliminados: stocksCount,
           detallesPreservados: detallesCount,
-          movimientosEliminados: movimientosCount
-        }
+          movimientosEliminados: movimientosCount,
+        },
       };
-      
     } catch (error) {
       console.error(`❌ Error al eliminar material ID ${id}:`, error);
       if (error instanceof BadRequestException) {
         throw error;
       }
-      throw new BadRequestException(`Error al eliminar material: ${error.message}`);
+      throw new BadRequestException(
+        `Error al eliminar material: ${error.message}`,
+      );
     }
   }
 
@@ -174,16 +234,22 @@ export class MaterialService {
   async getMaterialWithActiveStocks(id: number) {
     const material = await this.repo.findOne({
       where: { id },
-      relations: ['stocks', 'tipoMaterial', 'unidadMedida', 'categoriaMaterial'],
+      relations: [
+        'stocks',
+        'tipoMaterial',
+        'unidadMedida',
+        'categoriaMaterial',
+      ],
     });
-    if (!material) throw new NotFoundException(`Material no encontrado id: ${id}`);
-    
+    if (!material)
+      throw new NotFoundException(`Material no encontrado id: ${id}`);
+
     // Filtrar solo stocks activos
-    const activeStocks = material.stocks?.filter(stock => stock.activo) || [];
-    
+    const activeStocks = material.stocks?.filter((stock) => stock.activo) || [];
+
     return {
       message: 'Material con stocks activos',
-      data: { ...material, activeStocks }
+      data: { ...material, activeStocks },
     };
   }
 
@@ -192,146 +258,260 @@ export class MaterialService {
       where: { id: materialId },
       relations: ['stocks'],
     });
-    if (!material) throw new NotFoundException(`Material no encontrado id: ${materialId}`);
-    
-    return material.stocks?.filter(stock => stock.activo)
-      .reduce((total, stock) => total + stock.cantidad, 0) || 0;
+    if (!material)
+      throw new NotFoundException(`Material no encontrado id: ${materialId}`);
+
+    return (
+      material.stocks
+        ?.filter((stock) => stock.activo)
+        .reduce((total, stock) => total + stock.cantidad, 0) || 0
+    );
   }
 
   // Nuevos métodos con filtrado por usuario
   async findByUserSite(userId: number) {
     // Obtener sitios del usuario desde su perfil/permisos
     const userSites = await this.getUserSites(userId);
-    
+
     const lista = await this.repo.find({
-      where: { 
+      where: {
         activo: true,
-        sitioId: In(userSites) 
+        sitioId: In(userSites),
       },
-      relations: ['tipoMaterial', 'unidadMedida', 'categoriaMaterial', 'detalles', 'sitio', 'registradoPor', 'stocks'],
+      relations: [
+        'tipoMaterial',
+        'unidadMedida',
+        'categoriaMaterial',
+        'detalles',
+        'sitio',
+        'registradoPor',
+        'stocks',
+      ],
     });
     return { message: 'Materiales del usuario', data: lista };
   }
-  
+
   async findOneByUser(id: number, userId: number) {
     const userSites = await this.getUserSites(userId);
-    
+
     const encontrado = await this.repo.findOne({
-      where: { 
-        id, 
+      where: {
+        id,
         activo: true,
-        sitioId: In(userSites)
+        sitioId: In(userSites),
       },
-      relations: ['tipoMaterial', 'unidadMedida', 'categoriaMaterial', 'detalles', 'sitio', 'registradoPor', 'stocks'],
+      relations: [
+        'tipoMaterial',
+        'unidadMedida',
+        'categoriaMaterial',
+        'detalles',
+        'sitio',
+        'registradoPor',
+        'stocks',
+      ],
     });
-    
+
     if (!encontrado) {
-      throw new NotFoundException(`Material no encontrado o no tienes acceso a él`);
+      throw new NotFoundException(
+        `Material no encontrado o no tienes acceso a él`,
+      );
     }
-    
+
     return { message: 'Material encontrado', data: encontrado };
   }
-  
+
   async obtenerStockCompletoByUser(userId: number) {
     const userSites = await this.getUserSites(userId);
-    
+
     return this.repo.find({
       select: ['id', 'nombre', 'descripcion', 'activo', 'fechaVencimiento'],
-      relations: ['tipoMaterial', 'unidadMedida', 'categoriaMaterial', 'stocks'],
-      where: { 
+      relations: [
+        'tipoMaterial',
+        'unidadMedida',
+        'categoriaMaterial',
+        'stocks',
+      ],
+      where: {
         activo: true,
-        sitioId: In(userSites)
-      }
+        sitioId: In(userSites),
+      },
     });
   }
-  
+
   // Método auxiliar para obtener sitios del usuario (solución temporal)
   private async getUserSites(userId: number): Promise<number[]> {
     // SOLUCIÓN TEMPORAL: Retornar todos los sitios activos
     // TODO: Implementar lógica específica de usuario-sitio según requerimientos
     const sitiosActivos = await this.sitioRepo.find({
       where: { activo: true },
-      select: ['id']
+      select: ['id'],
     });
-    
-    return sitiosActivos.map(sitio => sitio.id);
+
+    return sitiosActivos.map((sitio) => sitio.id);
   }
-  
-  // Agregar después de la línea 259
-  // 🚀 VERSIÓN OPTIMIZADA - Reemplaza el método existente
-  async findMaterialesPrestadosConSaldoPendiente(userId: number, page: number = 1, limit: number = 50) {
-    const userSites = await this.getUserSites(userId);
-    const maxLimit = Math.min(limit, 100); // Máximo 100 registros
-    const skip = (page - 1) * maxLimit;
-  
-    // 🚀 UNA SOLA CONSULTA OPTIMIZADA con paginación
-    const query = this.repo
-      .createQueryBuilder('material')
-      .leftJoinAndSelect('material.tipoMaterial', 'tipoMaterial')
-      .leftJoinAndSelect('material.unidadMedida', 'unidadMedida')
-      .leftJoinAndSelect('material.categoriaMaterial', 'categoriaMaterial')
-      .leftJoinAndSelect('material.sitio', 'sitio')
-      .leftJoinAndSelect('material.registradoPor', 'registradoPor')
-      // 🚀 JOIN OPTIMIZADO para calcular saldo en una sola consulta
-      .leftJoin(
-        (subQuery) => {
-          return subQuery
-            .select('mov.materialId', '"materialId"') 
-            .addSelect('COALESCE(SUM(mov.cantidad), 0)', 'totalDevuelto')
-            .from(Movimiento, 'mov')
-            .innerJoin('mov.tipoMovimiento', 'tipo')
-            .where('tipo.nombre ILIKE :tipoNombre', { tipoNombre: '%devolucion%' })
-            .andWhere('mov.estado = :estado', { estado: 'APROBADO' })
-            .groupBy('mov.materialId');
-        },
-        'devoluciones',
-        'devoluciones."materialId" = material.id'
-      )
-      .addSelect('COALESCE(devoluciones.totalDevuelto, 0)', 'totalDevuelto')
-      .addSelect(
-        'CASE WHEN material.cantidadPrestada > COALESCE(devoluciones.totalDevuelto, 0) THEN material.cantidadPrestada - COALESCE(devoluciones.totalDevuelto, 0) ELSE 0 END',
-        'saldoPendiente'
-      )
-      .where('material.activo = :activo', { activo: true })
-      .andWhere('material.esOriginal = :esOriginal', { esOriginal: false })
-      .andWhere('material.requiereDevolucion = :requiereDevolucion', { requiereDevolucion: true })
-      .andWhere('material.sitioId IN (:...userSites)', { userSites })
-      .andWhere('material.cantidadPrestada > 0')
-      // 🚀 FILTRAR solo materiales con saldo pendiente
-      .having('saldoPendiente > 0')
-      .orderBy('material.id', 'DESC')
-      .skip(skip)
-      .take(maxLimit);
-  
-    const [materialesRaw, total] = await Promise.all([
-      query.getRawAndEntities(),
-      query.getCount()
-    ]);
-  
-    // 🚀 MAPEAR resultados eficientemente
-    const materialesConSaldo = materialesRaw.entities.map((material, index) => {
-      const rawData = materialesRaw.raw[index];
-      return {
-        ...material,
-        saldoPendiente: parseInt(rawData.saldoPendiente) || 0,
-        cantidadPrestada: parseInt(rawData.saldoPendiente) || material.cantidadPrestada
-      };
-    });
-  
-    return {
-      message: 'Materiales prestados con saldo pendiente',
-      data: materialesConSaldo,
-      pagination: {
-        page,
-        limit: maxLimit,
-        total,
-        totalPages: Math.ceil(total / maxLimit)
+
+  // 🚀 VERSIÓN CORREGIDA - Soluciona error 500 y errores de TypeScript
+  async findMaterialesPrestadosConSaldoPendiente(
+    userId: number,
+    page: number = 1,
+    limit: number = 50,
+  ) {
+    try {
+      const userSites = await this.getUserSites(userId);
+      const maxLimit = Math.min(limit, 100);
+      const skip = (page - 1) * maxLimit;
+
+      // 🚀 CONSULTA SIMPLIFICADA sin having problemático
+      const materialesQuery = this.repo
+        .createQueryBuilder('material')
+        .leftJoinAndSelect('material.tipoMaterial', 'tipoMaterial')
+        .leftJoinAndSelect('material.unidadMedida', 'unidadMedida')
+        .leftJoinAndSelect('material.categoriaMaterial', 'categoriaMaterial')
+        .leftJoinAndSelect('material.sitio', 'sitio')
+        .leftJoinAndSelect('material.registradoPor', 'registradoPor')
+        .where('material.activo = :activo', { activo: true })
+        .andWhere('material.esOriginal = :esOriginal', { esOriginal: false })
+        .andWhere('material.requiereDevolucion = :requiereDevolucion', {
+          requiereDevolucion: true,
+        })
+        .andWhere('material.sitioId IN (:...userSites)', { userSites })
+        .andWhere('material.cantidadPrestada > 0')
+        .orderBy('material.id', 'DESC')
+        .skip(skip)
+        .take(maxLimit);
+
+      const materiales = await materialesQuery.getMany();
+
+      // 🚀 CALCULAR SALDOS PENDIENTES POST-CONSULTA
+      // ✅ CORREGIR: Definir tipo explícito del array
+      const materialesConSaldo: (Material & {
+        saldoPendiente: number;
+        totalDevuelto: number;
+      })[] = [];
+
+      for (const material of materiales) {
+        // ✅ CORREGIR: Validar que cantidadPrestada no sea undefined
+        const cantidadPrestada = material.cantidadPrestada ?? 0;
+
+        // Solo procesar si tiene cantidad prestada
+        if (cantidadPrestada <= 0) {
+          continue;
+        }
+
+        // Calcular total devuelto para este material
+        const totalDevuelto = await this.movimientoRepo
+          .createQueryBuilder('mov')
+          .innerJoin('mov.tipoMovimiento', 'tipo')
+          .select('COALESCE(SUM(mov.cantidad), 0)', 'total')
+          .where('mov.materialId = :materialId', { materialId: material.id })
+          .andWhere('tipo.nombre ILIKE :tipoNombre', {
+            tipoNombre: '%devolucion%',
+          })
+          .andWhere('mov.estado = :estado', { estado: 'APROBADO' })
+          .getRawOne();
+
+        const devuelto = parseInt(totalDevuelto?.total || '0');
+        const saldoPendiente = cantidadPrestada - devuelto;
+
+        // Solo incluir si tiene saldo pendiente
+        if (saldoPendiente > 0) {
+          materialesConSaldo.push({
+            ...material,
+            saldoPendiente,
+            totalDevuelto: devuelto,
+          });
+        }
       }
-    };
+
+      // 🚀 CONTEO SIMPLIFICADO
+      const totalQuery = this.repo
+        .createQueryBuilder('material')
+        .where('material.activo = :activo', { activo: true })
+        .andWhere('material.esOriginal = :esOriginal', { esOriginal: false })
+        .andWhere('material.requiereDevolucion = :requiereDevolucion', {
+          requiereDevolucion: true,
+        })
+        .andWhere('material.sitioId IN (:...userSites)', { userSites })
+        .andWhere('material.cantidadPrestada > 0');
+
+      const totalMateriales = await totalQuery.getCount();
+
+      return {
+        message: 'Materiales prestados con saldo pendiente',
+        data: materialesConSaldo,
+        pagination: {
+          page,
+          limit: maxLimit,
+          total: materialesConSaldo.length, // Total real después del filtrado
+          totalMateriales, // Total de materiales prestados (antes del filtrado)
+          totalPages: Math.ceil(materialesConSaldo.length / maxLimit),
+        },
+      };
+    } catch (error) {
+      console.error(
+        'Error en findMaterialesPrestadosConSaldoPendiente:',
+        error,
+      );
+      throw new BadRequestException(
+        `Error al obtener materiales prestados: ${error.message}`,
+      );
+    }
   }
-  
-  // 🗑️ ELIMINAR el método calcularSaldoPendiente (ya no se necesita)
-  // private async calcularSaldoPendiente(materialPrestadoId: number): Promise<number> {
-  //   // MÉTODO ELIMINADO - causaba consultas N+1
-  // }
+
+  // Método auxiliar para procesar devolución automática
+  private async procesarDevolucionAutomatica(materialPrestado: Material) {
+    if (
+      !materialPrestado.materialOrigenId ||
+      !materialPrestado.cantidadPrestada
+    ) {
+      return; // No hay nada que devolver
+    }
+
+    // 1. Encontrar el material origen
+    const materialOrigen = await this.repo.findOne({
+      where: { id: materialPrestado.materialOrigenId, activo: true },
+    });
+
+    if (!materialOrigen) {
+      console.warn(
+        `⚠️ Material origen no encontrado para ID: ${materialPrestado.materialOrigenId}`,
+      );
+      return;
+    }
+
+    // 2. Devolver stock al material de origen
+    let stockOrigen = await this.stockRepo.findOne({
+      where: { materialId: materialOrigen.id, activo: true },
+    });
+
+    if (stockOrigen) {
+      // Si existe stock, agregar la cantidad devuelta
+      stockOrigen.cantidad += materialPrestado.cantidadPrestada;
+      await this.stockRepo.save(stockOrigen);
+    } else {
+      // Si no existe stock, crear uno nuevo
+      const nuevoStock = this.stockRepo.create({
+        materialId: materialOrigen.id,
+        cantidad: materialPrestado.cantidadPrestada,
+        activo: true,
+        fechaCreacion: new Date(),
+      });
+      await this.stockRepo.save(nuevoStock);
+    }
+
+    // 3. Resetear cantidad prestada
+    materialPrestado.cantidadPrestada = 0;
+    materialPrestado.activo = false;
+    await this.repo.save(materialPrestado);
+
+    // 4. Desactivar stocks del material prestado
+    await this.stockRepo.update(
+      { materialId: materialPrestado.id },
+      { activo: false, cantidad: 0 },
+    );
+
+    console.log(
+      `✅ Devolución automática procesada: ${materialPrestado.nombre}`,
+    );
+  }
 }

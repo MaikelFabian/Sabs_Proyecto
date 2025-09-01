@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsEnum, IsOptional, IsString, IsBoolean } from 'class-validator';
 
 export class AprobarMovimientoDto {
   @IsNotEmpty()
@@ -12,4 +12,8 @@ export class AprobarMovimientoDto {
   @IsOptional()
   @IsString()
   observaciones?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  desactivarMaterial?: boolean;
 }

@@ -1,5 +1,5 @@
 // src/personas/personas.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Persona } from './entities/persona.entity';
@@ -45,25 +45,36 @@ export class PersonasService {
     };
   }
 
-  async findAll() {
-    const listar = await this.personaRepository.find({
+  // 🚀 OPTIMIZADO: findAll con paginación y relaciones reducidas
+  async findAll(page: number = 1, limit: number = 50) {
+    const maxLimit = Math.min(limit, 100); // Máximo 100 registros
+    const skip = (page - 1) * maxLimit;
+  
+    const [personas, total] = await this.personaRepository.findAndCount({
       relations: [
-        'detallesSolicitados',
-        'movimientosSolicitados',
-        'movimientosAprobados',
-        'notificaciones',
         'ficha',
-        'rol',
+        'rol', // Solo relaciones esenciales
       ],
+      order: { id: 'DESC' },
+      skip,
+      take: maxLimit
     });
+  
     return {
       message: 'Listado de personas',
-      data: listar,
+      data: personas,
+      pagination: {
+        page,
+        limit: maxLimit,
+        total,
+        totalPages: Math.ceil(total / maxLimit)
+      }
     };
   }
-
-  async findOne(id: number) {
-    const buscar = await this.personaRepository.findOne({
+  
+  // 🚀 NUEVO: Método para obtener persona completa solo cuando sea necesario
+  async findOneComplete(id: number) {
+    const persona = await this.personaRepository.findOne({
       where: { id },
       relations: [
         'detallesSolicitados',
@@ -74,9 +85,14 @@ export class PersonasService {
         'rol',
       ],
     });
+    
+    if (!persona) {
+      throw new NotFoundException(`Persona con id ${id} no encontrada`);
+    }
+    
     return {
       message: 'Persona encontrada',
-      data: buscar,
+      data: persona,
     };
   }
 

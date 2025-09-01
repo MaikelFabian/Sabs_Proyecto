@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, Repository, MoreThan } from 'typeorm';
 import { Stock } from './entities/stock.entity';
 import { Material } from 'src/materiales/entities/materiale.entity';
 import { Sitio } from 'src/sitios/entities/sitio.entity'; // Agregar import
@@ -163,7 +163,7 @@ export class StockService {
       where: {
         materialOrigenId: stock.materialId,
         activo: true,
-        cantidadPrestada: { $gt: 0 } as any
+        cantidadPrestada: MoreThan(0)
       }
     });
 

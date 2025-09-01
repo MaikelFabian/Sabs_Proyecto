@@ -21,9 +21,9 @@ export class CreateMovimientoDto {
   @IsNumber()
   solicitanteId: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
-  aprobadorId: number;
+  aprobadorId?: number;
 
   @IsOptional()
   @IsString()
