@@ -288,6 +288,24 @@ export class MovimientosService {
         throw new BadRequestException(
           'No se puede devolver más de lo prestado',
         );
+
+      // NUEVO: validar contra lo ya devuelto (APROBADO + PENDIENTE)
+      const totalDevuelto = await this.detalleRepo
+        .createQueryBuilder('detalle')
+        .innerJoin('detalle.movimiento', 'mov')
+        .leftJoin('mov.tipoMovimiento', 'tipo')
+        .where('detalle.materialId = :materialId', { materialId: det.materialId })
+        .andWhere('mov.movimientoOrigenId = :prestamoId', { prestamoId: movimientoOrigen.id })
+        .andWhere('(tipo.nombre ILIKE :dev OR tipo.nombre ILIKE :ent)', { dev: '%devolucion%', ent: '%entrada%' })
+        .andWhere('mov.estado IN (:...estados)', { estados: ['aprobado', 'pendiente'] })
+        .select('COALESCE(SUM(detalle.cantidad), 0)', 'total')
+        .getRawOne();
+
+      const yaDevuelto = parseInt(totalDevuelto?.total || '0');
+      const saldoDisponible = prestado.cantidad - yaDevuelto;
+      if (det.cantidad > saldoDisponible) {
+        throw new BadRequestException('No se puede devolver más de lo pendiente');
+      }
     }
 
     // Buscar tipo "Devolución" (o "Entrada") para asignarlo al movimiento de devolución
@@ -416,14 +434,14 @@ export class MovimientosService {
       const detallesMaterial = prestamo.detalles?.filter(d => d.materialId === materialId) || [];
       const totalPrestado = detallesMaterial.reduce((sum, d) => sum + d.cantidad, 0);
 
-      // Calcular total devuelto para este préstamo específico
+      // Ajuste: contar devoluciones tipo 'devolución' o 'entrada'
       const totalDevuelto = await this.detalleRepo
         .createQueryBuilder('detalle')
         .innerJoin('detalle.movimiento', 'mov')
         .innerJoin('mov.tipoMovimiento', 'tipo')
         .where('detalle.materialId = :materialId', { materialId })
         .andWhere('mov.movimientoOrigenId = :prestamoId', { prestamoId: prestamo.id })
-        .andWhere('tipo.nombre ILIKE :tipo', { tipo: '%devolucion%' })
+        .andWhere('(tipo.nombre ILIKE :dev OR tipo.nombre ILIKE :ent)', { dev: '%devolucion%', ent: '%entrada%' })
         .andWhere('mov.estado = :estado', { estado: 'aprobado' })
         .select('COALESCE(SUM(detalle.cantidad), 0)', 'total')
         .getRawOne();
