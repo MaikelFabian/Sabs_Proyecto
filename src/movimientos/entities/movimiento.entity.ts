@@ -3,98 +3,83 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
+  OneToMany,
+  JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  JoinColumn,
 } from 'typeorm';
-import { TipoMovimiento } from 'src/tipo-movimiento/entities/tipo-movimiento.entity';
 import { Persona } from 'src/personas/entities/persona.entity';
-import { Material } from 'src/materiales/entities/materiale.entity';
 import { Sitio } from 'src/sitios/entities/sitio.entity';
+import { TipoMovimiento } from 'src/tipo-movimiento/entities/tipo-movimiento.entity';
+import { Detalle } from 'src/detalles/entities/detalle.entity';
 
 @Entity()
 export class Movimiento {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // Material solicitado
-  @ManyToOne(() => Material, { eager: true })
-  @JoinColumn({ name: 'materialId' })
-  material: Material;
-
-  @Column()
-  materialId: number;
-
-  // Cantidad solicitada
-  @Column()
-  cantidad: number;
-
-  // Fecha de la petición
-  @CreateDateColumn()
-  fechaPeticion: Date;
-
-  // Tipo de movimiento (Entrada, Salida, Préstamo, Devolución)
-  @ManyToOne(() => TipoMovimiento, { eager: true })
-  @JoinColumn({ name: 'tipoMovimientoId' })
-  tipoMovimiento: TipoMovimiento;
-
-  @Column()
-  tipoMovimientoId: number;
-
-  // Estado del movimiento (por defecto: NO_APROBADO)
-  @Column({ 
-    type: 'enum', 
-    enum: ['NO_APROBADO', 'APROBADO', 'RECHAZADO'],
-    default: 'NO_APROBADO'
-  })
-  estado: 'NO_APROBADO' | 'APROBADO' | 'RECHAZADO';
-
-  // Sitio al cual va dirigido
-  @ManyToOne(() => Sitio, { eager: true })
-  @JoinColumn({ name: 'sitioDestinoId' })
-  sitioDestino: Sitio;
-
-  @Column()
-  sitioDestinoId: number;
-
-  // Persona que hace la solicitud
-  @ManyToOne(() => Persona, { eager: true })
-  @JoinColumn({ name: 'solicitanteId' })
-  solicitante: Persona;
-
-  @Column()
-  solicitanteId: number;
-
-  // Persona que aprueba (a quien le llega el movimiento)
-  @ManyToOne(() => Persona, { nullable: true })
-  @JoinColumn({ name: 'aprobadorId' })
-  aprobador?: Persona;
-
+  // Persona que solicita
   @Column({ nullable: true })
-  aprobadorId?: number;
+  personaSolicitaId: number | null;
 
-  // Descripción opcional del movimiento
+  @ManyToOne(() => Persona, (p) => p.movimientosSolicitados, { nullable: true })
+  @JoinColumn({ name: 'personaSolicitaId' })
+  personaSolicita?: Persona;
+
+  // Persona que aprueba
   @Column({ nullable: true })
-  descripcion?: string;
+  personaApruebaId: number | null;
 
-  // Sitio de origen (para devoluciones y préstamos)
-  @ManyToOne(() => Sitio, { nullable: true })
+  @ManyToOne(() => Persona, (p) => p.movimientosAprobados, { nullable: true })
+  @JoinColumn({ name: 'personaApruebaId' })
+  personaAprueba?: Persona;
+
+  // Sitio origen
+  @Column({ nullable: true })
+  sitioOrigenId: number | null;
+
+  @ManyToOne(() => Sitio, (s) => s.movimientosOrigen, { nullable: true })
   @JoinColumn({ name: 'sitioOrigenId' })
   sitioOrigen?: Sitio;
 
+  // Sitio destino
   @Column({ nullable: true })
-  sitioOrigenId?: number;
+  sitioDestinoId: number | null;
 
-  @Column({ default: true })
-  activo: boolean;
+  @ManyToOne(() => Sitio, (s) => s.movimientosDestino, { nullable: true })
+  @JoinColumn({ name: 'sitioDestinoId' })
+  sitioDestino?: Sitio;
+
+  // Tipo de movimiento (Entrada, Salida, Devolución…)
+  @Column({ nullable: true })
+  tipoMovimientoId: number | null;
+
+  @ManyToOne(() => TipoMovimiento, (t) => t.movimientos, { nullable: true })
+  @JoinColumn({ name: 'tipoMovimientoId' })
+  tipoMovimiento?: TipoMovimiento;
+
+  // Estado del movimiento
+  @Column({ default: 'pendiente' })
+  estado: string;
+
+  @CreateDateColumn()
+  fechaCreacion: Date;
 
   @UpdateDateColumn({ nullable: true })
   fechaActualizacion?: Date;
 
+  // Relación con detalles
+  @OneToMany(() => Detalle, (d) => d.movimiento)
+  detalles?: Detalle[];
+
+  // 🔄 NUEVO: Relación con movimiento original (para devoluciones)
   @Column({ nullable: true })
-  materialPrestamoId?: number;
-  
-  @ManyToOne(() => Material, { nullable: true })
-  @JoinColumn({ name: 'materialPrestamoId' })
-  materialPrestamo?: Material;
+  movimientoOrigenId?: number | null;
+
+  @ManyToOne(() => Movimiento, (m) => m.devoluciones, { nullable: true })
+  @JoinColumn({ name: 'movimientoOrigenId' })
+  movimientoOrigen?: Movimiento;
+
+  @OneToMany(() => Movimiento, (m) => m.movimientoOrigen)
+  devoluciones?: Movimiento[];
 }

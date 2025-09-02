@@ -5,7 +5,7 @@ import { MaterialService } from './materiales.service';
 import { MaterialController } from './materiales.controller';
 import { Material } from './entities/materiale.entity';
 import { Movimiento } from '../movimientos/entities/movimiento.entity';
-import { Detalles } from '../detalles/entities/detalle.entity';
+import { Detalle } from '../detalles/entities/detalle.entity';
 import { Stock } from '../stock/entities/stock.entity';
 import { Persona } from '../personas/entities/persona.entity';
 import { Sitio } from '../sitios/entities/sitio.entity'; // Agregar import
@@ -17,7 +17,7 @@ import { RolPermisoOpcionModule } from '../rol-permiso-opcion/rol-permiso-opcion
     TypeOrmModule.forFeature([
       Material, 
       Movimiento, 
-      Detalles, 
+      Detalle, 
       Stock, 
       Persona,
       Sitio // Agregar Sitio

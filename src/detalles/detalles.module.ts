@@ -1,7 +1,7 @@
 // src/detalles/detalles.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Detalles } from './entities/detalle.entity';
+import { Detalle } from './entities/detalle.entity';
 import { DetallesService } from './detalles.service';
 import { DetallesController } from './detalles.controller';
 import { RolPermisoOpcionModule } from 'src/rol-permiso-opcion/rol-permiso-opcion.module';
@@ -12,7 +12,7 @@ import { TipoMovimiento } from 'src/tipo-movimiento/entities/tipo-movimiento.ent
 @Module({
   imports: [
     TypeOrmModule.forFeature([
-      Detalles,
+      Detalle,
       Movimiento,
       Material,
       TipoMovimiento, 

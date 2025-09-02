@@ -1,35 +1,20 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString, IsEnum } from 'class-validator';
-
 export class CreateMovimientoDto {
-  @IsNotEmpty()
-  @IsNumber()
-  materialId: number;
+  personaSolicitaId: number;
+  sitioOrigenId: number;
+  sitioDestinoId?: number;
+  detalles: { materialId: number; cantidad: number }[];
+}
 
-  @IsNotEmpty()
-  @IsNumber()
-  cantidad: number;
+export class AprobarMovimientoDto {
+  aprobadoPorId: number;
+}
 
-  @IsNotEmpty()
-  @IsNumber()
-  tipoMovimientoId: number;
+export class RechazarMovimientoDto {
+  rechazadoPorId: number;
+}
 
-  @IsNotEmpty()
-  @IsNumber()
-  sitioDestinoId: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  solicitanteId: number;
-
-  @IsOptional()
-  @IsNumber()
-  aprobadorId?: number;
-
-  @IsOptional()
-  @IsString()
-  descripcion?: string;
-
-  @IsOptional()
-  @IsNumber()
-  sitioOrigenId?: number;
+export class DevolverMaterialDto {
+  movimientoOrigenId: number;
+  personaSolicitaId: number;
+  detalles: { materialId: number; cantidad: number }[];
 }

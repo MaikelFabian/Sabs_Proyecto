@@ -12,7 +12,7 @@ import {
 import { Exclude } from 'class-transformer';
 import { Rol } from 'src/roles/entities/role.entity';
 import { Ficha } from 'src/fichas/entities/ficha.entity';
-import { Detalles } from 'src/detalles/entities/detalle.entity';
+import { Detalle } from 'src/detalles/entities/detalle.entity';
 import { Movimiento } from 'src/movimientos/entities/movimiento.entity';
 import { Notificacion } from 'src/notificaciones/entities/notificacion.entity';
 
@@ -66,15 +66,15 @@ export class Persona {
   fichaId?: number;
 
   // Detalles donde esta persona es el solicitante
-  @OneToMany(() => Detalles, (detalle) => detalle.solicitante)
-  detallesSolicitados?: Detalles[];
+  @OneToMany(() => Detalle, (detalle) => detalle.personaSolicita)
+  detallesSolicitados?: Detalle[];
 
   // Movimientos donde esta persona es el solicitante
-  @OneToMany(() => Movimiento, (movimiento) => movimiento.solicitante)
+  @OneToMany(() => Movimiento, (movimiento) => movimiento.personaSolicita)
   movimientosSolicitados?: Movimiento[];
 
   // Movimientos donde esta persona es el aprobador
-  @OneToMany(() => Movimiento, (movimiento) => movimiento.aprobador)
+  @OneToMany(() => Movimiento, (movimiento) => movimiento.personaAprueba)
   movimientosAprobados?: Movimiento[];
 
   @OneToMany(() => Notificacion, (notificacion) => notificacion.persona)

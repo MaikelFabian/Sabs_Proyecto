@@ -1,17 +1,19 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Movimiento } from './entities/movimiento.entity';
-import { MovimientoService } from './movimientos.service';
-import { MovimientoController } from './movimientos.controller';
+import { MovimientosService } from './movimientos.service';
+import { MovimientosController } from './movimientos.controller';
 import { Material } from 'src/materiales/entities/materiale.entity';
 import { TipoMovimiento } from 'src/tipo-movimiento/entities/tipo-movimiento.entity';
 import { RolPermisoOpcion } from 'src/rol-permiso-opcion/entities/rol-permiso-opcion.entity';
 import { Persona } from 'src/personas/entities/persona.entity';
 import { Sitio } from 'src/sitios/entities/sitio.entity';
-import { Detalles } from 'src/detalles/entities/detalle.entity';
+import { Detalle } from 'src/detalles/entities/detalle.entity';
 import { StockModule } from 'src/stock/stock.module';
 import { NotificationsModule } from '../notificaciones/notificaciones.module';
-import { MaterialesModule } from '../materiales/materiales.module'; // ✅ NUEVO: Importar MaterialesModule
+import { MaterialesModule } from '../materiales/materiales.module';
+import { DetallesModule } from 'src/detalles/detalles.module';
+import { Stock } from 'src/stock/entities/stock.entity';
 
 @Module({
   imports: [
@@ -20,16 +22,18 @@ import { MaterialesModule } from '../materiales/materiales.module'; // ✅ NUEVO
       Material,
       TipoMovimiento,
       RolPermisoOpcion,
-      Persona,        // ✅ AGREGADO: Necesario para PersonaRepository
-      Sitio,          // ✅ AGREGADO: Necesario para SitioRepository
-      Detalles,
+      Persona,
+      Sitio,
+      Detalle,
+      Stock,
     ]),
     StockModule,
-    NotificationsModule, // Importar el módulo de notificaciones
-    MaterialesModule, // ✅ NUEVO: Agregar MaterialesModule para usar MaterialService
+    NotificationsModule, 
+    MaterialesModule, 
+    DetallesModule,
   ],
-  controllers: [MovimientoController],
-  providers: [MovimientoService],
-  exports: [MovimientoService],
+  controllers: [MovimientosController],
+  providers: [MovimientosService],
+  exports: [MovimientosService],
 })
 export class MovimientosModule {}

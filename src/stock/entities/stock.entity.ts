@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { Material } from 'src/materiales/entities/materiale.entity';
 import { StockMovimiento } from './stock-movimiento.entity';
+import { Sitio } from 'src/sitios/entities/sitio.entity';
 
 @Entity()
 export class Stock {
@@ -17,16 +18,16 @@ export class Stock {
   id: number;
 
   @Column({ nullable: true })
-  codigo?: string; // Código individual opcional por unidad
+  codigo?: string; 
 
-  @Column()
-  cantidad: number;
-
-  @Column({ default: false })
-  activo: boolean; // Inicia inactivo hasta ser activado
+  @Column({ default: 1 })
+  cantidad: number; 
 
   @Column({ default: false })
-  requiereCodigo: boolean; // Indica si este stock requiere código individual
+  activo: boolean; 
+
+  @Column({ default: false })
+  requiereCodigo: boolean; 
 
   @CreateDateColumn()
   fechaCreacion: Date;
@@ -42,15 +43,22 @@ export class Stock {
   @Column()
   materialId: number;
 
-  // ✅ NUEVA RELACIÓN: Movimientos de este stock
+  // Relación con Sitio
+  @ManyToOne(() => Sitio, { nullable: true })
+  @JoinColumn({ name: 'sitioId' })
+  sitio?: Sitio;
+
+  @Column({ nullable: true })
+  sitioId?: number ;
+
+  // Historial de movimientos donde participa este stock
   @OneToMany(() => StockMovimiento, (stockMovimiento) => stockMovimiento.stock)
   movimientos?: StockMovimiento[];
 
-  // ✅ NUEVA RELACIÓN: Movimientos donde este stock es el destino
   @OneToMany(() => StockMovimiento, (stockMovimiento) => stockMovimiento.stockDestino)
   movimientosDestino?: StockMovimiento[];
 
-  // ✅ NUEVO CAMPO: Para rastrear el stock original (en caso de transferencias)
+  // Trazabilidad
   @Column({ nullable: true })
   stockOrigenId?: number;
 
@@ -58,7 +66,6 @@ export class Stock {
   @JoinColumn({ name: 'stockOrigenId' })
   stockOrigen?: Stock;
 
-  // ✅ NUEVO CAMPO: Indica si este stock fue transferido desde otro sitio
   @Column({ default: false })
   esTransferido: boolean;
 }

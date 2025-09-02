@@ -12,7 +12,7 @@ import {
 import { TipoMaterial } from 'src/tipo-material/entities/tipo-material.entity';
 import { UnidadMedida } from 'src/unidad-medida/entities/unidad-medida.entity';
 import { CategoriaMaterial } from 'src/categoria-material/entities/categoria-material.entity';
-import { Detalles } from 'src/detalles/entities/detalle.entity';
+import { Detalle } from 'src/detalles/entities/detalle.entity';
 import { Movimiento } from 'src/movimientos/entities/movimiento.entity';
 import { Sitio } from 'src/sitios/entities/sitio.entity';
 import { Persona } from 'src/personas/entities/persona.entity';
@@ -29,7 +29,6 @@ export class Material {
   @Column()
   descripcion: string;
 
-  // ❌ ELIMINADO: stock: number; - Ahora se maneja solo por Stock entities
 
   @Column({ default: true })
   caduca: boolean;
@@ -105,9 +104,7 @@ export class Material {
   @OneToMany(() => Stock, (stock) => stock.material)
   stocks?: Stock[];
 
-  @OneToMany(() => Detalles, (detalle) => detalle.material)
-  detalles?: Detalles[];
+  @OneToMany(() => Detalle, (detalle) => detalle.material)
+  detalles?: Detalle[];
 
-  @OneToMany(() => Movimiento, (movimiento) => movimiento.material)
-  movimientos?: Movimiento[];
 }

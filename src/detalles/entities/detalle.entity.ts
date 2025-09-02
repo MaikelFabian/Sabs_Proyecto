@@ -3,60 +3,63 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
-  CreateDateColumn,
   JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
+import { Movimiento } from 'src/movimientos/entities/movimiento.entity';
 import { Material } from 'src/materiales/entities/materiale.entity';
 import { Persona } from 'src/personas/entities/persona.entity';
-import { TipoMovimiento } from 'src/tipo-movimiento/entities/tipo-movimiento.entity';
 
 @Entity()
-export class Detalles {
+export class Detalle {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // Información del tipo de movimiento
-  @ManyToOne(() => TipoMovimiento, { eager: true })
-  @JoinColumn({ name: 'tipoMovimientoId' })
-  tipoMovimiento: TipoMovimiento;
-
-  @Column()
-  tipoMovimientoId: number;
-
-  // Material y cantidad (solo informativo)
-  @ManyToOne(() => Material, { eager: true, nullable: true })
-  @JoinColumn({ name: 'materialId' })
-  material?: Material;
-  
-  @Column({ nullable: true })
-  materialId?: number;
-
-  @Column()
-  cantidad: number;
-
-  // Estado del movimiento (copiado desde Movimiento)
-  @Column({ 
-    type: 'enum', 
-    enum: ['NO_APROBADO', 'APROBADO', 'RECHAZADO']
-  })
-  estado: 'NO_APROBADO' | 'APROBADO' | 'RECHAZADO';
-
-  // Quien lo solicitó
-  @ManyToOne(() => Persona, { eager: true })
-  @JoinColumn({ name: 'solicitanteId' })
-  solicitante: Persona;
-
-  @Column()
-  solicitanteId: number;
-
-  // Fecha de la solicitud
-  @CreateDateColumn()
-  fecha: Date;
-
-  // Referencia al movimiento original (para trazabilidad)
+  // Relación con movimiento
   @Column()
   movimientoId: number;
 
-  @Column({ default: true })
-  activo: boolean;
+  @ManyToOne(() => Movimiento, (mov) => mov.detalles, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'movimientoId' })
+  movimiento: Movimiento;
+
+  // Relación con material
+  @Column()
+  materialId: number;
+
+  @ManyToOne(() => Material, (mat) => mat.detalles)
+  @JoinColumn({ name: 'materialId' })
+  material: Material;
+
+  // Cantidad solicitada o movida
+  @Column()
+  cantidad: number;
+
+  // Estado del detalle (pendiente, completado, rechazado)
+  @Column({ default: 'pendiente' })
+  estado: string;
+
+  // Persona que solicita este detalle (opcional si se requiere granularidad)
+@Column({ nullable: true })
+personaSolicitaId: number | null;
+
+
+  @ManyToOne(() => Persona, { nullable: true })
+  @JoinColumn({ name: 'personaSolicitaId' })
+  personaSolicita?: Persona;
+
+  // Persona que aprueba este detalle (puede diferir del movimiento global)
+  @Column({ nullable: true })
+  personaApruebaId?: number;
+
+  @ManyToOne(() => Persona, { nullable: true })
+  @JoinColumn({ name: 'personaApruebaId' })
+  personaAprueba?: Persona;
+
+  @CreateDateColumn()
+  fechaCreacion: Date;
+
+  @UpdateDateColumn({ nullable: true })
+  fechaActualizacion?: Date;
 }

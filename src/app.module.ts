@@ -29,6 +29,7 @@ import { OpcionesModule } from './opciones/opciones.module';
 import { ModulosModule } from './modulos/modulos.module';
 import { RolPermisoOpcionModule } from './rol-permiso-opcion/rol-permiso-opcion.module';
 import { NotificationsModule } from './notificaciones/notificaciones.module'; 
+import { GatosModule } from './gatos/gatos.module';
 
 @Module({
   imports: [
@@ -73,7 +74,8 @@ import { NotificationsModule } from './notificaciones/notificaciones.module';
     OpcionesModule,
     ModulosModule,
     RolPermisoOpcionModule,
-    NotificationsModule, 
+    NotificationsModule,
+    GatosModule, 
   ],
 })
 export class AppModule {}

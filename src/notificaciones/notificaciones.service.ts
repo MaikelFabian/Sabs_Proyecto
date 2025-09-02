@@ -52,10 +52,21 @@ export class NotificationsService {
     solicitante: Persona, 
     aprobador: Persona
   ): Promise<void> {
+    const totalCantidad = (movimiento.detalles ?? []).reduce((a, d) => a + d.cantidad, 0);
+    const nombres = (movimiento.detalles ?? [])
+      .map(d => d.material?.nombre)
+      .filter((n): n is string => !!n);
+
+    const nombreMaterial = nombres.length === 0
+      ? 'material(es)'
+      : nombres.length === 1
+        ? nombres[0]
+        : `${nombres[0]} y otros`;
+
     // Notificación para el aprobador
     await this.create({
       tipo: 'solicitud_pendiente',
-      mensaje: `${solicitante.nombre} ${solicitante.apellido} ha solicitado ${movimiento.cantidad} unidades de ${movimiento.material.nombre}`,
+      mensaje: `${solicitante.nombre} ${solicitante.apellido} ha solicitado ${totalCantidad} unidades de ${nombreMaterial}`,
       personaId: aprobador.id,
       relacionadoId: movimiento.id,
       titulo: 'Nueva Solicitud de Material'
@@ -64,14 +75,14 @@ export class NotificationsService {
     // Notificación para el solicitante (confirmación)
     await this.create({
       tipo: 'solicitud_material',
-      mensaje: `Tu solicitud de ${movimiento.cantidad} unidades de ${movimiento.material.nombre} ha sido enviada y está pendiente de aprobación`,
+      mensaje: `Tu solicitud de ${totalCantidad} unidades de ${nombreMaterial} ha sido enviada y está pendiente de aprobación`,
       personaId: solicitante.id,
       relacionadoId: movimiento.id,
       titulo: 'Solicitud Enviada'
     });
   }
 
-  // Notificación cuando se aprueba una solicitud
+  // Notificación cuando se aprueba/rechaza una solicitud
   async crearNotificacionAprobacion(
     movimiento: Movimiento,
     solicitante: Persona,
@@ -79,11 +90,22 @@ export class NotificationsService {
     estado: 'APROBADO' | 'RECHAZADO'
   ): Promise<void> {
     const esAprobado = estado === 'APROBADO';
-    
+
+    const totalCantidad = (movimiento.detalles ?? []).reduce((a, d) => a + d.cantidad, 0);
+    const nombres = (movimiento.detalles ?? [])
+      .map(d => d.material?.nombre)
+      .filter((n): n is string => !!n);
+
+    const nombreMaterial = nombres.length === 0
+      ? 'material(es)'
+      : nombres.length === 1
+        ? nombres[0]
+        : `${nombres[0]} y otros`;
+
     // Notificación para el solicitante
     await this.create({
       tipo: esAprobado ? 'solicitud_aprobada' : 'solicitud_rechazada',
-      mensaje: `Tu solicitud de ${movimiento.cantidad} unidades de ${movimiento.material.nombre} ha sido ${esAprobado ? 'aprobada' : 'rechazada'} por ${aprobador.nombre} ${aprobador.apellido}`,
+      mensaje: `Tu solicitud de ${totalCantidad} unidades de ${nombreMaterial} ha sido ${esAprobado ? 'aprobada' : 'rechazada'} por ${aprobador.nombre} ${aprobador.apellido}`,
       personaId: solicitante.id,
       relacionadoId: movimiento.id,
       titulo: `Solicitud ${esAprobado ? 'Aprobada' : 'Rechazada'}`
