@@ -102,6 +102,25 @@ export const seedOpciones = async (dataSource: DataSource) => {
         { nombre: 'Gestión de Municipios', descripcion: 'Administrar municipios', rutaFrontend: '/municipios' },
       ],
     },
+    // NUEVAS OPCIONES AÑADIDAS
+    {
+      modulo: 'Unidad Medida',
+      opciones: [
+        { nombre: 'Gestión de Unidades de Medida', descripcion: 'Administrar unidades de medida', rutaFrontend: '/unidad-medida' },
+      ],
+    },
+    {
+      modulo: 'Categoría Material',
+      opciones: [
+        { nombre: 'Gestión de Categorías de Material', descripcion: 'Administrar categorías de material', rutaFrontend: '/categoria-material' },
+      ],
+    },
+    {
+      modulo: 'Tipo Material',
+      opciones: [
+        { nombre: 'Gestión de Tipos de Material', descripcion: 'Administrar tipos de material', rutaFrontend: '/tipo-material' },
+      ],
+    },
     {
       modulo: 'Gráficos',
       opciones: [

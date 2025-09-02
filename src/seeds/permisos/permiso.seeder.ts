@@ -28,6 +28,8 @@ const mapeoEspecial: { [key: string]: string } = {
   GESTIÓNDETIPOSDESITIO: 'TIPOSITIOS',
   GESTIÓNDETIPOSDEMATERIAL: 'TIPOMATERIALES',
   GESTIÓNDETIPOSDEMOVIMIENTO: 'TIPOMOVIMIENTOS',
+  GESTIÓNDEUNIDADESDEMEDIDA: 'UNIDADESMEDIDA',
+  GESTIÓNDECATEGORÍASDEMATERIAL: 'CATEGORIASMATERIAL',
 };
 
 export const seedPermisos = async (dataSource: DataSource) => {
@@ -47,9 +49,15 @@ export const seedPermisos = async (dataSource: DataSource) => {
 
   // Tipos de permisos estándar para cada opción
   const tiposPermiso = [
-    { sufijo: 'VER', nombre: 'Ver', descripcion: 'Permiso para ver' },
-    { sufijo: 'CREAR', nombre: 'Crear', descripcion: 'Permiso para crear' },
-    { sufijo: 'EDITAR', nombre: 'Editar', descripcion: 'Permiso para editar' },
+    { sufijo: 'VER', 
+      nombre: 'Ver', 
+      descripcion: 'Permiso para ver' },
+    { sufijo: 'CREAR', 
+      nombre: 'Crear', 
+      descripcion: 'Permiso para crear' },
+    { sufijo: 'EDITAR',
+       nombre: 'Editar', 
+       descripcion: 'Permiso para editar' },
     {
       sufijo: 'ELIMINAR',
       nombre: 'Eliminar',
