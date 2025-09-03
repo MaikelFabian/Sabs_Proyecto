@@ -28,7 +28,7 @@ import { AuthModule } from './auth/auth.module';
 import { OpcionesModule } from './opciones/opciones.module';
 import { ModulosModule } from './modulos/modulos.module';
 import { RolPermisoOpcionModule } from './rol-permiso-opcion/rol-permiso-opcion.module';
-import { NotificationsModule } from './notificaciones/notificaciones.module'; 
+import { NotificacionesModule } from './notificaciones/notificaciones.module'; 
 import { GatosModule } from './gatos/gatos.module';
 
 @Module({
@@ -74,7 +74,7 @@ import { GatosModule } from './gatos/gatos.module';
     OpcionesModule,
     ModulosModule,
     RolPermisoOpcionModule,
-    NotificationsModule,
+    NotificacionesModule,
     GatosModule, 
   ],
 })

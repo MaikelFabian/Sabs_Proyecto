@@ -342,6 +342,25 @@ export class MovimientosService {
     return this.findOne(savedDevolucion.id);
   }
 
+  async findMine(userId: number) {
+      return this.movimientoRepo.find({
+        where: [
+          { personaSolicita: { id: userId } },
+          { personaAprueba: { id: userId } },
+        ],
+        relations: [
+          'detalles',
+          'detalles.material',
+          'personaSolicita',
+          'personaAprueba',
+          'sitioOrigen',
+          'sitioDestino',
+          'tipoMovimiento',
+          'movimientoOrigen',
+        ],
+        order: { fechaCreacion: 'DESC' },
+      });
+    }
   // -----------------------
   // CONSULTAS
   // -----------------------

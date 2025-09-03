@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, ParseIntPipe, UseGuards, Body, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, ParseIntPipe, UseGuards, Body, BadRequestException, Query } from '@nestjs/common';
 import { NotificationsService } from './notificaciones.service';
 import { Notificacion } from './entities/notificacion.entity';
 import { CreateNotificacionDto } from './dto/create-notificacion.dto';
@@ -8,20 +8,32 @@ import { Roles } from 'src/auth/guards/roles.decorator';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 
 @Controller('notificaciones')
-export class NotificationsController {
+export class NotificacionesController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
   // Cambiar de recibir userId por parámetro a usar el usuario autenticado
   @Get('mis-notificaciones')
   @UseGuards(JwtAuthGuard, PermisosGuard)
-  @Roles('VER_NOTIFICACIONES')
-  async findMyNotifications(@CurrentUser() user: any): Promise<Notificacion[]> {
-    return this.notificationsService.findByUser(user.sub);
+  @Roles('VER_VERNOTIFICACIONES')
+  async findMyNotifications(
+    @CurrentUser() user: any,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('tipo') tipo?: string,
+    @Query('leida') leida?: 'true' | 'false',
+  ) {
+    const parsedPage = Math.max(parseInt(page ?? '1', 10), 1);
+    const parsedLimit = Math.min(Math.max(parseInt(limit ?? '20', 10), 1), 100);
+    const filtros = {
+      tipo,
+      leida: typeof leida !== 'undefined' ? leida === 'true' : undefined,
+    };
+    return this.notificationsService.findByUser(user.sub, parsedPage, parsedLimit, filtros);
   }
 
   @Get('count')
   @UseGuards(JwtAuthGuard, PermisosGuard)
-  @Roles('VER_NOTIFICACIONES')
+  @Roles('VER_VERNOTIFICACIONES')
   async getMyUnreadCount(@CurrentUser() user: any): Promise<{ count: number }> {
     const count = await this.notificationsService.getUnreadCount(user.sub);
     return { count };
@@ -36,7 +48,7 @@ export class NotificationsController {
 
   @Patch(':id/read')
   @UseGuards(JwtAuthGuard, PermisosGuard)
-  @Roles('VER_NOTIFICACIONES')
+  @Roles('VER_VERNOTIFICACIONES')
   async markAsRead(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: any
@@ -47,7 +59,7 @@ export class NotificationsController {
 
   @Patch('read-all')
   @UseGuards(JwtAuthGuard, PermisosGuard)
-  @Roles('VER_NOTIFICACIONES')
+  @Roles('VER_VERNOTIFICACIONES')
   async markAllAsRead(@CurrentUser() user: any): Promise<{ message: string }> {
     await this.notificationsService.markAllAsRead(user.sub);
     return { message: 'Todas las notificaciones marcadas como leídas' };

@@ -1,6 +1,10 @@
 // src/movimientos/movimientos.controller.ts
-import { Controller, Get, Post, Patch, Param, Body } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, UseGuards } from '@nestjs/common';
 import { MovimientosService } from './movimientos.service';
+import { PermisosGuard } from 'src/auth/guards/permisos.guards';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { Roles } from 'src/auth/guards/roles.decorator';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 
 // src/movimientos/movimientos.controller.ts
 @Controller('movimientos')
@@ -73,5 +77,11 @@ export class MovimientosController {
   @Get('prestamos-activos/:materialId')
   async getPrestamosActivos(@Param('materialId') materialId: number) {
     return this.movimientosService.getPrestamosActivos(+materialId);
+  }
+  @Get('mios')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
+  @Roles('VER_MOVIMIENTOS')
+  findMine(@CurrentUser() user: any) {
+    return this.movimientosService.findMine(user.sub);
   }
 }

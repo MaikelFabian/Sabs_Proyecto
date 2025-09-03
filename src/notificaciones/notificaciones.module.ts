@@ -1,20 +1,30 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NotificationsService } from './notificaciones.service';
-import { NotificationsController } from './notificaciones.controller';
+import { NotificacionesController } from './notificaciones.controller';
 import { NotificationsCronService } from './notificaciones-cron.service';
 import { Notificacion } from './entities/notificacion.entity';
 import { Persona } from 'src/personas/entities/persona.entity';
 import { Material } from 'src/materiales/entities/materiale.entity';
 import { RolPermisoOpcionModule } from 'src/rol-permiso-opcion/rol-permiso-opcion.module';
+import { JwtModule } from '@nestjs/jwt';
+import { NotificationsGateway } from './notificaciones.gateway';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Notificacion, Persona, Material]),
-    RolPermisoOpcionModule
+    RolPermisoOpcionModule,
+    JwtModule.register({
+      secret: 'Sabs',
+      signOptions: { expiresIn: '24h' },
+    }),
   ],
-  controllers: [NotificationsController],
-  providers: [NotificationsService, NotificationsCronService],
-  exports: [NotificationsService]
+  controllers: [NotificacionesController],
+  providers: [
+    NotificationsService,
+    NotificationsCronService,
+    NotificationsGateway,
+  ],
+  exports: [NotificationsService],
 })
-export class NotificationsModule {}
+export class NotificacionesModule {}

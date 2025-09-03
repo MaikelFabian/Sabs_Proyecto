@@ -6,6 +6,7 @@ import { CreateNotificacionDto } from './dto/create-notificacion.dto';
 import { Persona } from 'src/personas/entities/persona.entity';
 import { Material } from 'src/materiales/entities/materiale.entity';
 import { Movimiento } from 'src/movimientos/entities/movimiento.entity';
+import { NotificationsGateway } from 'src/notificaciones/notificaciones.gateway';
 
 @Injectable()
 export class NotificationsService {
@@ -16,13 +17,27 @@ export class NotificationsService {
     private personaRepository: Repository<Persona>,
     @InjectRepository(Material)
     private materialRepository: Repository<Material>,
+    private readonly gateway: NotificationsGateway,
   ) {}
 
-  async findByUser(userId: number): Promise<Notificacion[]> {
-    return this.notificationsRepository.find({
-      where: { persona: { id: userId } },
-      order: { id: 'DESC' }, 
+  async findByUser(
+    userId: number,
+    page = 1,
+    limit = 20,
+    filtros?: { tipo?: string; leida?: boolean }
+  ): Promise<{ data: Notificacion[]; total: number; page: number; limit: number }> {
+    const where: any = { persona: { id: userId } };
+    if (filtros?.tipo) where.tipo = filtros.tipo;
+    if (typeof filtros?.leida === 'boolean') where.leida = filtros.leida;
+  
+    const [data, total] = await this.notificationsRepository.findAndCount({
+      where,
+      order: { id: 'DESC' },
+      take: limit,
+      skip: (page - 1) * limit,
     });
+  
+    return { data, total, page, limit };
   }
 
   // Crear notificación genérica
@@ -43,7 +58,21 @@ export class NotificationsService {
       relacionadoId: dto.relacionadoId
     });
 
-    return await this.notificationsRepository.save(notificacion);
+    const saved = await this.notificationsRepository.save(notificacion);
+    this.gateway.notifyUser(persona.id, {
+      id: saved.id,
+      tipo: saved.tipo,
+      titulo: saved.titulo,
+      mensaje: saved.mensaje,
+      relacionadoId: saved.relacionadoId,
+      fecha: saved.fecha,
+    });
+
+    // Nuevo: emitir contador actualizado
+    const newCount = await this.getUnreadCount(persona.id);
+    this.gateway.sendUnreadCount(persona.id, newCount);
+
+    return saved;
   }
 
   // Notificación cuando se solicita un material
@@ -212,9 +241,15 @@ export class NotificationsService {
 
   // Marcar todas las notificaciones como leídas
   async markAllAsRead(userId: number): Promise<void> {
-    await this.notificationsRepository.update(
-      { persona: { id: userId }, leida: false },
-      { leida: true }
-    );
+    await this.notificationsRepository
+      .createQueryBuilder()
+      .update(Notificacion)
+      .set({ leida: true })
+      .where('personaId = :userId AND leida = false', { userId })
+      .execute();
+
+    // Nuevo: emitir contador actualizado
+    const newCount = await this.getUnreadCount(userId);
+    this.gateway.sendUnreadCount(userId, newCount);
   }
 }

@@ -16,9 +16,11 @@ import { seedSitios } from './seeds/sitios/sitio.seeder';
 import { seedUnidadMedida } from './seeds/unidad-medida/unidad-medida.seeder';
 import { DataSource } from 'typeorm';
 import { ValidationPipe } from '@nestjs/common';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.useWebSocketAdapter(new IoAdapter(app));
   const dataSource = app.get(DataSource);
   app.use(cookieParser());
   app.enableCors({

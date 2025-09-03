@@ -10,7 +10,7 @@ import { Persona } from 'src/personas/entities/persona.entity';
 import { Sitio } from 'src/sitios/entities/sitio.entity';
 import { Detalle } from 'src/detalles/entities/detalle.entity';
 import { StockModule } from 'src/stock/stock.module';
-import { NotificationsModule } from '../notificaciones/notificaciones.module';
+import { NotificacionesModule } from '../notificaciones/notificaciones.module';
 import { MaterialesModule } from '../materiales/materiales.module';
 import { DetallesModule } from 'src/detalles/detalles.module';
 import { Stock } from 'src/stock/entities/stock.entity';
@@ -28,7 +28,7 @@ import { Stock } from 'src/stock/entities/stock.entity';
       Stock,
     ]),
     StockModule,
-    NotificationsModule, 
+    NotificacionesModule, 
     MaterialesModule, 
     DetallesModule,
   ],
