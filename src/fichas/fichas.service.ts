@@ -1,71 +1,52 @@
-import { Injectable } from '@nestjs/common';
+// src/ficha/ficha.service.ts
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Ficha } from './entities/ficha.entity';
+import { Repository } from 'typeorm';
 import { CreateFichaDto } from './dto/create-ficha.dto';
 import { UpdateFichaDto } from './dto/update-ficha.dto';
-import { Ficha } from './entities/ficha.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-
-
-
 
 @Injectable()
-export class FichasService {
+export class FichaService {
   constructor(
     @InjectRepository(Ficha)
-    private readonly fichaRepository: Repository<Ficha>,
+    private readonly repo: Repository<Ficha>,
   ) {}
 
-  async create(data: Partial<Ficha>) {
-    const nuevo = await this.fichaRepository.save(data);
-    return {
-      message: 'ficha creado exitosamente',
-      data: nuevo,
-    };
+  async create(dto: CreateFichaDto) {
+    const nuevo = this.repo.create({ ...dto });
+    const guardado = await this.repo.save(nuevo);
+    return { message: 'Ficha creada', data: guardado };
   }
 
   async findAll() {
-    const listar = await this.fichaRepository.find({
-      relations: [
-        'personas',
-        'titulados',
-
-      ],
+    const lista = await this.repo.find({
+      relations: ['personas', 'titulados'],
     });
-    return {
-      message: 'lista de fichas',
-      data: listar,
-    };
+    return { message: 'Listado de fichas', data: lista };
   }
 
   async findOne(id: number) {
-    const buscar = await this.fichaRepository.findOne({
-      where: { idficha: id },
-      relations: [
-        'personas',
-        'titulados',
-      ],
+    const encontrado = await this.repo.findOne({
+      where: { id },
+      relations: ['personas', 'titulados'],
     });
-    return {
-      message: 'ficha encontrado',
-      data: buscar,
-    };
+    if (!encontrado)
+      throw new NotFoundException(`Ficha no encontrada id: ${id}`);
+    return { message: 'Ficha encontrada', data: encontrado };
   }
 
-  async update(id: number, data: Partial<Ficha>) {
-    await this.fichaRepository.update(id, data);
-    const actualizado = await this.fichaRepository.findOneBy({
-      idficha: id,
+  async update(id: number, dto: UpdateFichaDto) {
+    await this.repo.update(id, dto);
+    const actualizado = await this.repo.findOne({
+      where: { id },
+      relations: ['personas', 'titulados'],
     });
-    return {
-      message: 'ficha actualizado exitosamente',
-      data: actualizado,
-    };
+    return { message: 'Ficha actualizada', data: actualizado };
   }
 
   async remove(id: number) {
-    await this.fichaRepository.delete(id);
-    return {
-      message: 'ficha eliminado exitosamente',
-    };
+    await this.repo.delete(id);
+    return { message: 'Ficha eliminada' };
   }
 }

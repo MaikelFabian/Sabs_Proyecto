@@ -1,35 +1,58 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { AreasService } from './areas.service';
+// src/area/area.controller.ts
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
+import { AreaService } from './areas.service';
 import { CreateAreaDto } from './dto/create-area.dto';
 import { UpdateAreaDto } from './dto/update-area.dto';
-import { Area } from './entities/area.entity';
+import { Roles } from 'src/auth/guards/roles.decorator';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { PermisosGuard } from 'src/auth/guards/permisos.guards';
 
+@UseGuards(JwtAuthGuard, PermisosGuard)
 @Controller('areas')
-export class AreasController {
-  constructor(private readonly areasService: AreasService) {}
+export class AreaController {
+  constructor(private readonly service: AreaService) {}
 
   @Post()
-  create(@Body() data: Partial<Area>) {
-    return this.areasService.create(data);
+  @Roles('CREAR_ÁREAS')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
+  create(@Body() dto: CreateAreaDto) {
+    return this.service.create(dto);
   }
 
   @Get()
+  @Roles('VER_ÁREAS')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
   findAll() {
-    return this.areasService.findAll();
+    return this.service.findAll();
   }
 
   @Get(':id')
+  @Roles('VER_ÁREAS')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
   findOne(@Param('id') id: string) {
-    return this.areasService.findOne(+id);
+    return this.service.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data: Partial <Area>) {
-    return this.areasService.update(+id, data);
+  @Roles('EDITAR_ÁREAS')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
+  update(@Param('id') id: string, @Body() dto: UpdateAreaDto) {
+    return this.service.update(+id, dto);
   }
 
   @Delete(':id')
+  @Roles('ELIMINAR_ÁREAS')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
   remove(@Param('id') id: string) {
-    return this.areasService.remove(+id);
+    return this.service.remove(+id);
   }
 }

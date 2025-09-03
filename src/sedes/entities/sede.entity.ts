@@ -1,38 +1,38 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
-import { Centro } from "src/centros/entities/centro.entity";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
+  JoinColumn,
+} from 'typeorm';
+import { Centro } from 'src/centros/entities/centro.entity';
 
-@Entity("sede", { schema: "public" })
+@Entity()
 export class Sede {
-  @Column("uuid", {
-    primary: true,
-    name: "idsede",
-    default: () => "gen_random_uuid()",
-  })
-  idsede: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column("text", { name: "sede" })
-  sede: string;
+  @Column()
+  nombre: string;
 
-  @Column("text", { name: "direccion" })
+  @Column()
   direccion: string;
 
-  @Column("boolean", { name: "activo", nullable: true, default: () => "true" })
-  activo: boolean | null;
+  @Column({ nullable: true })
+  centroId?: number;
 
-  @Column("timestamp without time zone", {
-    name: "fechacreacion",
-    nullable: true,
-    default: () => "now()",
-  })
-  fechacreacion: Date | null;
+  @Column({ default: true })
+  activo: boolean;
 
-  @Column("timestamp without time zone", {
-    name: "fechaactualización",
-    nullable: true,
-  })
-  fechaactualizaciN: Date | null;
+  @CreateDateColumn()
+  fechaCreacion: Date;
 
-  @ManyToOne(() => Centro, (centro) => centro.sedes)
-  @JoinColumn([{ name: "centro", referencedColumnName: "idcentro" }])
-  centro: Centro;
+  @UpdateDateColumn({ nullable: true })
+  fechaActualizacion?: Date;
+
+  @ManyToOne(() => Centro, (centro) => centro.sedes, { nullable: true })
+  @JoinColumn({ name: 'centroId' })
+  centro?: Centro;
 }

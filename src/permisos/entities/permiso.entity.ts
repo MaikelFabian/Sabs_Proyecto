@@ -1,40 +1,37 @@
-import { Column, Entity, Index, OneToMany } from "typeorm";
-import { Rolpermiso } from "src/rolpermiso/entities/rolpermiso.entity";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Opcion } from 'src/opciones/entities/opcion.entity';
+import { RolPermisoOpcion } from 'src/rol-permiso-opcion/entities/rol-permiso-opcion.entity';
 
-@Entity("permiso", { schema: "public" })
+@Entity()
 export class Permiso {
-  @Column("uuid", {
-    primary: true,
-    name: "idpermiso",
-    default: () => "gen_random_uuid()",
-  })
-  idpermiso: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column("text", { name: "nombre" })
+  @Column()
   nombre: string;
 
-  @Column("text", { name: "descripcion", nullable: true })
-  descripcion: string | null;
+  @Column({ nullable: true })
+  descripcion?: string;
 
-  @Column("text", { name: "codigo", unique: true })
+  @Column()
   codigo: string;
 
-  @Column("boolean", { name: "activo", nullable: true, default: () => "true" })
-  activo: boolean | null;
+  @Column({ default: true })
+  activo: boolean;
 
-  @Column("timestamp without time zone", {
-    name: "fechacreacion",
-    nullable: true,
-    default: () => "now()",
-  })
-  fechacreacion: Date | null;
+  @CreateDateColumn()
+  fechaCreacion: Date;
 
-  @Column("timestamp without time zone", {
-    name: "fechaactualización",
-    nullable: true,
-  })
-  fechaactualizaciN: Date | null;
+  @UpdateDateColumn({ nullable: true })
+  fechaActualizacion?: Date;
 
-  @OneToMany(() => Rolpermiso, (rolpermiso) => rolpermiso.permiso)
-  rolpermisos: Rolpermiso[];
+  @ManyToOne(() => Opcion, (opcion) => opcion.permisos, { nullable: true })
+  @JoinColumn({ name: 'opcionId' })
+  opcion?: Opcion;
+
+  @Column({ nullable: true })
+  opcionId?: number;
+
+  @OneToMany(() => RolPermisoOpcion, (rpo) => rpo.permiso)
+  rolesPermisosOpciones?: RolPermisoOpcion[];
 }

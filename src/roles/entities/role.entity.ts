@@ -1,39 +1,38 @@
-import { Column, Entity, Index, OneToMany } from "typeorm";
-import { Persona } from "src/personas/entities/persona.entity";
-import { Rolpermiso } from "src/rolpermiso/entities/rolpermiso.entity";
+// src/rol/entities/rol.entity.ts
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { Persona } from 'src/personas/entities/persona.entity';
+import { Permiso } from 'src/permisos/entities/permiso.entity';
+import { RolPermisoOpcion } from 'src/rol-permiso-opcion/entities/rol-permiso-opcion.entity';
 
-
-@Entity("rol", { schema: "public" })
+@Entity()
 export class Rol {
-  @Column("uuid", {
-    primary: true,
-    name: "idrol",
-    default: () => "gen_random_uuid()",
-  })
-  idrol: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column("text", { name: "nombrerol" })
-  nombrerol: string;
+  @Column()
+  nombre: string;
 
-  @Column("boolean", { name: "activo", nullable: true, default: () => "true" })
-  activo: boolean | null;
+  @Column({ default: true })
+  activo: boolean;
 
-  @Column("timestamp without time zone", {
-    name: "fechacreacion",
-    nullable: true,
-    default: () => "now()",
-  })
-  fechacreacion: Date | null;
+  @CreateDateColumn()
+  fechaCreacion: Date;
 
-  @Column("timestamp without time zone", {
-    name: "fechaactualización",
-    nullable: true,
-  })
-  fechaactualizaciN: Date | null;
+  @UpdateDateColumn({ nullable: true })
+  fechaActualizacion?: Date;
 
   @OneToMany(() => Persona, (persona) => persona.rol)
-  personas: Persona[];
+  personas?: Persona[];
 
-  @OneToMany(() => Rolpermiso, (rolpermiso) => rolpermiso.rol)
-  rolpermisos: Rolpermiso[];
+  @OneToMany(() => RolPermisoOpcion, (rpo) => rpo.rol)
+  rolesPermisosOpciones?: RolPermisoOpcion[];
 }

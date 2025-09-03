@@ -1,35 +1,46 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+// src/categoria-material/categoria-material.controller.ts
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { CategoriaMaterialService } from './categoria-material.service';
 import { CreateCategoriaMaterialDto } from './dto/create-categoria-material.dto';
 import { UpdateCategoriaMaterialDto } from './dto/update-categoria-material.dto';
-import { Categoriamaterial } from './entities/categoria-material.entity';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
-@Controller('categoria-material')
+
+@Controller('categoriamateriales')
 export class CategoriaMaterialController {
-  constructor(private readonly categoriaMaterialService: CategoriaMaterialService) {}
+  constructor(private readonly service: CategoriaMaterialService) {}
 
   @Post()
-  create(@Body() data: Partial <Categoriamaterial>) {
-    return this.categoriaMaterialService.create(data);
+  @UseGuards(JwtAuthGuard )
+  create(@Body() dto: CreateCategoriaMaterialDto) {
+    return this.service.create(dto);
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard )
+  
   findAll() {
-    return this.categoriaMaterialService.findAll();
+    return this.service.findAll();
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard )
+  
   findOne(@Param('id') id: string) {
-    return this.categoriaMaterialService.findOne(+id);
+    return this.service.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() data: Partial <Categoriamaterial>) {
-    return this.categoriaMaterialService.update(+id, data);
+  @UseGuards(JwtAuthGuard )
+
+  update(@Param('id') id: string, @Body() dto: UpdateCategoriaMaterialDto) {
+    return this.service.update(+id, dto);
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard )
+
   remove(@Param('id') id: string) {
-    return this.categoriaMaterialService.remove(+id);
+    return this.service.remove(+id);
   }
 }

@@ -1,68 +1,51 @@
-import { Injectable } from '@nestjs/common';
-import { CreateTipoMovimientoDto } from './dto/create-tipo-movimiento.dto';
-import { UpdateTipoMovimientoDto } from './dto/update-tipo-movimiento.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Tipomovimiento } from './entities/tipo-movimiento.entity';
-
+import { TipoMovimiento } from './entities/tipo-movimiento.entity';
+import { CreateTipoMovimientoDto } from './dto/create-tipo-movimiento.dto';
+import { UpdateTipoMovimientoDto } from './dto/update-tipo-movimiento.dto';
 
 @Injectable()
 export class TipoMovimientoService {
   constructor(
-    @InjectRepository(Tipomovimiento)
-    private readonly tipoMovimientoRepository: Repository<Tipomovimiento>,
+    @InjectRepository(TipoMovimiento)
+    private readonly repo: Repository<TipoMovimiento>,
   ) {}
 
-  async create(data: Partial<Tipomovimiento>) {
-    const nuevo = await this.tipoMovimientoRepository.save(data);
-    return {
-      message: 'tipo de movimiento creado exitosamente',
-      data: nuevo,
-    };
+  async create(dto: CreateTipoMovimientoDto) {
+    const nuevo = this.repo.create({ ...dto });
+    const guardado = await this.repo.save(nuevo);
+    return { message: 'TipoMovimiento creado', data: guardado };
   }
 
   async findAll() {
-    const listar = await this.tipoMovimientoRepository.find({
-      relations: [
-        'movimientos',
-
-      ],
-    });
-    return {
-      message: 'Listado de tipo de movimiento',
-      data: listar,
-    };
+    const lista = await this.repo.find({ relations: ['movimientos'] });
+    return { message: 'Listado de tipos de movimiento', data: lista };
   }
 
   async findOne(id: number) {
-    const buscar = await this.tipoMovimientoRepository.findOne({
-      where: { idtipomovimiento: id },
-      relations: [
-        'movimientos',
-
-      ],
+    const encontrado = await this.repo.findOne({
+      where: { id },
+      relations: ['movimientos'],
     });
-    return {
-      message: 'munictipo de movimientoipio encontrado',
-      data: buscar,
-    };
+    if (!encontrado)
+      throw new NotFoundException(`TipoMovimiento no encontrado id: ${id}`);
+    return { message: 'TipoMovimiento encontrado', data: encontrado };
   }
 
-  async update(id: number, data: Partial<Tipomovimiento>) {
-    await this.tipoMovimientoRepository.update(id, data);
-    const actualizado = await this.tipoMovimientoRepository.findOneBy({
-      idtipomovimiento: id,
+  async update(id: number, dto: UpdateTipoMovimientoDto) {
+    const { movimientos, ...updateData } = dto as any;
+    
+    await this.repo.update(id, updateData);
+    const actualizado = await this.repo.findOne({
+      where: { id },
+      relations: ['movimientos'],
     });
-    return {
-      message: 'tipo de movimiento actualizado exitosamente',
-      data: actualizado,
-    };
+    return { message: 'TipoMovimiento actualizado', data: actualizado };
   }
 
   async remove(id: number) {
-    await this.tipoMovimientoRepository.delete(id);
-    return {
-      message: 'tipo de movimiento eliminado exitosamente',
-    };
+    await this.repo.delete(id);
+    return { message: 'TipoMovimiento eliminado' };
   }
 }

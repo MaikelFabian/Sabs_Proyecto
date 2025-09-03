@@ -1,12 +1,15 @@
+// src/area/area.module.ts
 import { Module } from '@nestjs/common';
-import { AreasService } from './areas.service';
-import { AreasController } from './areas.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Area } from './entities/area.entity';
+import { AreaService } from './areas.service';
+import { AreaController } from './areas.controller';
+import { RolPermisoOpcionModule } from 'src/rol-permiso-opcion/rol-permiso-opcion.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Area])],
-  controllers: [AreasController],
-  providers: [AreasService],
+  imports: [TypeOrmModule.forFeature([Area]),RolPermisoOpcionModule],
+  controllers: [AreaController],
+  providers: [AreaService],
+  exports: [AreaService],
 })
-export class AreasModule {}
+export class AreaModule {}

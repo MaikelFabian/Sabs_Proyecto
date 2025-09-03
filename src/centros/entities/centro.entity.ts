@@ -1,51 +1,44 @@
 import {
-  Column,
   Entity,
-  Index,
-  JoinColumn,
+  PrimaryGeneratedColumn,
+  Column,
   ManyToOne,
   OneToMany,
-} from "typeorm";
-import { Areacentro } from "src/area-centro/entities/area-centro.entity";
-import { Municipio } from "src/municipios/entities/municipio.entity";
-import { Sede } from "src/sedes/entities/sede.entity";
+  CreateDateColumn,
+  UpdateDateColumn,
+  JoinColumn,
+} from 'typeorm';
+import { Municipio } from 'src/municipios/entities/municipio.entity';
+import { AreaCentro } from 'src/area-centro/entities/area-centro.entity';
+import { Sede } from 'src/sedes/entities/sede.entity';
 
-
-@Entity("centro", { schema: "public" })
+@Entity()
 export class Centro {
-  @Column("uuid", {
-    primary: true,
-    name: "idcentro",
-    default: () => "gen_random_uuid()",
-  })
-  idcentro: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column("text", { name: "centro" })
-  centro: string;
+  @Column()
+  nombre: string;
 
-  @Column("boolean", { name: "activo", nullable: true, default: () => "true" })
-  activo: boolean | null;
+  @Column({ nullable: true })
+  municipioId?: number;
 
-  @Column("timestamp without time zone", {
-    name: "fechacreacion",
-    nullable: true,
-    default: () => "now()",
-  })
-  fechacreacion: Date | null;
+  @Column({ default: true })
+  activo: boolean;
 
-  @Column("timestamp without time zone", {
-    name: "fechaactualización",
-    nullable: true,
-  })
-  fechaactualizaciN: Date | null;
+  @CreateDateColumn()
+  fechaCreacion: Date;
 
-  @OneToMany(() => Areacentro, (areacentro) => areacentro.centro)
-  areacentros: Areacentro[];
+  @UpdateDateColumn({ nullable: true })
+  fechaActualizacion?: Date;
 
-  @ManyToOne(() => Municipio, (municipio) => municipio.centros)
-  @JoinColumn([{ name: "municipio", referencedColumnName: "idmunicipio" }])
-  municipio: Municipio;
+  @ManyToOne(() => Municipio, (municipio) => municipio.centros, { nullable: true })
+  @JoinColumn({ name: 'municipioId' })
+  municipio?: Municipio;
+
+  @OneToMany(() => AreaCentro, (areaCentro) => areaCentro.centro)
+  areasCentro?: AreaCentro[];
 
   @OneToMany(() => Sede, (sede) => sede.centro)
-  sedes: Sede[];
+  sedes?: Sede[];
 }

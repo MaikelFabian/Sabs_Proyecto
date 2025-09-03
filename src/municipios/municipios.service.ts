@@ -1,67 +1,49 @@
-import { Injectable } from '@nestjs/common';
-import { CreateMunicipioDto } from './dto/create-municipio.dto';
-import { UpdateMunicipioDto } from './dto/update-municipio.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Municipio } from './entities/municipio.entity';
 import { Repository } from 'typeorm';
+import { CreateMunicipioDto } from './dto/create-municipio.dto';
+import { UpdateMunicipioDto } from './dto/update-municipio.dto';
 
 @Injectable()
-export class MunicipiosService {
+export class MunicipioService {
   constructor(
     @InjectRepository(Municipio)
-    private readonly municipioRepository: Repository<Municipio>,
+    private readonly repo: Repository<Municipio>,
   ) {}
 
-  async create(data: Partial<Municipio>) {
-    const nuevo = await this.municipioRepository.save(data);
-    return {
-      message: 'municipios creado exitosamente',
-      data: nuevo,
-    };
+  async create(dto: CreateMunicipioDto) {
+    const nuevo = this.repo.create({ ...dto });
+    const guardado = await this.repo.save(nuevo);
+    return { message: 'Municipio creado', data: guardado };
   }
 
   async findAll() {
-    const listar = await this.municipioRepository.find({
-      relations: [
-        'centros',
-
-      ],
-    });
-    return {
-      message: 'Listado de municipios',
-      data: listar,
-    };
+    const lista = await this.repo.find({ relations: ['centros'] });
+    return { message: 'Listado de municipios', data: lista };
   }
 
   async findOne(id: number) {
-    const buscar = await this.municipioRepository.findOne({
-      where: { idmunicipio: id },
-      relations: [
-        'centros',
-
-      ],
+    const municipio = await this.repo.findOne({
+      where: { id },
+      relations: ['centros'],
     });
-    return {
-      message: 'municipio encontrado',
-      data: buscar,
-    };
+    if (!municipio)
+      throw new NotFoundException(`Municipio no encontrado id: ${id}`);
+    return { message: 'Municipio encontrado', data: municipio };
   }
 
-  async update(id: number, data: Partial<Municipio>) {
-    await this.municipioRepository.update(id, data);
-    const actualizado = await this.municipioRepository.findOneBy({
-      idmunicipio: id,
+  async update(id: number, dto: UpdateMunicipioDto) {
+    await this.repo.update(id, dto);
+    const actualizado = await this.repo.findOne({
+      where: { id },
+      relations: ['centros'],
     });
-    return {
-      message: 'municipio actualizado exitosamente',
-      data: actualizado,
-    };
+    return { message: 'Municipio actualizado', data: actualizado };
   }
 
   async remove(id: number) {
-    await this.municipioRepository.delete(id);
-    return {
-      message: 'municipio eliminado exitosamente',
-    };
+    await this.repo.delete(id);
+    return { message: 'Municipio eliminado' };
   }
 }

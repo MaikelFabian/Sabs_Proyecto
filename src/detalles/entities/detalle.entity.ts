@@ -1,51 +1,65 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
-import { Material } from "src/materiales/entities/materiale.entity";
-import { Persona } from "src/personas/entities/persona.entity";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { Movimiento } from 'src/movimientos/entities/movimiento.entity';
+import { Material } from 'src/materiales/entities/materiale.entity';
+import { Persona } from 'src/personas/entities/persona.entity';
 
-@Entity("detalles", { schema: "public" })
-export class Detalles {
-  @Column("uuid", {
-    primary: true,
-    name: "iddetalle",
-    default: () => "gen_random_uuid()",
-  })
-  iddetalle: number;
+@Entity()
+export class Detalle {
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column("integer", { name: "cantidasolicitada" })
-  cantidasolicitada: number;
+  // Relación con movimiento
+  @Column()
+  movimientoId: number;
 
-  @Column("text", { name: "descripcion", nullable: true })
-  descripcion: string | null;
+  @ManyToOne(() => Movimiento, (mov) => mov.detalles, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'movimientoId' })
+  movimiento: Movimiento;
 
-  @Column("boolean", { name: "activo", nullable: true, default: () => "true" })
-  activo: boolean | null;
+  // Relación con material
+  @Column()
+  materialId: number;
 
-  @Column("timestamp without time zone", {
-    name: "fechacreacion",
-    nullable: true,
-    default: () => "now()",
-  })
-  fechacreacion: Date | null;
-
-  @Column("timestamp without time zone", {
-    name: "fechaactualización",
-    nullable: true,
-  })
-  fechaactualizaciN: Date | null;
-
-  @ManyToOne(() => Material, (material) => material.detalles)
-  @JoinColumn([{ name: "material", referencedColumnName: "idmaterial" }])
+  @ManyToOne(() => Material, (mat) => mat.detalles)
+  @JoinColumn({ name: 'materialId' })
   material: Material;
 
-  @ManyToOne(() => Persona, (persona) => persona.detalles)
-  @JoinColumn([{ name: "personaaprueba", referencedColumnName: "idpersona" }])
-  personaaprueba: Persona;
+  // Cantidad solicitada o movida
+  @Column()
+  cantidad: number;
 
-  @ManyToOne(() => Persona, (persona) => persona.detalles2)
-  @JoinColumn([{ name: "personaencargada", referencedColumnName: "idpersona" }])
-  personaencargada: Persona;
+  // Estado del detalle (pendiente, completado, rechazado)
+  @Column({ default: 'pendiente' })
+  estado: string;
 
-  @ManyToOne(() => Persona, (persona) => persona.detalles3)
-  @JoinColumn([{ name: "personasolicita", referencedColumnName: "idpersona" }])
-  personasolicita: Persona;
+  // Persona que solicita este detalle (opcional si se requiere granularidad)
+@Column({ nullable: true })
+personaSolicitaId: number | null;
+
+
+  @ManyToOne(() => Persona, { nullable: true })
+  @JoinColumn({ name: 'personaSolicitaId' })
+  personaSolicita?: Persona;
+
+  // Persona que aprueba este detalle (puede diferir del movimiento global)
+  @Column({ nullable: true })
+  personaApruebaId?: number;
+
+  @ManyToOne(() => Persona, { nullable: true })
+  @JoinColumn({ name: 'personaApruebaId' })
+  personaAprueba?: Persona;
+
+  @CreateDateColumn()
+  fechaCreacion: Date;
+
+  @UpdateDateColumn({ nullable: true })
+  fechaActualizacion?: Date;
 }

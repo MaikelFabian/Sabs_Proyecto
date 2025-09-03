@@ -1,34 +1,30 @@
-import { Column, Entity, Index, OneToMany } from "typeorm";
-import { Movimiento } from "src/movimientos/entities/movimiento.entity";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { Movimiento } from 'src/movimientos/entities/movimiento.entity';
 
-@Entity("tipomovimiento", { schema: "public" })
-export class Tipomovimiento {
-  @Column("uuid", {
-    primary: true,
-    name: "idtipomovimiento",
-    default: () => "gen_random_uuid()",
-  })
-  idtipomovimiento: number;
+@Entity()
+export class TipoMovimiento {
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column("text", { name: "tipomovimiento" })
-  tipomovimiento: string;
+  @Column()
+  nombre: string;
 
-  @Column("boolean", { name: "activo", nullable: true, default: () => "true" })
-  activo: boolean | null;
+  @Column({ default: true })
+  activo: boolean;
 
-  @Column("timestamp without time zone", {
-    name: "fechacreacion",
-    nullable: true,
-    default: () => "now()",
-  })
-  fechacreacion: Date | null;
+  @CreateDateColumn()
+  fechaCreacion: Date;
 
-  @Column("timestamp without time zone", {
-    name: "fechaactualización",
-    nullable: true,
-  })
-  fechaactualizaciN: Date | null;
+  @UpdateDateColumn({ nullable: true })
+  fechaActualizacion?: Date;
 
-  @OneToMany(() => Movimiento, (movimiento) => movimiento.tipomovimiento)
-  movimientos: Movimiento[];
+  @OneToMany(() => Movimiento, (movimiento) => movimiento.tipoMovimiento)
+  movimientos?: Movimiento[];
 }

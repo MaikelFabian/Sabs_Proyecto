@@ -1,34 +1,30 @@
-import { Column, Entity, Index, OneToMany } from "typeorm";
-import { Centro } from "src/centros/entities/centro.entity";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { Centro } from 'src/centros/entities/centro.entity';
 
-@Entity("municipio", { schema: "public" })
+@Entity()
 export class Municipio {
-  @Column("uuid", {
-    primary: true,
-    name: "idmunicipio",
-    default: () => "gen_random_uuid()",
-  })
-  idmunicipio: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column("text", { name: "municipio" })
-  municipio: string;
+  @Column()
+  nombre: string;
 
-  @Column("boolean", { name: "activo", nullable: true, default: () => "true" })
-  activo: boolean | null;
+  @Column({ default: true })
+  activo: boolean;
 
-  @Column("timestamp without time zone", {
-    name: "fechacreacion",
-    nullable: true,
-    default: () => "now()",
-  })
-  fechacreacion: Date | null;
+  @CreateDateColumn()
+  fechaCreacion: Date;
 
-  @Column("timestamp without time zone", {
-    name: "fechaactualización",
-    nullable: true,
-  })
-  fechaactualizaciN: Date | null;
+  @UpdateDateColumn({ nullable: true })
+  fechaActualizacion?: Date;
 
   @OneToMany(() => Centro, (centro) => centro.municipio)
-  centros: Centro[];
+  centros?: Centro[];
 }

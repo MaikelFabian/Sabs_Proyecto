@@ -1,37 +1,40 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
-import { Area } from 'src/areas/entities/area.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
+  JoinColumn,
+} from 'typeorm';
 import { Centro } from 'src/centros/entities/centro.entity';
+import { Area } from 'src/areas/entities/area.entity';
 
-@Entity('areacentro', { schema: 'public' })
-export class Areacentro {
-    @Column('uuid', {
-        primary: true,
-        name: 'idareacentro',
-        default: () => 'gen_random_uuid()',
-    })
-    idareacentro: number;
+@Entity()
+export class AreaCentro {
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column('boolean', { name: 'activo', nullable: true, default: () => 'true' })
-    activo: boolean | null;
+  @Column({ nullable: true })
+  centroId?: number;
 
-    @Column('timestamp without time zone', {
-        name: 'fechacreacion',
-        nullable: true,
-        default: () => 'now()',
-    })
-    fechacreacion: Date | null;
+  @Column({ nullable: true })
+  areaId?: number;
 
-    @Column('timestamp without time zone', {
-        name: 'fechaactualización',
-        nullable: true,
-    })
-    fechaactualizaciN: Date | null;
+  @Column({ default: true })
+  activo: boolean;
 
-    @ManyToOne(() => Area, (area) => area.areacentros)
-    @JoinColumn([{ name: 'area', referencedColumnName: 'idarea' }])
-    area: Area;
+  @CreateDateColumn()
+  fechaCreacion: Date;
 
-    @ManyToOne(() => Centro, (centro) => centro.areacentros)
-    @JoinColumn([{ name: 'centro', referencedColumnName: 'idcentro' }])
-    centro: Centro;
+  @UpdateDateColumn({ nullable: true })
+  fechaActualizacion?: Date;
+
+  @ManyToOne(() => Centro, (centro) => centro.areasCentro, { nullable: true })
+  @JoinColumn({ name: 'centroId' })
+  centro?: Centro;
+
+  @ManyToOne(() => Area, (area) => area.areasCentro, { nullable: true })
+  @JoinColumn({ name: 'areaId' })
+  area?: Area;
 }

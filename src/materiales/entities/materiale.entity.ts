@@ -1,80 +1,110 @@
+// src/material/entities/material.entity.ts
 import {
-  Column,
   Entity,
-  Index,
-  JoinColumn,
+  PrimaryGeneratedColumn,
+  Column,
   ManyToOne,
   OneToMany,
-} from "typeorm";
-import { Detalles } from "src/detalles/entities/detalle.entity";
-import { Categoriamaterial } from "src/categoria-material/entities/categoria-material.entity";
-import { Tipomaterial } from "src/tipo-material/entities/tipo-material.entity";
-import { Unidadmedida } from "src/unidad-medida/entities/unidad-medida.entity";
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { TipoMaterial } from 'src/tipo-material/entities/tipo-material.entity';
+import { UnidadMedida } from 'src/unidad-medida/entities/unidad-medida.entity';
+import { CategoriaMaterial } from 'src/categoria-material/entities/categoria-material.entity';
+import { Detalle } from 'src/detalles/entities/detalle.entity';
+import { Movimiento } from 'src/movimientos/entities/movimiento.entity';
+import { Sitio } from 'src/sitios/entities/sitio.entity';
+import { Persona } from 'src/personas/entities/persona.entity';
+import { Stock } from 'src/stock/entities/stock.entity';
 
-@Entity("material", { schema: "public" })
+@Entity()
 export class Material {
-  @Column("uuid", {
-    primary: true,
-    name: "idmaterial",
-    default: () => "gen_random_uuid()",
-  })
-  idmaterial: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column("text", { name: "nombrematerial" })
-  nombrematerial: string;
+  @Column()
+  nombre: string;
 
-  @Column("text", { name: "descripcion" })
+  @Column()
   descripcion: string;
 
-  @Column("integer", { name: "stock" })
-  stock: number;
 
-  @Column("boolean", { name: "caduca" })
+  @Column({ default: true })
   caduca: boolean;
 
-  @Column("timestamp without time zone", {
-    name: "fechavencimiento",
+  @Column({ nullable: true })
+  fechaVencimiento?: string;
+
+  @Column({ default: true })
+  activo: boolean;
+
+  @CreateDateColumn()
+  fechaCreacion: string;
+
+  @UpdateDateColumn({ nullable: true })
+  fechaActualizacion?: string;
+
+  @ManyToOne(() => TipoMaterial, (tipo) => tipo.materiales, { nullable: true })
+  @JoinColumn({ name: 'tipoMaterialId' })
+  tipoMaterial?: TipoMaterial;
+
+  @Column({ nullable: true })
+  tipoMaterialId?: number;
+
+  @ManyToOne(() => UnidadMedida, (unidad) => unidad.materiales, {
     nullable: true,
   })
-  fechavencimiento: Date | null;
+  @JoinColumn({ name: 'unidadMedidaId' })
+  unidadMedida?: UnidadMedida;
 
-  @Column("boolean", { name: "activo", nullable: true, default: () => "true" })
-  activo: boolean | null;
+  @Column({ nullable: true })
+  unidadMedidaId?: number;
 
-  @Column("timestamp without time zone", {
-    name: "fechacreacion",
-    nullable: true,
-    default: () => "now()",
-  })
-  fechacreacion: Date | null;
-
-  @Column("timestamp without time zone", {
-    name: "fechaactualización",
+  @ManyToOne(() => CategoriaMaterial, (categoria) => categoria.materiales, {
     nullable: true,
   })
-  fechaactualizaciN: Date | null;
+  @JoinColumn({ name: 'categoriaMaterialId' })
+  categoriaMaterial?: CategoriaMaterial;
 
-  @OneToMany(() => Detalles, (detalles) => detalles.material)
-  detalles: Detalles[];
+  @Column({ nullable: true })
+  categoriaMaterialId?: number;
 
-  @ManyToOne(
-    () => Categoriamaterial,
-    (categoriamaterial) => categoriamaterial.materials
-  )
-  @JoinColumn([
-    { name: "categoriamaterial", referencedColumnName: "idcategoriamaterial" },
-  ])
-  categoriamaterial: Categoriamaterial;
+  @Column({ default: false })
+  requiereDevolucion: boolean;
 
-  @ManyToOne(() => Tipomaterial, (tipomaterial) => tipomaterial.materials)
-  @JoinColumn([
-    { name: "tipomaterial", referencedColumnName: "idtipomaterial" },
-  ])
-  tipomaterial: Tipomaterial;
+  @ManyToOne(() => Sitio, { nullable: true })
+  @JoinColumn({ name: 'sitioId' })
+  sitio?: Sitio;
 
-  @ManyToOne(() => Unidadmedida, (unidadmedida) => unidadmedida.materials)
-  @JoinColumn([
-    { name: "unidadmedida", referencedColumnName: "idunidadmedida" },
-  ])
-  unidadmedida: Unidadmedida;
+  @Column({ nullable: true })
+  sitioId?: number;
+
+  @ManyToOne(() => Persona, { nullable: true })
+  @JoinColumn({ name: 'registradoPorId' })
+  registradoPor?: Persona;
+
+  @Column({ nullable: true })
+  registradoPorId?: number;
+
+  @Column({ default: true })
+  esOriginal: boolean;
+
+  @ManyToOne(() => Material, { nullable: true })
+  @JoinColumn({ name: 'materialOrigenId' })
+  materialOrigen?: Material;
+
+  @Column({ nullable: true })
+  materialOrigenId?: number;
+
+  // ✅ NUEVA PROPIEDAD: Cantidad total para materiales prestados (reemplaza stock)
+  @Column({ nullable: true })
+  cantidadPrestada?: number;
+
+  @OneToMany(() => Stock, (stock) => stock.material)
+  stocks?: Stock[];
+
+  @OneToMany(() => Detalle, (detalle) => detalle.material)
+  detalles?: Detalle[];
+
 }

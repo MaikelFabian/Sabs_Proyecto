@@ -1,66 +1,45 @@
-import { Injectable } from '@nestjs/common';
+// src/categoria-material/categoria-material.service.ts
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { CategoriaMaterial } from './entities/categoria-material.entity';
+import { Repository } from 'typeorm';
 import { CreateCategoriaMaterialDto } from './dto/create-categoria-material.dto';
 import { UpdateCategoriaMaterialDto } from './dto/update-categoria-material.dto';
-import { Categoriamaterial } from './entities/categoria-material.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 
 @Injectable()
 export class CategoriaMaterialService {
   constructor(
-    @InjectRepository(Categoriamaterial)
-    private readonly CategoriamaterialRepository: Repository<Categoriamaterial>,
+    @InjectRepository(CategoriaMaterial)
+    private readonly repo: Repository<CategoriaMaterial>,
   ) {}
 
-  async create(data: Partial<Categoriamaterial>) {
-    const nuevo = await this.CategoriamaterialRepository.save(data);
-    return {
-      message: 'Categoriamaterial creado exitosamente',
-      data: nuevo,
-    };
+  async create(dto: CreateCategoriaMaterialDto) {
+    const nuevo = this.repo.create({ ...dto });
+    const guardado = await this.repo.save(nuevo);
+    return { message: 'CategoriaMaterial creada', data: guardado };
   }
 
   async findAll() {
-    const listar = await this.CategoriamaterialRepository.find({
-      relations: [
-        'materials',
-      ],
-    });
-    return {
-      message: 'Listado de Categoriamaterial',
-      data: listar,
-    };
+    const lista = await this.repo.find({ relations: ['materiales'] });
+    return { message: 'Listado de categorías de material', data: lista };
   }
 
   async findOne(id: number) {
-    const buscar = await this.CategoriamaterialRepository.findOne({
-      where: { idcategoriamaterial: id },
-      relations: [
-      'materials',
-
-      ],
-    });
-    return {
-      message: 'Categoriamaterial encontrado',
-      data: buscar,
-    };
+    const encontrado = await this.repo.findOne({ where: { id }, relations: ['materiales'] });
+    if (!encontrado) throw new NotFoundException(`CategoriaMaterial no encontrada id: ${id}`);
+    return { message: 'CategoriaMaterial encontrada', data: encontrado };
   }
 
-  async update(id: number, data: Partial<Categoriamaterial>) {
-    await this.CategoriamaterialRepository.update(id, data);
-    const actualizado = await this.CategoriamaterialRepository.findOneBy({
-      idcategoriamaterial: id,
-    });
-    return {
-      message: 'ElCategoriamaterialemento actualizado exitosamente',
-      data: actualizado,
-    };
+  async update(id: number, dto: UpdateCategoriaMaterialDto) {
+    const { materiales, ...updateData } = dto as any;
+    
+    await this.repo.update(id, updateData);
+    const actualizado = await this.repo.findOne({ where: { id }, relations: ['materiales'] });
+    return { message: 'CategoriaMaterial actualizada', data: actualizado };
   }
 
   async remove(id: number) {
-    await this.CategoriamaterialRepository.delete(id);
-    return {
-      message: 'Categoriamaterial eliminado exitosamente',
-    };
+    await this.repo.delete(id);
+    return { message: 'CategoriaMaterial eliminada' };
   }
 }

@@ -1,3 +1,4 @@
+// src/movimiento/dto/update-movimiento.dto.ts
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateMovimientoDto } from './create-movimiento.dto';
 

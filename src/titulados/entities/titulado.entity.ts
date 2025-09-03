@@ -1,40 +1,44 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
-import { Area } from "src/areas/entities/area.entity";
-import { Ficha } from "src/fichas/entities/ficha.entity";
+// src/titulado/entities/titulado.entity.ts
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
+  JoinColumn,
+} from 'typeorm';
+import { Area } from 'src/areas/entities/area.entity';
+import { Ficha } from 'src/fichas/entities/ficha.entity';
 
-@Entity("titulado", { schema: "public" })
+@Entity()
 export class Titulado {
-  @Column("uuid", {
-    primary: true,
-    name: "idtitulado",
-    default: () => "gen_random_uuid()",
-  })
-  idtitulado: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column("text", { name: "titulado" })
-  titulado: string;
+  @Column()
+  nombre: string;
 
-  @Column("boolean", { name: "activo", nullable: true, default: () => "true" })
-  activo: boolean | null;
+  @Column({ nullable: true })
+  areaId?: number;
 
-  @Column("timestamp without time zone", {
-    name: "fechacreacion",
-    nullable: true,
-    default: () => "now()",
-  })
-  fechacreacion: Date | null;
+  @Column({ nullable: true })
+  fichaId?: number;
 
-  @Column("timestamp without time zone", {
-    name: "fechaactualización",
-    nullable: true,
-  })
-  fechaactualizaciN: Date | null;
+  @Column({ default: true })
+  activo: boolean;
 
-  @ManyToOne(() => Area, (area) => area.titulados)
-  @JoinColumn([{ name: "area", referencedColumnName: "idarea" }])
-  area: Area;
+  @CreateDateColumn()
+  fechaCreacion: Date;
 
-  @ManyToOne(() => Ficha, (ficha) => ficha.titulados)
-  @JoinColumn([{ name: "ficha", referencedColumnName: "idficha" }])
-  ficha: Ficha;
+  @UpdateDateColumn({ nullable: true })
+  fechaActualizacion?: Date;
+
+  @ManyToOne(() => Area, (area) => area.titulados, { nullable: true })
+  @JoinColumn({ name: 'areaId' })
+  area?: Area;
+
+  @ManyToOne(() => Ficha, (ficha) => ficha.titulados, { nullable: true })
+  @JoinColumn({ name: 'fichaId' })
+  ficha?: Ficha;
 }

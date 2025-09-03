@@ -1,68 +1,52 @@
-import { Injectable } from '@nestjs/common';
+// src/unidad-medida/unidad-medida.service.ts
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UnidadMedida } from './entities/unidad-medida.entity';
+import { Repository } from 'typeorm';
 import { CreateUnidadMedidaDto } from './dto/create-unidad-medida.dto';
 import { UpdateUnidadMedidaDto } from './dto/update-unidad-medida.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Unidadmedida } from './entities/unidad-medida.entity';
-
 
 @Injectable()
 export class UnidadMedidaService {
   constructor(
-    @InjectRepository(Unidadmedida)
-    private readonly unidadmedidaRepository: Repository<Unidadmedida>,
+    @InjectRepository(UnidadMedida)
+    private readonly repo: Repository<UnidadMedida>,
   ) {}
 
-  async create(data: Partial<Unidadmedida>) {
-    const nuevo = await this.unidadmedidaRepository.save(data);
-    return {
-      message: 'unidad de medida  creado exitosamente',
-      data: nuevo,
-    };
+  async create(dto: CreateUnidadMedidaDto) {
+    const nuevo = this.repo.create({ ...dto });
+    const guardado = await this.repo.save(nuevo);
+    return { message: 'UnidadMedida creada', data: guardado };
   }
 
   async findAll() {
-    const listar = await this.unidadmedidaRepository.find({
-      relations: [
-        'materials',
-
-      ],
-    });
-    return {
-      message: 'Listado de unidad de medida ',
-      data: listar,
-    };
+    const lista = await this.repo.find({ relations: ['materiales'] });
+    return { message: 'Listado de unidades de medida', data: lista };
   }
 
   async findOne(id: number) {
-    const buscar = await this.unidadmedidaRepository.findOne({
-      where: { idunidadmedida: id },
-      relations: [
-        'materials',
-
-      ],
+    const encontrado = await this.repo.findOne({
+      where: { id },
+      relations: ['materiales'],
     });
-    return {
-      message: 'unidad de medida  encontrado',
-      data: buscar,
-    };
+    if (!encontrado)
+      throw new NotFoundException(`UnidadMedida no encontrada id: ${id}`);
+    return { message: 'UnidadMedida encontrada', data: encontrado };
   }
 
-  async update(id: number, data: Partial<Unidadmedida>) {
-    await this.unidadmedidaRepository.update(id, data);
-    const actualizado = await this.unidadmedidaRepository.findOneBy({
-      idunidadmedida: id,
+  async update(id: number, dto: UpdateUnidadMedidaDto) {
+    const { materiales, ...updateData } = dto as any;
+
+    await this.repo.update(id, updateData);
+    const actualizado = await this.repo.findOne({
+      where: { id },
+      relations: ['materiales'],
     });
-    return {
-      message: 'unidad de medida  actualizado exitosamente',
-      data: actualizado,
-    };
+    return { message: 'UnidadMedida actualizada', data: actualizado };
   }
 
   async remove(id: number) {
-    await this.unidadmedidaRepository.delete(id);
-    return {
-      message: 'unidad de medida  eliminado exitosamente',
-    };
+    await this.repo.delete(id);
+    return { message: 'UnidadMedida eliminada' };
   }
 }

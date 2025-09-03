@@ -1,11 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { CreateRoleDto } from './dto/create-role.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Rol } from './entities/role.entity';
-
-
+import { CreateRolDto } from './dto/create-role.dto';
+import { UpdateRolDto } from './dto/update-role.dto';
 
 @Injectable()
 export class RolesService {
@@ -14,50 +12,67 @@ export class RolesService {
     private readonly rolRepository: Repository<Rol>,
   ) {}
 
-  async create(data: Partial<Rol>) {
+  async create(data: CreateRolDto) {
+    if (data.permisosId) {
+      data.permisosId = { id: data.permisosId } as any;
+    }
+
     const nuevo = await this.rolRepository.save(data);
     return {
-      message: 'rol creado exitosamente',
+      message: 'Rol creado exitosamente',
       data: nuevo,
     };
   }
 
   async findAll() {
-    const listar = await this.rolRepository.find({
-      relations: [
-        'personas',
-        'rolpermisos',
-
-      ],
-    });
+    const lista = await this.rolRepository.find({ relations: ['personas'] });
     return {
       message: 'Listado de roles',
-      data: listar,
+      data: lista,
     };
   }
 
   async findOne(id: number) {
-    const buscar = await this.rolRepository.findOne({
-      where: { idrol: id },
-      relations: [
-        'personas',
-        'rolpermisos',
-
-      ],
+    const rol = await this.rolRepository.findOne({
+      where: { id },
+      relations: ['personas', 'permisos'],
     });
+    if (!rol) throw new NotFoundException(`Rol con id ${id} no encontrado`);
     return {
-      message: 'rol encontrado',
-      data: buscar,
+      message: 'Rol encontrado',
+      data: rol,
     };
   }
 
-  async update(id: number, data: Partial<Rol>) {
-    await this.rolRepository.update(id, data);
-    const actualizado = await this.rolRepository.findOneBy({
-      idrol: id,
+  async update(id: number, updateRolDto: UpdateRolDto) {
+
+    const camposActualizables = ['nombre', 'activo', 'permisosId'];
+    const updateData = {};
+    
+
+    camposActualizables.forEach(campo => {
+      if (updateRolDto[campo] !== undefined) {
+        updateData[campo] = updateRolDto[campo];
+      }
     });
+    
+
+    const rolExistente = await this.rolRepository.findOne({ where: { id } });
+    if (!rolExistente) {
+      throw new NotFoundException(`Rol con id ${id} no encontrado`);
+    }
+    if (Object.keys(updateData).length > 0) {
+      await this.rolRepository.update(id, updateData);
+    }
+    
+ 
+    const actualizado = await this.rolRepository.findOne({
+      where: { id },
+      relations: ['personas']
+    });
+    
     return {
-      message: 'rol actualizado exitosamente',
+      message: 'Rol actualizado exitosamente',
       data: actualizado,
     };
   }
@@ -65,7 +80,22 @@ export class RolesService {
   async remove(id: number) {
     await this.rolRepository.delete(id);
     return {
-      message: 'rol eliminado exitosamente',
+      message: 'Rol eliminado exitosamente',
+    };
+  }
+
+  async getAllWithPermisosYOpciones() {
+    const data = await this.rolRepository.find({
+      relations: [
+        'rolesPermisosOpciones',
+        'rolesPermisosOpciones.permiso',
+        'rolesPermisosOpciones.opcion',
+        'rolesPermisosOpciones.opcion.modulo',
+      ],
+    });
+    return {
+      message: 'Roles con permisos y opciones',
+      data,
     };
   }
 }

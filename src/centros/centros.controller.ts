@@ -1,35 +1,57 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { CentrosService } from './centros.service';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
+import { CentroService } from './centros.service';
 import { CreateCentroDto } from './dto/create-centro.dto';
 import { UpdateCentroDto } from './dto/update-centro.dto';
-import { Centro } from './entities/centro.entity';
+import { Roles } from 'src/auth/guards/roles.decorator';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { PermisosGuard } from 'src/auth/guards/permisos.guards';
 
+@UseGuards(JwtAuthGuard, PermisosGuard)
 @Controller('centros')
-export class CentrosController {
-  constructor(private readonly centrosService: CentrosService) {}
+export class CentroController {
+  constructor(private readonly service: CentroService) {}
 
   @Post()
-  create(@Body() data : Partial<Centro>) {
-    return this.centrosService.create(data);
+  @Roles('CREAR_CENTROS')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
+  create(@Body() dto: CreateCentroDto) {
+    return this.service.create(dto);
   }
 
   @Get()
+  @Roles('VER_CENTROS')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
   findAll() {
-    return this.centrosService.findAll();
+    return this.service.findAll();
   }
 
   @Get(':id')
+  @Roles('VER_CENTRO')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
   findOne(@Param('id') id: string) {
-    return this.centrosService.findOne(+id);
+    return this.service.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body()data : Partial <Centro>) {
-    return this.centrosService.update(+id, data);
+  @Roles('EDITAR_CENTROS')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
+  update(@Param('id') id: string, @Body() dto: UpdateCentroDto) {
+    return this.service.update(+id, dto);
   }
 
   @Delete(':id')
+  @Roles('ELIMINAR_CENTROS')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
   remove(@Param('id') id: string) {
-    return this.centrosService.remove(+id);
+    return this.service.remove(+id);
   }
 }

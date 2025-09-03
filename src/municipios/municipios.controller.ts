@@ -1,35 +1,48 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { MunicipiosService } from './municipios.service';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { MunicipioService } from './municipios.service';
 import { CreateMunicipioDto } from './dto/create-municipio.dto';
 import { UpdateMunicipioDto } from './dto/update-municipio.dto';
-import { Municipio } from './entities/municipio.entity';
+import { Roles } from 'src/auth/guards/roles.decorator';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { PermisosGuard } from 'src/auth/guards/permisos.guards';
 
+@UseGuards(JwtAuthGuard, PermisosGuard)
 @Controller('municipios')
-export class MunicipiosController {
-  constructor(private readonly municipiosService: MunicipiosService) {}
+export class MunicipioController {
+  constructor(private readonly service: MunicipioService) {}
 
   @Post()
-  create(@Body() data: Partial<Municipio>) {
-    return this.municipiosService.create(data);
+  @Roles('CREAR_MUNICIPIOS')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
+  create(@Body() dto: CreateMunicipioDto) {
+    return this.service.create(dto);
   }
 
   @Get()
+  @Roles('VER_MUNICIPIOS')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
   findAll() {
-    return this.municipiosService.findAll();
+    return this.service.findAll();
   }
 
   @Get(':id')
+  @Roles('VER_MUNICIPIOS')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
   findOne(@Param('id') id: string) {
-    return this.municipiosService.findOne(+id);
+    return this.service.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body()data: Partial<Municipio>) {
-    return this.municipiosService.update(+id, data);
+  @Roles('EDITAR_MUNICIPIOS')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
+  update(@Param('id') id: string, @Body() dto: UpdateMunicipioDto) {
+    return this.service.update(+id, dto);
   }
 
   @Delete(':id')
+  @Roles('ELIMINAR_MUNICIPIOS')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
   remove(@Param('id') id: string) {
-    return this.municipiosService.remove(+id);
+    return this.service.remove(+id);
   }
 }

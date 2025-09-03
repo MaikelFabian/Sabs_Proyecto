@@ -1,12 +1,14 @@
 import { Module } from '@nestjs/common';
-import { MunicipiosService } from './municipios.service';
-import { MunicipiosController } from './municipios.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Municipio } from './entities/municipio.entity';
+import { MunicipioService } from './municipios.service';
+import { MunicipioController } from './municipios.controller';
+import { RolPermisoOpcionModule } from 'src/rol-permiso-opcion/rol-permiso-opcion.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Municipio])],
-  controllers: [MunicipiosController],
-  providers: [MunicipiosService],
+  imports: [TypeOrmModule.forFeature([Municipio]),RolPermisoOpcionModule],
+  controllers: [MunicipioController],
+  providers: [MunicipioService],
+  exports: [MunicipioService],
 })
-export class MunicipiosModule {}
+export class MunicipioModule {}

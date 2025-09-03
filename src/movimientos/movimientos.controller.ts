@@ -1,35 +1,87 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+// src/movimientos/movimientos.controller.ts
+import { Controller, Get, Post, Patch, Param, Body, UseGuards } from '@nestjs/common';
 import { MovimientosService } from './movimientos.service';
-import { CreateMovimientoDto } from './dto/create-movimiento.dto';
-import { UpdateMovimientoDto } from './dto/update-movimiento.dto';
-import { Movimiento } from './entities/movimiento.entity';
+import { PermisosGuard } from 'src/auth/guards/permisos.guards';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { Roles } from 'src/auth/guards/roles.decorator';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 
+// src/movimientos/movimientos.controller.ts
 @Controller('movimientos')
 export class MovimientosController {
   constructor(private readonly movimientosService: MovimientosService) {}
 
   @Post()
-  create(@Body() data: Partial<Movimiento>) {
-    return this.movimientosService.create(data);
+  async create(
+    @Body()
+    dto: {
+      personaSolicitaId: number;
+      sitioOrigenId: number;
+      sitioDestinoId?: number | null;
+      detalles: { materialId: number; cantidad: number }[];
+      tipoMovimientoId?: number | null; // <-- NUEVO
+    },
+  ) {
+    return this.movimientosService.createMovimiento(dto);
+  }
+
+  @Patch(':id/devolver')
+  async devolver(
+    @Param('id') id: number,
+    @Body()
+    dto: {
+      personaSolicitaId: number;
+      detalles: { materialId: number; cantidad: number }[];
+    },
+  ) {
+    return this.movimientosService.devolverMaterial({
+      movimientoOrigenId: +id,
+      personaSolicitaId: dto.personaSolicitaId,
+      detalles: dto.detalles,
+    });
+  }
+
+  @Patch(':id/aprobar')
+  async aprobar(
+    @Param('id') id: number,
+    @Body('aprobadoPorId') aprobadoPorId: number,
+  ) {
+    return this.movimientosService.aprobarMovimiento(+id, aprobadoPorId);
+  }
+
+  @Patch(':id/rechazar')
+  async rechazar(
+    @Param('id') id: number,
+    @Body('rechazadoPorId') rechazadoPorId: number,
+  ) {
+    return this.movimientosService.rechazarMovimiento(+id, rechazadoPorId);
   }
 
   @Get()
-  findAll() {
+  async findAll() {
     return this.movimientosService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.movimientosService.findOne(+id);
+  async findOne(@Param('id') id: number) {
+    return this.movimientosService.findOne(+id); // ✅ CORREGIDO
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() data: Partial<Movimiento>) {
-    return this.movimientosService.update(+id, data);
+  @Get('saldo/:materialId')
+  async getSaldoPendiente(@Param('materialId') materialId: number) {
+    const saldo = await this.movimientosService.getSaldoPendiente(+materialId);
+    return { saldoPendiente: saldo };
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.movimientosService.remove(+id);
+  // ✅ NUEVO: Obtener préstamos activos por material
+  @Get('prestamos-activos/:materialId')
+  async getPrestamosActivos(@Param('materialId') materialId: number) {
+    return this.movimientosService.getPrestamosActivos(+materialId);
+  }
+  @Get('mios')
+  @UseGuards(JwtAuthGuard, PermisosGuard)
+  @Roles('VER_MOVIMIENTOS')
+  findMine(@CurrentUser() user: any) {
+    return this.movimientosService.findMine(user.sub);
   }
 }

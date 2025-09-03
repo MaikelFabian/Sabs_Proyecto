@@ -1,68 +1,49 @@
-import { Injectable } from '@nestjs/common';
+// src/sitio/sitio.service.ts
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Sitio } from './entities/sitio.entity';
+import { Repository } from 'typeorm';
 import { CreateSitioDto } from './dto/create-sitio.dto';
 import { UpdateSitioDto } from './dto/update-sitio.dto';
-import { Sitio } from './entities/sitio.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-
 
 @Injectable()
-export class SitiosService {
+export class SitioService {
   constructor(
     @InjectRepository(Sitio)
-    private readonly sitioRepository: Repository<Sitio>,
+    private readonly repo: Repository<Sitio>,
   ) {}
 
-  async create(data: Partial<Sitio>) {
-    const nuevo = await this.sitioRepository.save(data);
-    return {
-      message: 'sitio creado exitosamente',
-      data: nuevo,
-    };
+  async create(dto: CreateSitioDto) {
+    const nuevo = this.repo.create({ ...dto });
+    const guardado = await this.repo.save(nuevo);
+    return { message: 'Sitio creado', data: guardado };
   }
 
   async findAll() {
-    const listar = await this.sitioRepository.find({
-      relations: [
-        'tipositio',
-
-      ],
-    });
-    return {
-      message: 'Listado de sitio',
-      data: listar,
-    };
+    const lista = await this.repo.find({ relations: ['tipoSitio'] });
+    return { message: 'Listado de sitios', data: lista };
   }
 
   async findOne(id: number) {
-    const buscar = await this.sitioRepository.findOne({
-      where: { idsitio: id },
-      relations: [
-        'tipositio',
-
-      ],
+    const sitio = await this.repo.findOne({
+      where: { id },
+      relations: ['tipoSitio'],
     });
-    return {
-      message: 'sitio encontrado',
-      data: buscar,
-    };
+    if (!sitio) throw new NotFoundException(`Sitio no encontrado id: ${id}`);
+    return { message: 'Sitio encontrado', data: sitio };
   }
 
-  async update(id: number, data: Partial<Sitio>) {
-    await this.sitioRepository.update(id, data);
-    const actualizado = await this.sitioRepository.findOneBy({
-      idsitio: id,
+  async update(id: number, dto: UpdateSitioDto) {
+    await this.repo.update(id, dto);
+    const actualizado = await this.repo.findOne({
+      where: { id },
+      relations: ['tipoSitio'],
     });
-    return {
-      message: 'sitio actualizado exitosamente',
-      data: actualizado,
-    };
+    return { message: 'Sitio actualizado', data: actualizado };
   }
 
   async remove(id: number) {
-    await this.sitioRepository.delete(id);
-    return {
-      message: 'sitio eliminado exitosamente',
-    };
+    await this.repo.delete(id);
+    return { message: 'Sitio eliminado' };
   }
 }

@@ -1,36 +1,50 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm";
-import { Tipositio } from "src/tipo-sitio/entities/tipo-sitio.entity";
+// src/sitio/entities/sitio.entity.ts
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
+  JoinColumn,
+} from 'typeorm';
+import { TipoSitio } from 'src/tipo-sitio/entities/tipo-sitio.entity';
+import { Material } from 'src/materiales/entities/materiale.entity';
+import { Movimiento } from 'src/movimientos/entities/movimiento.entity';
 
-
-@Entity("sitio", { schema: "public" })
+@Entity()
 export class Sitio {
-  @Column("uuid", {
-    primary: true,
-    name: "idsitio",
-    default: () => "gen_random_uuid()",
-  })
-  idsitio: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column("text", { name: "sitio" })
-  sitio: string;
+  @Column()
+  nombre: string;
 
-  @Column("boolean", { name: "activo", nullable: true, default: () => "true" })
-  activo: boolean | null;
+  @Column({ nullable: true })
+  tipoSitioId?: number;
 
-  @Column("timestamp without time zone", {
-    name: "fechacreacion",
-    nullable: true,
-    default: () => "now()",
-  })
-  fechacreacion: Date | null;
+  @Column({ default: true })
+  activo: boolean;
 
-  @Column("timestamp without time zone", {
-    name: "fechaactualización",
-    nullable: true,
-  })
-  fechaactualizaciN: Date | null;
+  @CreateDateColumn()
+  fechaCreacion: Date;
 
-  @ManyToOne(() => Tipositio, (tipositio) => tipositio.sitios)
-  @JoinColumn([{ name: "tipositio", referencedColumnName: "idtipositio" }])
-  tipositio: Tipositio;
+  @UpdateDateColumn({ nullable: true })
+  fechaActualizacion?: Date;
+
+  @ManyToOne(() => TipoSitio, (tipoSitio) => tipoSitio.sitios, { nullable: true })
+  @JoinColumn({ name: 'tipoSitioId' })
+  tipoSitio?: TipoSitio;
+  
+  @OneToMany(() => Material, (material) => material.sitio)
+  materiales?: Material[];
+
+  // Movimientos donde este sitio es el destino
+  @OneToMany(() => Movimiento, (movimiento) => movimiento.sitioDestino)
+  movimientosDestino?: Movimiento[];
+
+  // Movimientos donde este sitio es el origen
+  @OneToMany(() => Movimiento, (movimiento) => movimiento.sitioOrigen)
+  movimientosOrigen?: Movimiento[];
 }

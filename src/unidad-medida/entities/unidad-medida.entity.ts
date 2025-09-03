@@ -1,35 +1,33 @@
-import { Column, Entity, Index, OneToMany } from "typeorm";
-import { Material } from "src/materiales/entities/materiale.entity";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { Material } from 'src/materiales/entities/materiale.entity';
 
+@Entity()
+export class UnidadMedida {
+  @PrimaryGeneratedColumn()
+  id: number;
 
-@Entity("unidadmedida", { schema: "public" })
-export class Unidadmedida {
-  @Column("uuid", {
-    primary: true,
-    name: "idunidadmedida",
-    default: () => "gen_random_uuid()",
-  })
-  idunidadmedida: number;
+  @Column()
+  unidad: string;
 
-  @Column("text", { name: "unidadmedida" })
-  unidadmedida: string;
+  @Column({ default: 'N/A' })
+  simbolo: string;
 
-  @Column("boolean", { name: "activo", nullable: true, default: () => "true" })
-  activo: boolean | null;
+  @Column({ default: true })
+  activo: boolean;
 
-  @Column("timestamp without time zone", {
-    name: "fechacreacion",
-    nullable: true,
-    default: () => "now()",
-  })
-  fechacreacion: Date | null;
+  @CreateDateColumn()
+  fechaCreacion: Date;
 
-  @Column("timestamp without time zone", {
-    name: "fechaactualización",
-    nullable: true,
-  })
-  fechaactualizaciN: Date | null;
+  @UpdateDateColumn({ nullable: true })
+  fechaActualizacion?: Date;
 
-  @OneToMany(() => Material, (material) => material.unidadmedida)
-  materials: Material[];
+  @OneToMany(() => Material, (material) => material.unidadMedida)
+  materiales?: Material[];
 }

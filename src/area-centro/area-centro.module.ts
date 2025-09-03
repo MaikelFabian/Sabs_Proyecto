@@ -1,13 +1,15 @@
+// src/areacentro/areacentro.module.ts
 import { Module } from '@nestjs/common';
-import { AreacentroService } from './area-centro.service';
-import { AreaCentroController } from './area-centro.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Areacentro } from './entities/area-centro.entity';
-
+import { AreaCentro } from './entities/area-centro.entity';
+import { AreaCentroService } from './area-centro.service';
+import { AreaCentroController } from './area-centro.controller';
+import { RolPermisoOpcionModule } from 'src/rol-permiso-opcion/rol-permiso-opcion.module';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Areacentro])],
+  imports: [TypeOrmModule.forFeature([AreaCentro]),RolPermisoOpcionModule],
   controllers: [AreaCentroController],
-  providers: [AreacentroService],
+  providers: [AreaCentroService],
+  exports: [AreaCentroService],
 })
 export class AreaCentroModule {}

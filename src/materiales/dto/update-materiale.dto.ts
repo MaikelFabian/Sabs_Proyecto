@@ -1,4 +1,9 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { CreateMaterialeDto } from './create-materiale.dto';
+import { CreateMaterialDto } from './create-materiale.dto';
+import { IsOptional, IsBoolean } from 'class-validator';
 
-export class UpdateMaterialeDto extends PartialType(CreateMaterialeDto) {}
+export class UpdateMaterialDto extends PartialType(CreateMaterialDto) {
+  @IsOptional()
+  @IsBoolean()
+  activo?: boolean;
+}

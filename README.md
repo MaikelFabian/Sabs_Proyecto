@@ -1,98 +1,210 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# SABS Backend (NestJS) — Guía de instalación y uso
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Este proyecto es una API backend construida con NestJS, que utiliza autenticación con JWT vía cookie HttpOnly y PostgreSQL como base de datos. Incluye seeders automáticos para módulos, opciones y permisos.
 
-## Description
+## Requisitos
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Node.js (versión LTS recomendada)
+- npm (incluido con Node.js)
+- Docker Desktop (para Windows)
+- Git (opcional si prefieres clonar el repositorio)
 
-## Project setup
+## 1) Clonar o descargar el proyecto
 
-```bash
-$ npm install
+Opción A — Clonar con Git:
+```powershell
+git clone https://github.com/MaikelFabian/Sabs_Proyecto.git
 ```
 
-## Compile and run the project
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+Entrar al directorio del proyecto:
+```powershell
+cd Sabs_Proyecto
 ```
 
-## Run tests
+Opción B — Descargar ZIP desde tu proveedor de repositorios (GitHub/GitLab/Bitbucket), extraer y abrir la carpeta en tu IDE.
 
-```bash
-# unit tests
-$ npm run test
+## 2) Variables de entorno
 
-# e2e tests
-$ npm run test:e2e
+El backend usa variables de entorno para configuraciones como el puerto y el secreto JWT.
 
-# test coverage
-$ npm run test:cov
+- JWT_SECRET: secreto para firmar los tokens (por defecto usa "Sabs" si no se define).
+- PORT: puerto del servidor (por defecto 3000).
+- Parámetros de base de datos: si tu configuración de TypeORM lee variables de entorno, ajusta host/puerto/usuario/contraseña y nombre de la base.
+
+Ejemplo (si decides crear un archivo `.env` en la raíz):
+
+Nota:
+- El secreto JWT también puede definirse desde el sistema. Si no estableces JWT_SECRET, la app usará "Sabs" por defecto.
+- El backend expone CORS para http://localhost:5173 con credenciales habilitadas (cookies), ideal si usas un frontend en Vite.
+
+## 3) Base de datos con Docker (PostgreSQL)
+
+El proyecto incluye un docker-compose.yml para levantar PostgreSQL.
+
+Arrancar la base de datos:
+```powershell
+docker compose up -d
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+Ver logs de la base de datos:
+```powershell
+docker compose logs -f db
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Apagar contenedores:
+```powershell
+docker compose down
+```
 
-## Resources
+Volumen de datos:
+- La configuración monta un volumen para persistencia, por lo que tus datos permanecen entre reinicios de contenedores.
 
-Check out a few resources that may come in handy when working with NestJS:
+¿La base de datos se crea automáticamente?
+- Sí, el contenedor de PostgreSQL crea la base definida en `docker-compose.yml` (usuario, contraseña y base por variables de entorno).
+- Las tablas se crean/actualizan por TypeORM según tu configuración (p. ej., `synchronize: true` o migraciones). En este proyecto, además se ejecutan seeders al arrancar (módulos, opciones y permisos).
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## 4) Instalar dependencias
 
-## Support
+Instalar dependencias del backend:
+```powershell
+npm install
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## 5) Arrancar el backend
 
-## Stay in touch
+Desarrollo (watch mode):
+```powershell
+npm run start:dev
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Producción (build + run):
+```powershell
+npm run build
+```
 
-## License
+Iniciar servidor con el build:
+```powershell
+npm run start:prod
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Por defecto, el backend escucha en:
+- http://localhost:3000 (o el valor de `PORT` en tu .env)
+
+CORS:
+- Habilitado para http://localhost:5173 con `credentials: true` (si usas un frontend local, recuerda enviar cookies).
+
+## 6) Autenticación (cookies HttpOnly)
+
+Este backend usa JWT enviado en una cookie HttpOnly llamada `access_token`.
+
+- Inicio de sesión
+  - Endpoint: POST /auth/login
+  - Body esperado:
+    ```json
+    {
+      "correo": "admin@gmail.com",
+      "contrasena": "LOUR1234"
+    }
+    ```
+  - Respuesta: datos del usuario y se establece la cookie `access_token` (HttpOnly, `sameSite: 'lax'`, `secure: false` en desarrollo).
+
+- Perfil actual (requiere cookie válida)
+  - Endpoint: GET /auth/me
+
+- Cerrar sesión
+  - Endpoint: POST /auth/logout
+  - Efecto: limpia la cookie `access_token`.
+
+Importante para frontends:
+- Debes enviar credenciales (cookies) en cada request.
+- En axios, por ejemplo, usa `withCredentials: true`.
+
+## 7) Notificaciones y permisos
+
+Endpoints de notificaciones están protegidos por:
+- JwtAuthGuard (requiere cookie `access_token` válida).
+- PermisosGuard (requiere permisos asociados a la ruta).
+
+Permiso requerido:
+- Tras el ajuste reciente, los endpoints clave de notificaciones usan el permiso:
+  - `VER_VERNOTIFICACIONES`
+- Asegúrate de que el rol del usuario tenga asignado este permiso. Los seeders generan permisos a partir de las opciones y, en el caso de “Ver Notificaciones”, el código normalizado resultante es `VER_VERNOTIFICACIONES`.
+
+Si recibes 403:
+- Verifica que el usuario haya iniciado sesión (cookie presente).
+- Verifica que la ruta tenga el permiso correcto y que tu rol lo tenga asignado (`VER_VERNOTIFICACIONES`).
+- Revisa que el frontend esté enviando cookies (withCredentials) y que el origen CORS coincida (http://localhost:5173).
+
+## 8) Semillas (seeders)
+
+Al iniciar la aplicación se ejecutan seeders que:
+- Crean módulos (por ejemplo, “Notificaciones”).
+- Crean opciones (p. ej., “Ver Notificaciones”, “Gestionar Notificaciones”).
+- Generan permisos a partir de las opciones (p. ej., `VER_VERNOTIFICACIONES`, etc.).
+
+Esto permite empezar con una base de permisos/opciones consistente para probar el flujo completo.
+
+## 9) Comandos útiles
+
+Instalar dependencias:
+```powershell
+npm install
+```
+
+Arrancar en desarrollo:
+```powershell
+npm run start:dev
+```
+
+Compilar para producción:
+```powershell
+npm run build
+```
+
+Arrancar en producción:
+```powershell
+npm run start:prod
+```
+
+Levantar base de datos en Docker:
+```powershell
+docker compose up -d
+```
+
+Apagar contenedores:
+```powershell
+docker compose down
+```
+
+## 10) Solución de problemas
+
+- 401 (Unauthorized):
+  - La cookie `access_token` no está presente o expiró. Inicia sesión de nuevo en /auth/login.
+
+- 403 (Forbidden):
+  - Problema de permisos. Confirma que el rol del usuario tiene el permiso requerido (p. ej., `VER_VERNOTIFICACIONES` para notificaciones).
+  - Revisa que PermisosGuard mapea correctamente el permiso para la ruta solicitada.
+
+- Cookies no viajan al backend:
+  - Asegúrate de que el cliente envíe `withCredentials: true`.
+  - Verifica que CORS permita el origen (por defecto http://localhost:5173) y que `credentials` esté habilitado.
+  - En desarrollo, `secure: false` y `sameSite: 'lax'` están configurados en las cookies.
+
+- Conexión a base de datos:
+  - Verifica que el contenedor de PostgreSQL esté arriba (`docker compose up -d`).
+  - Confirma host/puerto/usuario/contraseña en tu configuración de TypeORM.
+  - Revisa logs: `docker compose logs -f db`.
+
+## 11) Estructura (resumen)
+
+- Autenticación
+  - Controlador: `src/auth/auth.controller.ts`
+  - Estrategias: `src/auth/local.strategy.ts` (campos: correo, contrasena), `src/auth/jwt.strategy.ts` (extrae JWT desde cookie `access_token`).
+- Guards
+  - JWT: protege endpoints autenticados.
+  - Permisos: valida que el usuario tenga permiso para la ruta.
+- Notificaciones
+  - Controlador con endpoints protegidos (requieren `VER_VERNOTIFICACIONES` tras la corrección).
+
+---

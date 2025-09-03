@@ -1,80 +1,88 @@
+// src/persona/entities/persona.entity.ts
 import {
-  Column,
   Entity,
-  Index,
-  JoinColumn,
+  PrimaryGeneratedColumn,
+  Column,
   ManyToOne,
   OneToMany,
-} from "typeorm";
-import { Detalles } from "src/detalles/entities/detalle.entity";
-import { Movimiento } from "src/movimientos/entities/movimiento.entity";
-import { Ficha } from "src/fichas/entities/ficha.entity";
-import { Rol } from "src/roles/entities/role.entity";
+  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { Exclude } from 'class-transformer';
+import { Rol } from 'src/roles/entities/role.entity';
+import { Ficha } from 'src/fichas/entities/ficha.entity';
+import { Detalle } from 'src/detalles/entities/detalle.entity';
+import { Movimiento } from 'src/movimientos/entities/movimiento.entity';
+import { Notificacion } from 'src/notificaciones/entities/notificacion.entity';
 
-
-@Entity("persona", { schema: "public" })
+@Entity()
 export class Persona {
-  @Column("uuid", {
-    primary: true,
-    name: "idpersona",
-    default: () => "gen_random_uuid()",
-  })
-  idpersona: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column("text", { name: "identificacion", unique: true })
+  @Column()
   identificacion: string;
 
-  @Column("text", { name: "nombre" })
+  @Column()
   nombre: string;
 
-  @Column("text", { name: "apellido" })
+  @Column()
   apellido: string;
 
-  @Column("text", { name: "telefono", nullable: true })
-  telefono: string | null;
+  @Column({ nullable: true })
+  telefono: string;
 
-  @Column("text", { name: "correo", unique: true })
+  @Column()
   correo: string;
 
-  @Column("text", { name: "contrasena" })
+  @Column()
+  @Exclude()
   contrasena: string;
 
-  @Column("integer", { name: "edad" })
+  @Column()
   edad: number;
 
-  @Column("boolean", { name: "activo", nullable: true, default: () => "true" })
-  activo: boolean | null;
+  @Column({ default: true })
+  activo: boolean;
 
-  @Column("timestamp without time zone", {
-    name: "fechacreacion",
-    nullable: true,
-    default: () => "now()",
-  })
-  fechacreacion: Date | null;
+  @CreateDateColumn()
+  fechaCreacion: Date;
 
-  @Column("timestamp without time zone", {
-    name: "fechaactualización",
-    nullable: true,
-  })
-  fechaactualizaciN: Date | null;
+  @UpdateDateColumn({ nullable: true })
+  fechaActualizacion?: Date;
 
-  @OneToMany(() => Detalles, (detalles) => detalles.personaaprueba)
-  detalles: Detalles[];
+  @ManyToOne(() => Rol, (rol) => rol.personas, { nullable: true })
+  @JoinColumn({ name: 'rolId' })
+  rol?: Rol;
 
-  @OneToMany(() => Detalles, (detalles) => detalles.personaencargada)
-  detalles2: Detalles[];
+  @Column({ nullable: true })
+  rolId?: number;
 
-  @OneToMany(() => Detalles, (detalles) => detalles.personasolicita)
-  detalles3: Detalles[];
-
-  @OneToMany(() => Movimiento, (movimiento) => movimiento.movimientopersona)
-  movimientos: Movimiento[];
-
-  @ManyToOne(() => Ficha, (ficha) => ficha.personas)
-  @JoinColumn([{ name: "ficha", referencedColumnName: "idficha" }])
+  @ManyToOne(() => Ficha, (ficha) => ficha.personas, { nullable: true })
   ficha: Ficha;
 
-  @ManyToOne(() => Rol, (rol) => rol.personas)
-  @JoinColumn([{ name: "rol", referencedColumnName: "idrol" }])
-  rol: Rol;
+  @Column({ nullable: true })
+  fichaId?: number;
+
+  // Detalles donde esta persona es el solicitante
+  @OneToMany(() => Detalle, (detalle) => detalle.personaSolicita)
+  detallesSolicitados?: Detalle[];
+
+  // Movimientos donde esta persona es el solicitante
+  @OneToMany(() => Movimiento, (movimiento) => movimiento.personaSolicita)
+  movimientosSolicitados?: Movimiento[];
+
+  // Movimientos donde esta persona es el aprobador
+  @OneToMany(() => Movimiento, (movimiento) => movimiento.personaAprueba)
+  movimientosAprobados?: Movimiento[];
+
+  @OneToMany(() => Notificacion, (notificacion) => notificacion.persona)
+  notificaciones?: Notificacion[];
+
+  @Column({ type: 'varchar', nullable: true })
+  resetToken: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  resetTokenExpiry: Date | null;
 }

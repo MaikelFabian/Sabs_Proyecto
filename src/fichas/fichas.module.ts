@@ -1,14 +1,15 @@
+// src/ficha/ficha.module.ts
 import { Module } from '@nestjs/common';
-import { FichasService } from './fichas.service';
-import { FichasController } from './fichas.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Ficha } from './entities/ficha.entity';
-
-
+import { FichaService } from './fichas.service';
+import { FichaController } from './fichas.controller';
+import { RolPermisoOpcionModule } from 'src/rol-permiso-opcion/rol-permiso-opcion.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Ficha])],
-  controllers: [FichasController],
-  providers: [FichasService],
+  imports: [TypeOrmModule.forFeature([Ficha]),RolPermisoOpcionModule],
+  controllers: [FichaController],
+  providers: [FichaService],
+  exports: [FichaService],
 })
-export class FichasModule {}
+export class FichaModule {}

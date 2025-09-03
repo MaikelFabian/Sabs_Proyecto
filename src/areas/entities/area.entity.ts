@@ -1,38 +1,34 @@
-import { Column, Entity, Index, OneToMany } from "typeorm";
-import { Areacentro } from "src/area-centro/entities/area-centro.entity";
-import { Titulado } from "src/titulados/entities/titulado.entity";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { AreaCentro } from 'src/area-centro/entities/area-centro.entity';
+import { Titulado } from 'src/titulados/entities/titulado.entity';
 
-@Entity("area", { schema: "public" })
+@Entity()
 export class Area {
-  @Column("uuid", {
-    primary: true,
-    name: "idarea",
-    default: () => "gen_random_uuid()",
-  })
-  idarea: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column("text", { name: "area" })
-  area: string;
+  @Column()
+  nombre: string;
 
-  @Column("boolean", { name: "activo", nullable: true, default: () => "true" })
-  activo: boolean | null;
+  @Column({ default: true })
+  activo: boolean;
 
-  @Column("timestamp without time zone", {
-    name: "fechacreacion",
-    nullable: true,
-    default: () => "now()",
-  })
-  fechacreacion: Date | null;
+  @CreateDateColumn()
+  fechaCreacion: Date;
 
-  @Column("timestamp without time zone", {
-    name: "fechaactualización",
-    nullable: true,
-  })
-  fechaactualizaciN: Date | null;
+  @UpdateDateColumn({ nullable: true })
+  fechaActualizacion?: Date;
 
-  @OneToMany(() => Areacentro, (areacentro) => areacentro.area)
-  areacentros: Areacentro[];
+  @OneToMany(() => AreaCentro, (areaCentro) => areaCentro.area)
+  areasCentro?: AreaCentro[];
 
   @OneToMany(() => Titulado, (titulado) => titulado.area)
-  titulados: Titulado[];
+  titulados?: Titulado[];
 }
